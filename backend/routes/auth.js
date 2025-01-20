@@ -3,6 +3,20 @@ const passport = require("passport");
 
 const CLIENT_URL = "http://localhost:5173/";
 
+
+const userSignUpController = require("../controller/user/userSignUp")
+const userSignInController = require("../controller/user/userSigIn")
+const userDetailsController = require('../controller/user/userDetails')
+const authToken = require('../middleware/authToken')
+
+
+
+
+router.post("/signup",userSignUpController)
+router.post("/signin",userSignInController)
+router.get("/user-details",authToken,userDetailsController)
+
+
 router.get("/login/success", (req, res) => {
   if (req.user) {
     res.status(200).json({
