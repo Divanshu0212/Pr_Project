@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import SignUp from "./pages/SignUp";
+import AuthPage from "./pages/AuthPage";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -53,7 +54,12 @@ const App = () => {
             path="/signup"
             element={<SignUp/>}
           />
+        
+          <Route path="/authpage" element={<AuthPage />} />
+
         </Routes>
+
+         
       </div>
     </BrowserRouter>
   );
