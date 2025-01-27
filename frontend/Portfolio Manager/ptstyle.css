@@ -1,0 +1,155 @@
+/* General Reset */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #0D1117;
+    /* Primary Color */
+    color: #E5E5E5;
+    /* Font Color */
+    line-height: 1.6;
+}
+
+header {
+    background-color: #161B22;
+    /* Secondary Color */
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    color: #00FFFF;
+    /* Accent Color */
+    font-size: 1.8rem;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+}
+
+nav ul li {
+    margin: 0 1rem;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: #E5E5E5;
+    /* Font Color */
+    font-size: 1rem;
+    transition: color 0.3s;
+}
+
+nav ul li a:hover {
+    color: #9C27B0;
+    /* Highlight Color */
+}
+
+.profile-header {
+    background: linear-gradient(145deg, #161B22, #0D1117);
+    padding: 2rem;
+    text-align: center;
+    border-bottom: 1px solid #9C27B0;
+    /* Highlight Color */
+}
+
+.profile-header img {
+    border-radius: 50%;
+    width: 150px;
+    height: 150px;
+    margin-bottom: 1rem;
+    border: 3px solid #00FFFF;
+    /* Accent Color */
+}
+
+.profile-header h2 {
+    color: #00FFFF;
+    /* Accent Color */
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.profile-header p {
+    font-size: 1.2rem;
+    color: #E5E5E5;
+    /* Font Color */
+}
+
+.stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 2rem 0;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat h3 {
+    color: #9C27B0;
+    /* Highlight Color */
+    font-size: 1.5rem;
+}
+
+.stat p {
+    font-size: 1rem;
+}
+
+.repositories {
+    padding: 2rem;
+}
+
+.repo-card {
+    background-color: #161B22;
+    /* Secondary Color */
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s;
+}
+
+.repo-card:hover {
+    transform: translateY(-5px);
+}
+
+.repo-card h4 {
+    color: #00FFFF;
+    /* Accent Color */
+    margin-bottom: 0.5rem;
+}
+
+.repo-card p {
+    font-size: 1rem;
+}
+
+footer {
+    background-color: #161B22;
+    /* Secondary Color */
+    text-align: center;
+    padding: 1rem 0;
+    margin-top: 2rem;
+}
+
+footer p {
+    font-size: 0.9rem;
+}
+
+footer a {
+    color: #00FFFF;
+    /* Accent Color */
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: #9C27B0;
+    /* Highlight Color */
+}
