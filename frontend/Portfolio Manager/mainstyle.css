@@ -1,0 +1,145 @@
+/* General Reset */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #0D1117;
+    /* Primary Color */
+    color: #E5E5E5;
+    /* Font Color */
+    line-height: 1.6;
+}
+
+header {
+    background-color: #161B22;
+    /* Secondary Color */
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    color: #00FFFF;
+    /* Accent Color */
+    font-size: 1.8rem;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+}
+
+nav ul li {
+    margin: 0 1rem;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: #E5E5E5;
+    /* Font Color */
+    font-size: 1rem;
+    transition: color 0.3s;
+}
+
+nav ul li a:hover {
+    color: #9C27B0;
+    /* Highlight Color */
+}
+
+.hero {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(145deg, #161B22, #0D1117);
+}
+
+.hero h2 {
+    color: #00FFFF;
+    /* Accent Color */
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.hero button {
+    background-color: #9C27B0;
+    /* Highlight Color */
+    color: #E5E5E5;
+    /* Font Color */
+    border: none;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.hero button:hover {
+    background-color: #00FFFF;
+    /* Accent Color */
+    color: #161B22;
+    /* Secondary Color */
+}
+
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+}
+
+.feature-card {
+    background-color: #161B22;
+    /* Secondary Color */
+    border-radius: 10px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-card h3 {
+    color: #9C27B0;
+    /* Highlight Color */
+    margin-bottom: 1rem;
+}
+
+.feature-card p {
+    font-size: 1rem;
+}
+
+footer {
+    background-color: #161B22;
+    /* Secondary Color */
+    text-align: center;
+    padding: 1rem 0;
+    margin-top: 2rem;
+}
+
+footer p {
+    font-size: 0.9rem;
+}
+
+footer a {
+    color: #00FFFF;
+    /* Accent Color */
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: #9C27B0;
+    /* Highlight Color */
+}
