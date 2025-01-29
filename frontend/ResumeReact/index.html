@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0D1117;
+            color: #E5E5E5;
+        }
+    </style>
+</head>
+
+<body class="flex">
+    <!-- Vertical Navbar -->
+    <nav class="w-64 h-screen bg-gray-800 text-white flex flex-col items-center py-6 shadow-lg">
+        <h1 class="text-2xl font-extrabold text-cyan-400 mb-12">Resume Generator</h1>
+        <ul class="space-y-6 text-lg font-semibold">
+            <li>
+                <a href="index.html" class="hover:text-cyan-400 transition duration-200">🏠 Home</a>
+            </li>
+            <li>
+                <a href="form.html" class="hover:text-cyan-400 transition duration-200">📝 Generate Resume</a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-12">
+        <section class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl font-extrabold text-purple-400 mb-6 animate-pulse">Welcome to the Resume Generator</h2>
+            <p class="text-xl leading-relaxed mb-8">
+                Create professional, visually appealing resumes effortlessly. Our tool is designed to make the process simple and fast for everyone.
+            </p>
+            <p class="text-lg font-medium text-gray-400 mb-12">
+                Ready to get started? Click on <span class="text-cyan-400 font-bold">"Generate Resume"</span> in the menu to begin!
+            </p>
+            <a href="form.html" class="inline-block px-8 py-4 bg-purple-600 text-white text-lg font-semibold rounded-lg shadow-lg hover:bg-purple-500 transition duration-300">
+        Get Started
+      </a>
+        </section>
+    </main>
+</body>
+
+</html>
