@@ -11,6 +11,10 @@ import SignUp from "./pages/SignUp";
 import AuthPage from "./pages/AuthPage";
 import ResumeBuilderHome from "./pages/ResumeGen/ResumeBuilderHome";
 import ResumeBuilder from "./pages/ResumeGen/ResumeBuilder";
+import FAQs from './pages/FAQs';
+import ContactUs from './pages/ContactUs';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsAndConditions from './pages/termsAndConditions';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -63,6 +67,10 @@ const App = () => {
           <Route path="/authpage" element={<AuthPage />} />
           <Route path="/resume-builder-home" element={<ResumeBuilderHome />}/>
           <Route path="/resume-builder" element={<ResumeBuilder />} />
+          <Route path="/faqs"  element={<FAQs />}  />
+          <Route path="/contact-us"  element={<ContactUs />} />
+        < Route path="/privacy-policy"  element={<PrivacyPolicy />}/>
+        <Route path="/terms-and-conditions"  element={<TermsAndConditions />}  />
 
         </Routes>
         <Footer user={user} />
