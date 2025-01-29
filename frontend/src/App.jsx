@@ -1,12 +1,16 @@
 import Navbar from "./components/Navbar";
+import Footer from "./components/footer";
 import "./app.css";
-import Home from "./pages/Home";
+import HomePage from "./pages/HomePage";
+import LandingPage from "./pages/LandingPage";
 import Post from "./pages/Post";
 import Login from "./pages/Login";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import SignUp from "./pages/SignUp";
 import AuthPage from "./pages/AuthPage";
+import ResumeBuilderHome from "./pages/ResumeGen/ResumeBuilderHome";
+import ResumeBuilder from "./pages/ResumeGen/ResumeBuilder";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -41,7 +45,8 @@ const App = () => {
       <div>
         <Navbar user={user} />
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/home" element={<HomePage />} />
           <Route
             path="/login"
             element={user ? <Navigate to="/" /> : <Login />}
@@ -56,9 +61,11 @@ const App = () => {
           />
         
           <Route path="/authpage" element={<AuthPage />} />
+          <Route path="/resume-builder-home" element={<ResumeBuilderHome />}/>
+          <Route path="/resume-builder" element={<ResumeBuilder />} />
 
         </Routes>
-
+        <Footer user={user} />
          
       </div>
     </BrowserRouter>
