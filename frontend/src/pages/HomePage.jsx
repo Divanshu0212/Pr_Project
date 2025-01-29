@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-const HomePage = () => {
+const HomePage = ({ user }) => {
   const navigate = useNavigate();
-  const [greeting, setGreeting] = useState("Welcome back, [User's Name]!");
+  const [greeting, setGreeting] = useState(`Welcome back ${user ? user.displayName : ''}!`);
   const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
@@ -17,7 +17,6 @@ const HomePage = () => {
     "Keep your portfolio updated.",
     "Tailor your resume for each job.",
     "Use action words to describe achievements.",
-    
   ];
 
   const notifications = [
@@ -32,7 +31,6 @@ const HomePage = () => {
         <nav className="space-y-6">
           {[
             { name: "Resumes", icon: "📄", link: "/resumes" },
-            { name: "Portfolios", icon: "🎨", link: "/portfolios" },
             { name: "ATS Tracker", icon: "📊", link: "/ats-tracker" },
             { name: "Settings", icon: "⚙️", link: "/settings" },
           ].map((item, index) => (
@@ -52,9 +50,9 @@ const HomePage = () => {
       <div className="flex-1 flex flex-col items-center px-6 py-4">
         {/* TrackFolio Branding */}
         <div className="text-center">
-          <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#00FFFF] to-[#0088FF] animate-fadeIn">
+          <Link to={"/"} className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#00FFFF] to-[#0088FF] animate-fadeIn">
             TrackFolio
-          </h1>
+          </Link>
           <p className="text-lg text-gray-400 mt-2 animate-fadeInSlow">
             Your Career, Your Control.
           </p>
@@ -67,63 +65,59 @@ const HomePage = () => {
 
         {/* Welcome Banner */}
         <header className="text-center mt-20 ">
-  <h1 className="text-4xl font-bold transition-all">{greeting}</h1>
-  <div className="mt-4 flex justify-center gap-4">
-    <button
-      className="border border-[#00FFFF] px-8 py-3 text-xl rounded-lg hover:bg-[#161B22] transition-all    text-[#00FFFF]"
-      onClick={() => navigate("/build-resume")}
-    >
-      Build Resume
-    </button>
-    <button
-      className="border border-[#00FFFF] px-8 py-3 text-xl rounded-lg hover:bg-[#161B22] transition-all  text-[#00FFFF]"
-      onClick={() => navigate("/create-portfolio")}
-    >
-      Create Portfolio
-    </button>
-    <button
-      className="border border-[#00FFFF] px-8 py-3 text-xl rounded-lg hover:bg-[#161B22] transition-all  text-[#00FFFF]"
-      onClick={() => navigate("/ats-tracker")}
-    >
-      Track ATS Scores
-    </button>
-  </div>
-</header>
-
+          <h1 className="text-4xl font-bold transition-all">{greeting}</h1>
+          <div className="mt-4 flex justify-center gap-4">
+            <button
+              className="border border-[#00FFFF] px-8 py-3 text-xl rounded-lg hover:bg-[#161B22] transition-all text-[#00FFFF]"
+              onClick={() => navigate("/resume-builder-home")}
+            >
+              Build Resume
+            </button>
+            <button
+              className="border border-[#00FFFF] px-8 py-3 text-xl rounded-lg hover:bg-[#161B22] transition-all text-[#00FFFF]"
+              onClick={() => navigate("/portfolioHome")}
+            >
+              Create Portfolio
+            </button>
+            <button
+              className="border border-[#00FFFF] px-8 py-3 text-xl rounded-lg hover:bg-[#161B22] transition-all text-[#00FFFF]"
+              onClick={() => navigate("/ats-tracker")}
+            >
+              Track ATS Scores
+            </button>
+          </div>
+        </header>
 
         {/* Overview Section */}
         <section className="mt-28 grid grid-cols-1 md:grid-cols-2 gap-16">
-  {[
-    { title: "Resume Stats", desc: "You have 2 active resumes. Avg. ATS Score: 80%." },
-    { title: "Portfolio Progress", desc: "Your portfolio is 60% complete. Click to finish." },
-  ].map((item, index) => (
-    <div
-      key={index}
-      className="p-6 bg-[#1F2937] rounded-lg transition hover:scale-105 min-w-[350px] md:min-w-[450px]"
-    >
-      <h2 className="text-2xl text-[#00FFFF]">{item.title}</h2>
-      <p className="mt-2 text-[#E5E5E5]">{item.desc}</p>
-    </div>
-  ))}
-</section>
-
+          {[
+            { title: "Resume Stats", desc: "You have 2 active resumes. Avg. ATS Score: 80%." },
+            { title: "Portfolio Progress", desc: "Your portfolio is 60% complete. Click to finish." },
+          ].map((item, index) => (
+            <div
+              key={index}
+              className="p-6 bg-[#1F2937] rounded-lg transition hover:scale-105 min-w-[350px] md:min-w-[450px]"
+            >
+              <h2 className="text-2xl text-[#00FFFF]">{item.title}</h2>
+              <p className="mt-2 text-[#E5E5E5]">{item.desc}</p>
+            </div>
+          ))}
+        </section>
 
         {/* Tips & Insights (Carousel) */}
         <section className="mt-10">
-  <h2 className="text-2xl text-center text-[#00FFFF]">Career Tips & Insights</h2>
-  <div className="mt-4 flex overflow-x-auto gap-4 p-2 scrollbar-hide">
-    {tips.map((tip, index) => (
-      <div
-        key={index}
-        className="p-6 bg-gradient-to-r from-[#9C27B0] to-[#eb8ed4] text-white rounded-lg shadow-lg min-w-[250px] transition-transform duration-300 hover:scale-105 hover:shadow-2xl"
-      >
-        {tip}
-      </div>
-    ))}
-  </div>
-</section>
-
-
+          <h2 className="text-2xl text-center text-[#00FFFF]">Career Tips & Insights</h2>
+          <div className="mt-4 flex overflow-x-auto gap-4 p-2 scrollbar-hide">
+            {tips.map((tip, index) => (
+              <div
+                key={index}
+                className="p-6 bg-gradient-to-r from-[#9C27B0] to-[#eb8ed4] text-white rounded-lg shadow-lg min-w-[250px] transition-transform duration-300 hover:scale-105 hover:shadow-2xl"
+              >
+                {tip}
+              </div>
+            ))}
+          </div>
+        </section>
       </div>
 
       {/* Notification Center */}

@@ -15,7 +15,7 @@ const Navbar = ({ user }) => {
   return (
     <div>
       <button
-        className={`focus:outline-none focus:ring-0 active:outline-none active:ring-0 flex fixed left-0 top-2 items-center bg-gray-800 text-white border-0 z-50 bg-transparent `}
+        className={`focus:outline-none focus:ring-0 active:outline-none active:ring-0 flex fixed -left-3 -top-1 items-center bg-gray-800 text-white border-0 z-50 bg-transparent `}
         onClick={toggleNavbar}
       >
         <div className="items-center justify-center">☰</div>
