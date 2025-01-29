@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Generator - Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0D1117;
+            color: #E5E5E5;
+        }
+    </style>
+</head>
+
+<body class="flex">
+    <!-- Vertical Navbar -->
+    <nav class="w-64 h-screen bg-gray-800 text-white flex flex-col items-center py-6 shadow-lg">
+        <h1 class="text-2xl font-extrabold text-cyan-400 mb-12">Resume Generator</h1>
+        <ul class="space-y-6 text-lg font-semibold">
+            <li>
+                <a href="index.html" class="hover:text-cyan-400 transition duration-200">🏠 Home</a>
+            </li>
+            <li>
+                <a href="form.html" class="hover:text-cyan-400 transition duration-200">📝 Generate Resume</a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-12">
+        <section class="max-w-4xl mx-auto">
+            <h2 class="text-4xl font-extrabold text-purple-400 mb-8 text-center">Fill in Your Details</h2>
+            <form class="space-y-6 bg-gray-800 p-8 rounded-lg shadow-lg">
+                <div>
+                    <label for="name" class="block text-lg font-semibold mb-2">Full Name</label>
+                    <input type="text" id="name" class="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-cyan-400" placeholder="Enter your full name">
+                </div>
+                <div>
+                    <label for="email" class="block text-lg font-semibold mb-2">Email</label>
+                    <input type="email" id="email" class="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-cyan-400" placeholder="Enter your email">
+                </div>
+                <div>
+                    <label for="phone" class="block text-lg font-semibold mb-2">Phone</label>
+                    <input type="tel" id="phone" class="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-cyan-400" placeholder="Enter your phone number">
+                </div>
+                <div>
+                    <label for="education" class="block text-lg font-semibold mb-2">Education</label>
+                    <textarea id="education" rows="4" class="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-cyan-400" placeholder="Enter your educational background"></textarea>
+                </div>
+                <div>
+                    <label for="experience" class="block text-lg font-semibold mb-2">Work Experience</label>
+                    <textarea id="experience" rows="4" class="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-cyan-400" placeholder="Enter your work experience"></textarea>
+                </div>
+                <div>
+                    <label for="skills" class="block text-lg font-semibold mb-2">Skills</label>
+                    <input type="text" id="skills" class="w-full p-3 rounded bg-gray-700 text-white focus:ring-2 focus:ring-cyan-400" placeholder="Enter your skills (comma-separated)">
+                </div>
+                <button type="submit" class="w-full px-6 py-3 bg-purple-600 text-white text-lg font-semibold rounded-lg shadow-md hover:bg-purple-500 transition duration-300">
+          Generate Resume
+        </button>
+            </form>
+        </section>
+    </main>
+</body>
+
+</html>
