@@ -42,20 +42,29 @@ const App = () => {
 
   return (
     <BrowserRouter>
-      <div className="flex flex-col min-h-screen">
+      <div>
         <Navbar user={user} />
-        <div className="flex-grow p-4">
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/home" element={<HomePage />} />
-            <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
-            <Route path="/post/:id" element={user ? <Post /> : <Navigate to="/login" />} />
-            <Route path="/signup" element={<SignUp />} />
-            <Route path="/authpage" element={<AuthPage />} />
-            <Route path="/resume-builder-home" element={<ResumeBuilderHome />} />
-            <Route path="/resume-builder" element={<ResumeBuilder />} />
-          </Routes>
-        </div>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/home" element={<HomePage />} />
+          <Route
+            path="/login"
+            element={user ? <Navigate to="/" /> : <Login />}
+          />
+          <Route
+            path="/post/:id"
+            element={user ? <Post /> : <Navigate to="/login" />}
+          />
+          <Route
+            path="/signup"
+            element={<SignUp/>}
+          />
+        
+          <Route path="/authpage" element={<AuthPage />} />
+          <Route path="/resume-builder-home" element={<ResumeBuilderHome />}/>
+          <Route path="/resume-builder" element={<ResumeBuilder />} />
+
+        </Routes>
         <Footer user={user} />
       </div>
     </BrowserRouter>
