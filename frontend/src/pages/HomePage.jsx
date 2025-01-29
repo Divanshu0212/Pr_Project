@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const [greeting, setGreeting] = useState("Welcome back, [User’s Name]!");
+  const [greeting, setGreeting] = useState("Welcome back, [User's Name]!");
   const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
