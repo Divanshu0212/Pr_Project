@@ -15,6 +15,7 @@ import ContactUs from './pages/ContactUs';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/termsAndConditions';
 import "./app.css";
+import PortfolioHome from "./pages/PortfolioHome";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -50,7 +51,7 @@ const App = () => {
         <Navbar user={user} />
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/home" element={<HomePage />} />
+          <Route path="/home" element={<HomePage user={user} />} />
           <Route
             path="/login"
             element={user ? <Navigate to="/" /> : <Login />}
@@ -63,7 +64,7 @@ const App = () => {
             path="/signup"
             element={<SignUp/>}
           />
-        
+          <Route path="/portfolioHome" element={<PortfolioHome user={user} />}/>
           <Route path="/authpage" element={<AuthPage />} />
           <Route path="/resume-builder-home" element={<ResumeBuilderHome />}/>
           <Route path="/resume-builder" element={<ResumeBuilder />} />

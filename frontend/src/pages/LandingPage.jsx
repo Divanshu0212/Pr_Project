@@ -44,7 +44,7 @@ const LandingPage = () => {
   <div className="flex justify-center mt-25 gap-8">
     {[
       { name: "Resume Generator", icon: <FaUserTie className="text-[#00FFFF] text-5xl mb-4" />, link:"/resume-builder-home" },
-      { name: "Portfolio Manager", icon: <FaBriefcase className="text-[#00FFFF] text-5xl mb-4" />, link:"/resume-builder-home" },
+      { name: "Portfolio Manager", icon: <FaBriefcase className="text-[#00FFFF] text-5xl mb-4" />, link:"/portfolioHome" },
       { name: "ATS Tracker", icon: <FaSearch className="text-[#00FFFF] text-5xl mb-4" />, link:"/resume-builder-home" }
     ].map((feature, index) => (
       <Link 
