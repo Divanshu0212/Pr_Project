@@ -66,7 +66,7 @@ const Footer = () => {
           </div>
 
           {/* Back to Top Section */}
-          <div className="flex flex-col items-center mt-6">
+          <div className="flex flex-col items-center mt-6 scroll-smooth">
             <a href="#top" className="text-[#9C27B0] hover:text-[#00FFFF] font-semibold text-lg">
               Back to Top
             </a>
