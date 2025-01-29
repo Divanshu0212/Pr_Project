@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 html {
-  transition: all 5s;
+  transition: all 1s;
   scroll-behavior: smooth;
 }
 
