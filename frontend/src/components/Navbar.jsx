@@ -28,7 +28,7 @@ const Navbar = ({ user }) => {
         </span>
         {user ? (
           <ul className="list mt-4">
-            <li className="listItem mb-4">
+            <li className="listItem mb-4 ml-10">
               <img src={user.photos[0].value} alt="" className="avatar rounded-full w-16 h-16" />
             </li>
             <li className="listItem text-white mb-4">{user.displayName}</li>
