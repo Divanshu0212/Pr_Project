@@ -7,7 +7,7 @@ class ResumeGenerator:
     def __init__(self, api_key):
         genai.configure(api_key=api_key)
         self.user_info = {}
-    
+        
     def gather_user_input(self):
         """Gather basic information from the user"""
         print("\n=== Resume Information Gathering ===")
@@ -85,8 +85,17 @@ class ResumeGenerator:
 
     def create_pdf(self, output_filename="resume.pdf"):
         """Generate a PDF resume"""
+        # Create PDF with UTF-8 encoding support
         pdf = FPDF()
         pdf.add_page()
+        
+        # Add Unicode font
+        try:
+            # Try to use Arial Unicode MS if available
+            pdf.add_font('Arial', '', 'Arial Unicode.ttf', uni=True)
+        except RuntimeError:
+            # Fallback to built-in Arial with encoding
+            pass
         
         # Set fonts
         pdf.set_font('Arial', 'B', 16)
@@ -132,7 +141,8 @@ class ResumeGenerator:
         pdf.cell(0, 10, 'Key Achievements', ln=True)
         pdf.set_font('Arial', '', 10)
         for achievement in self.user_info['enhanced_achievements']:
-            pdf.multi_cell(0, 5, f"• {achievement}")
+            # Replace bullet point with hyphen to avoid encoding issues
+            pdf.multi_cell(0, 5, f"- {achievement}")
         
         # Skills
         pdf.ln(5)
@@ -142,8 +152,13 @@ class ResumeGenerator:
         skills_text = ", ".join(self.user_info['skills'])
         pdf.multi_cell(0, 5, skills_text)
         
-        # Save PDF
-        pdf.output(output_filename)
+        try:
+            # Save PDF with error handling
+            pdf.output(output_filename, 'F')
+        except UnicodeEncodeError as e:
+            print(f"Warning: Some special characters might not be displayed correctly: {str(e)}")
+            # Attempt to save with basic character substitution
+            pdf.output(output_filename)
 
 def main():
     # Get Gemini API key from environment variable
