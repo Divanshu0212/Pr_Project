@@ -1,12 +1,11 @@
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
-import Footer from "./components/footer";
-import "./app.css";
+import Footer from "./components/Footer";
 import HomePage from "./pages/HomePage";
 import LandingPage from "./pages/LandingPage";
 import Post from "./pages/Post";
 import Login from "./pages/Login";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 import SignUp from "./pages/SignUp";
 import AuthPage from "./pages/AuthPage";
 import ResumeBuilderHome from "./pages/ResumeGen/ResumeBuilderHome";
@@ -15,6 +14,7 @@ import FAQs from './pages/FAQs';
 import ContactUs from './pages/ContactUs';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/termsAndConditions';
+import "./app.css";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -47,7 +47,7 @@ const App = () => {
   return (
     <BrowserRouter>
       <div>
-        {/* <Navbar user={user} /> */}
+        <Navbar user={user} />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<HomePage />} />
@@ -74,7 +74,6 @@ const App = () => {
 
         </Routes>
         <Footer user={user} />
-         
       </div>
     </BrowserRouter>
   );

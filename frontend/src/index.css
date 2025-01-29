@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  transition: all 1s;
+  scroll-behavior: smooth;
+}
 
 body {
   margin: 0;

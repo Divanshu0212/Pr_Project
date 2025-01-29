@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaUserTie, FaBriefcase, FaSearch } from "react-icons/fa";
 
 import "./Animation_Css/LandingPage.css"; // Ensure to create this file for animations
@@ -20,7 +20,7 @@ const LandingPage = () => {
         
         <div className="mt-6 flex gap-6 z-10">
           <button 
-            onClick={() => navigate("/signup")} 
+            onClick={() => navigate("/home")} 
             className="border border-[#00FFFF] px-6 py-3 rounded-lg hover:bg-[#161B22]">
             Get Started
           </button>
@@ -43,11 +43,12 @@ const LandingPage = () => {
   
   <div className="flex justify-center mt-25 gap-8">
     {[
-      { name: "Resume Generator", icon: <FaUserTie className="text-[#00FFFF] text-5xl mb-4" /> },
-      { name: "Portfolio Manager", icon: <FaBriefcase className="text-[#00FFFF] text-5xl mb-4" /> },
-      { name: "ATS Tracker", icon: <FaSearch className="text-[#00FFFF] text-5xl mb-4" /> }
+      { name: "Resume Generator", icon: <FaUserTie className="text-[#00FFFF] text-5xl mb-4" />, link:"/resume-builder-home" },
+      { name: "Portfolio Manager", icon: <FaBriefcase className="text-[#00FFFF] text-5xl mb-4" />, link:"/resume-builder-home" },
+      { name: "ATS Tracker", icon: <FaSearch className="text-[#00FFFF] text-5xl mb-4" />, link:"/resume-builder-home" }
     ].map((feature, index) => (
-      <div 
+      <Link 
+        to={feature.link}
         key={index} 
         className="w-1/4 p-6 bg-[#161B22] rounded-lg shadow-md transform transition hover:scale-105 hover:shadow-[0_4px_20px_rgba(0,255,255,0.5)] duration-300"
       >
@@ -55,7 +56,7 @@ const LandingPage = () => {
           {feature.icon}
           <h3 className="text-xl text-[#E5E5E5] font-semibold">{feature.name}</h3>
         </div>
-      </div>
+      </Link>
     ))}
   </div>
 </section>
