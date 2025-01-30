@@ -76,7 +76,6 @@ const App = () => {
           <Route path="/contact-us"  element={<ContactUs />} />
         < Route path="/privacy-policy"  element={<PrivacyPolicy />}/>
         <Route path="/terms-and-conditions"  element={<TermsAndConditions />}  />
-
         </Routes>
         <Footer user={user} />
       </div>
