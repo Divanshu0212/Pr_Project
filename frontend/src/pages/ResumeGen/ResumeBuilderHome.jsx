@@ -11,13 +11,13 @@ const ResumeBuilderHome = () => {
 
       <div className="mt-8 flex gap-6">
         <button
-          onClick={() => navigate("/resume-builder?type=general")}
+          onClick={() => navigate("/resume-builder")}
           className="bg-[#00FFFF] text-[#0D1117] px-8 py-4 rounded-lg hover:scale-105 transition"
         >
           Create General Resume
         </button>
         <button
-          onClick={() => navigate("/resume-builder?type=ats")}
+          onClick={() => navigate("/ats")}
           className="border border-[#00FFFF] px-8 py-4 rounded-lg hover:bg-[#161B22] transition"
         >
           Build for ATS Compatibility

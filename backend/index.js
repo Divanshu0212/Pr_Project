@@ -282,8 +282,8 @@ function calculateScores(keywordAnalysis, sectionAnalysis, formatAnalysis) {
         sections: Math.round(sectionAnalysis.score),
         format: Math.round(formatAnalysis.score),
         overall: Math.round(
-            (keywordAnalysis.score * 0.4) + 
-            (sectionAnalysis.score * 0.3) + 
+            (keywordAnalysis.score * 0.4) +
+            (sectionAnalysis.score * 0.3) +
             (formatAnalysis.score * 0.3)
         )
     };
