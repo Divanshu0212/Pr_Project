@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
 import { MdEdit } from "react-icons/md";
 
-
 const PortfolioHome = ({ user }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [bio, setBio] = useState(user?.bio || 'As a dedicated professional, I excel in software development with a focus on creating innovative solutions. My experience in diverse projects and passion for excellence make me a valuable asset. I thrive in fast-paced environments, consistently delivering high-quality results and exceeding expectations.');
+    const [hoveredProject, setHoveredProject] = useState(null);
 
     const handleEditClick = () => {
         setIsEditing(!isEditing);
@@ -29,10 +29,10 @@ const PortfolioHome = ({ user }) => {
     };
 
     const projects = [
-        { name: 'AskUrDoc', image: '../src/img/askurdoc.jpg', link: 'https://github.com/Speedy2705/DBMS_Project' },
-        { name: 'E-Commerce', image: '../src/img/E-Commerce.jpg', link: 'https://github.com/Speedy2705/MERN' },
-        { name: 'TrackFolio', image: '../src/img/TrackFolio.jpg', link: 'https://github.com/Speedy2705/Pr_Project' },
-        { name: 'Gaming Community', image: '../src/img/BigDawgs.png', link: 'https://github.com/Divanshu0212/canuhkit' },
+        { name: 'AskUrDoc', image: '../src/img/askurdoc.jpg', link: 'https://github.com/Speedy2705/DBMS_Project', description: 'A project description for AskUrDoc.' },
+        { name: 'E-Commerce', image: '../src/img/E-Commerce.jpg', link: 'https://github.com/Speedy2705/MERN', description: 'A project description for E-Commerce.' },
+        { name: 'TrackFolio', image: '../src/img/TrackFolio.jpg', link: 'https://github.com/Speedy2705/Pr_Project', description: 'A project description for TrackFolio.' },
+        { name: 'Gaming Community', image: '../src/img/BigDawgs.png', link: 'https://github.com/Divanshu0212/canuhkit', description: 'A project description for Gaming Community.' },
     ];
 
     const certificates = [
@@ -89,16 +89,31 @@ const PortfolioHome = ({ user }) => {
                 <div className="flex justify-between items-center mb-8 border-b border-gray-200">
                     <h3 className="text-3xl text-[#00FFFF] pb-10 font-semibold">Pinned Projects</h3>
                 </div>
-                <div className="flex space-x-4 overflow-x-auto pt-5 pl-5">
+                <div className="flex h-96 space-x-4 overflow-x-auto pt-5 pl-5">
                     {projects.map((project, index) => (
-                        <a key={index} href={project.link} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center space-y-2 hover:scale-105">
-                            <img
-                                className="h-32 w-32 rounded-full object-cover border-2 border-[#31aad5] hover:scale-100"
-                                src={project.image}
-                                alt={project.name}
-                            />
-                            <p className="text-sm text-gray-400">{project.name}</p>
-                        </a>
+                        <div
+                            key={index}
+                            onMouseEnter={() => setHoveredProject(index)}
+                            onMouseLeave={() => setHoveredProject(null)}
+                            className="relative flex flex-col items-center space-y-2 hover:scale-105 transition duration-300"
+                        >
+                            <a href={project.link} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center space-y-2">
+                                <img
+                                    className="h-32 w-32 rounded-full object-cover border-2 border-[#31aad5]"
+                                    src={project.image}
+                                    alt={project.name}
+                                />
+                                <p className="text-sm text-gray-400">{project.name}</p>
+                            </a>
+                            {hoveredProject === index && (
+                                <div className="absolute left-1/2 top-96 z-50 transform -translate-x-1/2 -translate-y-full mt-2 w-64 p-4 bg-[#161B22] text-[#E5E5E5] rounded-lg shadow-lg">
+                                    <h4 className="text-lg font-semibold mb-2">{project.name}</h4>
+                                    <p className="text-sm mb-2">{project.description}</p>
+                                    <img src={project.image} alt={project.name} className="w-full h-32 object-cover rounded" />
+                                    <a href={project.link} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline mt-2 inline-block">View Project</a>
+                                </div>
+                            )}
+                        </div>
                     ))}
                     <button
                         onClick={handleAddProject}
@@ -112,7 +127,7 @@ const PortfolioHome = ({ user }) => {
             <div className="flex justify-between items-center mb-8 border-b border-gray-200">
                 <h3 className="text-3xl text-[#00FFFF] pb-10 font-semibold">Certificates</h3>
             </div>
-            <div className="grid grid-cols-3"> {/* Adjusted gap */}
+            <div className="grid grid-cols-3">
                 {certificates.map((certificate, index) => (
                     <a key={index} href={certificate.link} target="_blank" rel="noopener noreferrer">
                         <img
