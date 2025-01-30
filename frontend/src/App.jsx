@@ -51,7 +51,7 @@ const App = () => {
       <div>
         <Navbar user={user} />
         <Routes>
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<LandingPage user={user} />} />
           <Route path="/home" element={<HomePage user={user} />} />
           <Route
             path="/login"

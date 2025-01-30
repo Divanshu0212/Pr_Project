@@ -77,7 +77,7 @@ const HomePage = ({ user }) => {
               className="border border-[#00FFFF] px-8 py-3 text-xl rounded-lg hover:bg-[#161B22] transition-all text-[#00FFFF]"
               onClick={() => navigate("/portfolioHome")}
             >
-              Create Portfolio
+              Portfolio Manager
             </button>
             <button
               className="border border-[#00FFFF] px-8 py-3 text-xl rounded-lg hover:bg-[#161B22] transition-all text-[#00FFFF]"
