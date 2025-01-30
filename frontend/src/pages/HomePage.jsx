@@ -81,7 +81,7 @@ const HomePage = ({ user }) => {
             </button>
             <button
               className="border border-[#00FFFF] px-8 py-3 text-xl rounded-lg hover:bg-[#161B22] transition-all text-[#00FFFF]"
-              onClick={() => navigate("/ats-tracker")}
+              onClick={() => navigate("/ats")}
             >
               Track ATS Scores
             </button>
