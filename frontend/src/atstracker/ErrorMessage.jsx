@@ -2,10 +2,10 @@ import React from 'react';
 
 const ErrorMessage = ({ message }) => {
   return (
-    <div className="bg-red-50 text-red-700 p-4 rounded-lg">
-      <div className="flex">
+    <div className="bg-[#161B22] text-[#9C27B0] p-4 rounded-lg border border-[#00FFFF]">
+      <div className="flex items-center">
         <svg
-          className="h-5 w-5 mr-3"
+          className="h-5 w-5 mr-3 text-[#00FFFF]"
           fill="currentColor"
           viewBox="0 0 20 20"
         >
@@ -15,7 +15,7 @@ const ErrorMessage = ({ message }) => {
             clipRule="evenodd"
           />
         </svg>
-        {message}
+        <span className="text-[#E5E5E5]">{message}</span>
       </div>
     </div>
   );

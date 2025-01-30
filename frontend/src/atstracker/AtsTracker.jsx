@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import ResumeUploader from './ResumeUploader';
 import AnalysisResults from './AnalysisResults';
 import LoadingState from './LoadingState';
@@ -36,10 +36,11 @@ const ATSTracker = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="w-full mx-auto p-6 space-y-6 bg-[#0D1117] text-[#E5E5E5] shadow-lg border border-[#161B22]">
+      <h1 className="text-3xl font-semibold text-[#00FFFF] text-center">ATS Resume Analyzer</h1>
       <ResumeUploader onUpload={handleAnalysis} />
       {isAnalyzing && <LoadingState />}
-      {error && <ErrorMessage message={error} />}
+      {error && <ErrorMessage message={error} className="text-[#9C27B0]" />}
       {analysisResult && <AnalysisResults results={analysisResult} />}
     </div>
   );
