@@ -17,6 +17,7 @@ import TermsAndConditions from './pages/termsAndConditions';
 import "./app.css";
 import PortfolioHome from "./pages/PortfolioHome";
 import ResumeForm from "./pages/ResumeForm";
+import ATSTracker from "./atstracker/AtsTracker";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -69,6 +70,8 @@ const App = () => {
           <Route path="/authpage" element={<AuthPage />} />
           <Route path="/resume-builder-home" element={<ResumeBuilderHome />}/>
           <Route path="/resume-builder" element={<ResumeForm />} />
+          <Route path="/ats" element={<ATSTracker />} />
+          
           <Route path="/faqs"  element={<FAQs />}  />
           <Route path="/contact-us"  element={<ContactUs />} />
         < Route path="/privacy-policy"  element={<PrivacyPolicy />}/>
