@@ -55,6 +55,7 @@ const AuthPage = () => {
 
       if (response.ok) {
         setSuccessMessage("Login successful!");
+        navigate("/home")
       } else {
         setErrorMessage(result.message || "Login failed.");
       }
