@@ -53,7 +53,7 @@ const PortfolioHome = ({ user }) => {
                         <div className="mb-4 ml-20">
                             <img src={user?.photos[0].value} alt="Profile" className="avatar rounded-full w-48 h-48" />
                         </div>
-                        <div>
+                        <div className='w-[calc(750px)]'>
                             <h2 className="text-3xl mb-5 font-semibold text-left">{user?.displayName}</h2>
                             <div className="flex space-x-2">
                                 {isEditing ? (
@@ -103,7 +103,7 @@ const PortfolioHome = ({ user }) => {
                 <div className="flex justify-between items-center mb-8 border-b border-gray-200">
                     <h3 className="text-3xl text-[#00FFFF] pb-10 font-semibold">Pinned Projects</h3>
                 </div>
-                <div className="flex h-96 space-x-4 overflow-x-auto pt-5 pl-5">
+                <div className="flex h-[calc(445px)] space-x-4 overflow-x-auto gap-16 pt-7 pl-20 relative z-50">
                     {projects.map((project, index) => (
                         <div
                             key={index}
@@ -113,14 +113,14 @@ const PortfolioHome = ({ user }) => {
                         >
                             <a href={project.link} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center space-y-2">
                                 <img
-                                    className="h-32 w-32 rounded-full object-cover border-2 border-[#31aad5]"
+                                    className="h-32 w-32 rounded-full object-cover border-2 border-[#31aad5] shadow-md transform transition hover:scale-105 hover:shadow-[0_10px_40px_rgba(0,255,255,0.5)] duration-300"
                                     src={project.image}
                                     alt={project.name}
                                 />
                                 <p className="text-sm text-gray-400">{project.name}</p>
                             </a>
                             {hoveredProject === index && (
-                                <div className="absolute left-1/2 top-96 z-50 transform -translate-x-1/2 -translate-y-full mt-2 w-64 p-4 bg-[#161B22] text-[#E5E5E5] rounded-lg shadow-lg">
+                                <div className="absolute left-1/2 top-[calc(400px)] z-50 transform -translate-x-1/2 -translate-y-full mt-2 w-64 p-4 bg-[#161B22] text-[#E5E5E5] rounded-lg shadow-lg">
                                     <h4 className="text-lg font-semibold mb-2">{project.name}</h4>
                                     <p className="text-sm mb-2">{project.description}</p>
                                     <img src={project.image} alt={project.name} className="w-full h-32 object-cover rounded" />
@@ -138,14 +138,14 @@ const PortfolioHome = ({ user }) => {
                 </div>
             </div>
 
-            <div className="flex justify-between items-center mb-8 border-b border-gray-200">
+            <div className="relative -top-52 flex justify-between items-center mb-8 border-b border-gray-200">
                 <h3 className="text-3xl text-[#00FFFF] pb-10 font-semibold">Certificates</h3>
             </div>
-            <div className="grid grid-cols-3">
+            <div className="grid grid-cols-3 relative -top-52 h-1">
                 {certificates.map((certificate, index) => (
                     <a key={index} href={certificate.link} target="_blank" rel="noopener noreferrer">
                         <img
-                            className="w-[calc(450px)] h-full object-cover"
+                            className="w-[calc(450px)] h-52 object-cover"
                             src={certificate.image}
                             alt={certificate.name}
                         />
