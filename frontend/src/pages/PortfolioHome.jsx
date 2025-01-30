@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { FaEdit, FaPlus } from 'react-icons/fa';
+import { FaPlus } from 'react-icons/fa';
+import { MdEdit } from "react-icons/md";
+
 
 const PortfolioHome = ({ user }) => {
     const [isEditing, setIsEditing] = useState(false);
@@ -59,12 +61,12 @@ const PortfolioHome = ({ user }) => {
                                 ) : (
                                     <p className="text-gray-400 w-[calc(800px)]">{bio}</p>
                                 )}
-                                <button
+                                <div
                                     onClick={isEditing ? handleSaveClick : handleEditClick}
-                                    className="flex items-center justify-center w-8 h-8 text-white rounded-full transition duration-300"
+                                    className="flex cursor-pointer items-center justify-center w-8 h-8 text-white rounded-full relative z-50"
                                 >
-                                    <FaEdit />
-                                </button>
+                                    <MdEdit />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -72,11 +74,11 @@ const PortfolioHome = ({ user }) => {
                         <div className="flex justify-center space-x-8">
                             <div>
                                 <p className="text-2xl font-semibold">10</p>
-                                <p className="text-gray-400">Projects</p>
+                                <p className="text-lg text-gray-400">Projects</p>
                             </div>
                             <div>
-                                <p className="text-lg font-semibold">8</p>
-                                <p className="text-gray-400">Completed Task</p>
+                                <p className="text-2xl font-semibold">8</p>
+                                <p className="text-lg text-gray-400">Completed Task</p>
                             </div>
                         </div>
                     </div>
@@ -87,11 +89,11 @@ const PortfolioHome = ({ user }) => {
                 <div className="flex justify-between items-center mb-8 border-b border-gray-200">
                     <h3 className="text-5xl pb-10 font-semibold">Hero Projects</h3>
                 </div>
-                <div className="flex space-x-4 overflow-x-auto">
+                <div className="flex space-x-4 overflow-x-auto pt-5 pl-5">
                     {projects.map((project, index) => (
-                        <a key={index} href={project.link} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center space-y-2">
+                        <a key={index} href={project.link} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center space-y-2 hover:scale-105">
                             <img
-                                className="h-44 w-44 rounded-full object-cover border-2 border-[#31aad5]"
+                                className="h-44 w-44 rounded-full object-cover border-2 border-[#31aad5] hover:scale-100"
                                 src={project.image}
                                 alt={project.name}
                             />
