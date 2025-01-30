@@ -10,6 +10,11 @@ const PortfolioHome = ({ user }) => {
     const handleEditClick = () => {
         setIsEditing(!isEditing);
     };
+    const skills = [
+        'javascript', 'python', 'java', 'react', 'node.js', 'angular',
+        'vue.js', 'typescript', 'mongodb', 'sql', 'aws', 'docker',
+        'kubernetes', 'ci/cd', 'git', 'rest api', 'graphql'
+    ];
 
     const handleBioChange = (event) => {
         setBio(event.target.value);
@@ -66,6 +71,15 @@ const PortfolioHome = ({ user }) => {
                                     className="flex cursor-pointer items-center justify-center w-8 h-8 text-white rounded-full relative z-50"
                                 >
                                     <MdEdit />
+                                </div>
+                            </div>
+                            <div className='skills'>
+                                <div className="flex flex-wrap gap-2 mt-4">
+                                    {skills.map((skill, index) => (
+                                        <span key={index} className="px-4 py-2 border border-[#00FFFF] text-[#00FFFF] rounded-full text-sm">
+                                            {skill}
+                                        </span>
+                                    ))}
                                 </div>
                             </div>
                         </div>
@@ -131,7 +145,7 @@ const PortfolioHome = ({ user }) => {
                 {certificates.map((certificate, index) => (
                     <a key={index} href={certificate.link} target="_blank" rel="noopener noreferrer">
                         <img
-                            className="w-[calc(450px)] h-56 object-cover"
+                            className="w-[calc(450px)] h-full object-cover"
                             src={certificate.image}
                             alt={certificate.name}
                         />
