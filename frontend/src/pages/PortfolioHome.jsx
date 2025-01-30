@@ -49,8 +49,8 @@ const PortfolioHome = ({ user }) => {
                             <img src={user?.photos[0].value} alt="Profile" className="avatar rounded-full w-48 h-48" />
                         </div>
                         <div>
-                            <h2 className="text-3xl mb-5 font-semibold">{user?.displayName}</h2>
-                            <div className="flex items-center space-x-2">
+                            <h2 className="text-3xl mb-5 font-semibold text-left">{user?.displayName}</h2>
+                            <div className="flex space-x-2">
                                 {isEditing ? (
                                     <input
                                         type="text"
@@ -59,7 +59,7 @@ const PortfolioHome = ({ user }) => {
                                         className="mt-2 px-4 py-2 bg-[#161B22] text-[#E5E5E5] rounded"
                                     />
                                 ) : (
-                                    <p className="text-gray-400 w-[calc(800px)]">{bio}</p>
+                                    <p className="text-gray-400 w-[calc(800px)] text-left">{bio}</p>
                                 )}
                                 <div
                                     onClick={isEditing ? handleSaveClick : handleEditClick}
@@ -73,12 +73,12 @@ const PortfolioHome = ({ user }) => {
                     <div className="text-center pb-4 mb-4 pr-20">
                         <div className="flex justify-center space-x-8">
                             <div>
-                                <p className="text-2xl font-semibold">10</p>
-                                <p className="text-lg text-gray-400">Projects</p>
+                                <p className="text-xl text-[#00FFFF] font-semibold">10</p>
+                                <p className="text-lg text-[#9C27B0]">Projects</p>
                             </div>
                             <div>
-                                <p className="text-2xl font-semibold">8</p>
-                                <p className="text-lg text-gray-400">Completed Task</p>
+                                <p className="text-xl text-[#00FFFF] font-semibold">8</p>
+                                <p className="text-lg text-[#9C27B0]">Completed Task</p>
                             </div>
                         </div>
                     </div>
@@ -87,13 +87,13 @@ const PortfolioHome = ({ user }) => {
 
             <div className="pb-4 mb-4">
                 <div className="flex justify-between items-center mb-8 border-b border-gray-200">
-                    <h3 className="text-5xl pb-10 font-semibold">Hero Projects</h3>
+                    <h3 className="text-3xl text-[#00FFFF] pb-10 font-semibold">Pinned Projects</h3>
                 </div>
                 <div className="flex space-x-4 overflow-x-auto pt-5 pl-5">
                     {projects.map((project, index) => (
                         <a key={index} href={project.link} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center space-y-2 hover:scale-105">
                             <img
-                                className="h-44 w-44 rounded-full object-cover border-2 border-[#31aad5] hover:scale-100"
+                                className="h-32 w-32 rounded-full object-cover border-2 border-[#31aad5] hover:scale-100"
                                 src={project.image}
                                 alt={project.name}
                             />
@@ -102,7 +102,7 @@ const PortfolioHome = ({ user }) => {
                     ))}
                     <button
                         onClick={handleAddProject}
-                        className="flex text-5xl items-center justify-center w-44 h-44 text-[#E5E5E5] rounded-full transition duration-300"
+                        className="flex text-5xl items-center justify-center w-32 h-32 text-[#E5E5E5] rounded-full transition duration-300"
                     >
                         <FaPlus />
                     </button>
@@ -110,13 +110,13 @@ const PortfolioHome = ({ user }) => {
             </div>
 
             <div className="flex justify-between items-center mb-8 border-b border-gray-200">
-                <h3 className="text-5xl pb-10 font-semibold">Certificates</h3>
+                <h3 className="text-3xl text-[#00FFFF] pb-10 font-semibold">Certificates</h3>
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3"> {/* Adjusted gap */}
                 {certificates.map((certificate, index) => (
                     <a key={index} href={certificate.link} target="_blank" rel="noopener noreferrer">
                         <img
-                            className="w-full h-full object-cover"
+                            className="w-[calc(450px)] h-56 object-cover"
                             src={certificate.image}
                             alt={certificate.name}
                         />
@@ -124,7 +124,7 @@ const PortfolioHome = ({ user }) => {
                 ))}
                 <button
                     onClick={handleAddCertificate}
-                    className="flex text-5xl items-center justify-center w-full text-[#E5E5E5] transition duration-300"
+                    className="flex text-5xl items-center justify-center w-96 h-56 text-[#E5E5E5] transition duration-300"
                 >
                     <FaPlus />
                 </button>
