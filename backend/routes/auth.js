@@ -1,7 +1,8 @@
 const router = require("express").Router();
 const passport = require("passport");
 
-const CLIENT_URL = "http://localhost:5173/";
+const CLIENT_URL = "http://localhost:5173/home";
+const CLIENT_URL_LOGOUT = "http://localhost:5173/";
 
 
 const userSignUpController = require("../controller/user/userSignUp")
@@ -12,8 +13,8 @@ const authToken = require('../middleware/authToken')
 
 
 
-router.post("/signup",userSignUpController)
-router.post("/signin",userSignInController)
+router.post("/signup",authToken,userSignUpController)
+router.post("/signin",authToken,userSignInController)
 router.get("/user-details",authToken,userDetailsController)
 
 
@@ -37,7 +38,7 @@ router.get("/login/failed", (req, res) => {
 
 router.get("/logout", (req, res) => {
   req.logout();
-  res.redirect(CLIENT_URL);
+  res.redirect(CLIENT_URL_LOGOUT);
 });
 
 router.get("/google", passport.authenticate("google", { scope: ["profile"] }));
