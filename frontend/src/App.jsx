@@ -16,6 +16,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsAndConditions from './pages/termsAndConditions';
 import "./app.css";
 import PortfolioHome from "./pages/PortfolioHome";
+import ResumeForm from "./pages/ResumeForm";
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -67,7 +68,7 @@ const App = () => {
           <Route path="/portfolioHome" element={<PortfolioHome user={user} />}/>
           <Route path="/authpage" element={<AuthPage />} />
           <Route path="/resume-builder-home" element={<ResumeBuilderHome />}/>
-          <Route path="/resume-builder" element={<ResumeBuilder />} />
+          <Route path="/resume-builder" element={<ResumeForm />} />
           <Route path="/faqs"  element={<FAQs />}  />
           <Route path="/contact-us"  element={<ContactUs />} />
         < Route path="/privacy-policy"  element={<PrivacyPolicy />}/>

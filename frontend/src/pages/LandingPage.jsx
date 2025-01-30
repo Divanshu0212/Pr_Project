@@ -20,7 +20,7 @@ const LandingPage = () => {
         
         <div className="mt-6 flex gap-6 z-10">
           <button 
-            onClick={() => navigate("/home")} 
+            onClick={() => navigate("/signup")} 
             className="border border-[#00FFFF] px-6 py-3 rounded-lg hover:bg-[#161B22]">
             Get Started
           </button>

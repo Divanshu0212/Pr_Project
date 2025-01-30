@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import SummaryApi from '../common';
+import { useNavigate } from 'react-router-dom';
 
 const SignUp = () => {
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -131,6 +133,14 @@ const SignUp = () => {
             </button>
           </div>
         </form>
+        <div className="text-center mt-4">
+          <button
+            className="text-[#00FFFF] underline hover:text-[#9C27B0]"
+            onClick={() => navigate("/authpage")}
+          >
+            If already have an account, login
+          </button>
+        </div>
       </div>
     </div>
   );
