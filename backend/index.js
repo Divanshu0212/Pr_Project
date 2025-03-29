@@ -11,8 +11,18 @@ const passportSetup = require("./passport");
 const authRoute = require("./routes/auth");
 const connectDB = require('./config/db');
 const router = require('./routes/auth');
+const rateLimit = require('express-rate-limit'); // Add this line
 
 const app = express();
+
+// Configure rate limiter (global)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again later."
+});
+
+app.use(limiter); // Apply global limiter
 
 app.use(
   cookieSession({ name: "session", keys: ["lama"], maxAge: 24 * 60 * 60 * 100 })
@@ -35,17 +45,15 @@ app.listen("5000", () => {
   console.log("Server is running!");
 });
 
+app.use("/api", router);
+const PORT = 8080 || process.env.PORT;
 
-app.use("/api",router)
-const PORT = 8080 || process.env.PORT
-
-
-connectDB().then (()=>{
-    app.listen(PORT,()=>{
-        console.log("Connect to DB");
-        console.log("Server is running !!!!!!!");
-    })
-})
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log("Connect to DB");
+    console.log("Server is running !!!!!!!");
+  });
+});
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -288,24 +296,21 @@ function calculateScores(keywordAnalysis, sectionAnalysis, formatAnalysis) {
         )
     };
 }
-
 // Error handling middleware
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
-        if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(400).json({
-                error: 'File size is too large. Maximum size is 5MB'
-            });
-        }
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({
+          error: 'File size is too large. Maximum size is 5MB'
+        });
+      }
     }
-    
+  
     console.error(err);
     res.status(500).json({
-        error: 'Internal server error',
-        details: err.message
+      error: 'Internal server error',
+      details: err.message
     });
-});
-
-
-
-module.exports = app;
+  });
+  
+  module.exports = app;
