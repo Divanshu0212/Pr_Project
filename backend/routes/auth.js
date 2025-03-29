@@ -1,21 +1,40 @@
 const router = require("express").Router();
 const passport = require("passport");
+const rateLimit = require('express-rate-limit');
+const { body, validationResult } = require('express-validator'); // Import express-validator
 
 const CLIENT_URL = "http://localhost:5173/home";
 const CLIENT_URL_LOGOUT = "http://localhost:5173/";
 
+const userSignUpController = require("../controller/user/userSignUp");
+const userSignInController = require("../controller/user/userSigIn");
+const userDetailsController = require('../controller/user/userDetails');
+const authToken = require('../middleware/authToken');
 
-const userSignUpController = require("../controller/user/userSignUp")
-const userSignInController = require("../controller/user/userSigIn")
-const userDetailsController = require('../controller/user/userDetails')
-const authToken = require('../middleware/authToken')
+// Specific limiter for signup and signin routes
+const authLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // limit each IP to 5 attempts per hour
+  message: "Too many signup or login attempts, please try again later."
+});
 
+// Validation middleware for signup
+const signupValidation = [
+  body('username').trim().notEmpty().withMessage('Username is required').escape(),
+  body('email').isEmail().withMessage('Invalid email').normalizeEmail(),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long').escape()
+];
 
+// Validation middleware for signin
+const signinValidation = [
+  body('email').isEmail().withMessage('Invalid email').normalizeEmail(),
+  body('password').notEmpty().withMessage('Password is required').escape()
+];
 
-
-router.post("/signup",authToken,userSignUpController)
-router.post("/signin",authToken,userSignInController)
-router.get("/user-details",authToken,userDetailsController)
+// Apply the authLimiter and validation middleware here:
+router.post("/signup", authLimiter, signupValidation, authToken, userSignUpController);
+router.post("/signin", authLimiter, signinValidation, authToken, userSignInController);
+router.get("/user-details", authToken, userDetailsController);
 
 
 router.get("/login/success", (req, res) => {
