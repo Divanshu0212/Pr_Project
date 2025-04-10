@@ -1,48 +1,76 @@
 :root {
-  /* Colors */
+  /* Colors - Keeping original names to avoid errors */
   --bg-primary: #0D1117;
   --bg-secondary: #161B22;
   --text-primary: #E5E5E5;
   --accent-cyan: #00FFFF;
   --accent-purple: #9C27B0;
-  
-  /* Spacing */
+
+  /* Spacing - Keeping original names to avoid errors */
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
   --spacing-xxl: 3rem;
-  
-  /* Border Radius */
-  --border-radius-sm: 0.25rem;
-  --border-radius-md: 0.5rem;
-  --border-radius-lg: 1rem;
-  --border-radius-full: 9999px;
-  
-  /* Typography */
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-md: 1rem;
-  --font-size-lg: 1.125rem;
-  --font-size-xl: 1.25rem;
-  --font-size-2xl: 1.5rem;
-  --font-size-3xl: 1.875rem;
-  --font-size-4xl: 2.25rem;
-  
-  /* Font weights */
+
+  /* Border Radius - Merging and slightly adjusting new names */
+  --border-radius-sm: 0.25rem; /* Matches old --border-radius-sm */
+  --border-radius-md: 0.5rem;  /* Matches old --border-radius-md */
+  --border-radius-lg: 1rem;   /* Matches old --border-radius-lg */
+  --border-radius-full: 9999px; /* Keeping old */
+
+  /* Typography - Merging and adjusting new names, keeping some old */
+  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --font-size-xs: 0.75rem; /* Keeping old */
+  --font-size-sm: 0.875rem; /* Keeping old */
+  --font-size-md: 1rem;   /* Keeping old */
+  --font-size-lg: 1.125rem; /* Keeping old */
+  --font-size-xl: 1.25rem; /* Keeping old */
+  --font-size-2xl: 1.5rem; /* Keeping old */
+  --font-size-3xl: 1.875rem; /* Keeping old */
+  --font-size-4xl: 2.25rem; /* Keeping old */
+
+  /* Font weights - Keeping original names */
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
-  
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-  
-  /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-normal: 300ms ease;
-  --transition-slow: 500ms ease;
+
+  /* Shadows - Merging with new names */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05); /* Keeping old */
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);  /* Keeping old */
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1); /* Keeping old */
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.5); /* New shadow */
+  --hover-shadow: 0 8px 12px rgba(0, 0, 0, 0.6); /* New shadow */
+
+  /* Transitions - Merging with slightly adjusted new names */
+  --transition-fast: 150ms ease; /* Keeping old, but new is 0.2s which is close */
+  --transition-normal: 300ms ease; /* Keeping old, but new is 0.3s which is close */
+  --transition-slow: 500ms ease;   /* Keeping old */
+  --transition-medium: 0.3s ease; /* New transition */
+
+  /* Z-index layers - New additions */
+  --z-index-navbar: 1000;
+  --z-index-sidebar: 900;
+  --z-index-dropdown: 800;
+  --z-index-modal: 1100;
+
+  /* Breakpoints - Added for responsive design (Crucial for your goal) */
+  --breakpoint-sm: 640px;  /* Small devices (phones) */
+  --breakpoint-md: 768px;  /* Medium devices (tablets) */
+  --breakpoint-lg: 1024px; /* Large devices (desktops) */
+  --breakpoint-xl: 1280px; /* Extra large devices */
 }
+
+/* Dark mode is default */
+@media (prefers-color-scheme: light) {
+  :root {
+    /* Light mode colors if needed */
+  }
+}
+
+/* Media query mixins - Essential for responsive design */
+@custom-media --mobile (max-width: 639px);
+@custom-media --tablet (min-width: 640px) and (max-width: 1023px);
+@custom-media --desktop (min-width: 1024px);
