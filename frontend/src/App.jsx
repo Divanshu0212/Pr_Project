@@ -48,6 +48,9 @@ import KeywordAnalysis from './pages/ats/KeywordAnalysis'; // Assuming this page
 // Post
 import Post from './pages/Post';
 
+//Hooks
+import { useAuth } from './hooks/useAuth';
+
 // Styles
 import './styles/variables.css';
 import './styles/global.css';
@@ -57,6 +60,7 @@ import './styles/animations.css'; // Ensure animations.css is imported
 // AnimatedRoutes component wraps all routes with transitions
 const AnimatedRoutes = () => {
   const location = useLocation();
+  const { currentUser } = useAuth(); 
 
   return (
     <PageTransition location={location}>
@@ -64,19 +68,18 @@ const AnimatedRoutes = () => {
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
-
-        {/* Public Routes */}
-        <Route path="/" element={<MainLayout><LandingPage /></MainLayout>} />
-        <Route path="/faqs" element={<MainLayout><FAQs /></MainLayout>} />
-        <Route path="/contact-us" element={<MainLayout><ContactUs /></MainLayout>} />
-        <Route path="/privacy-policy" element={<MainLayout><PrivacyPolicy /></MainLayout>} />
-        <Route path="/terms-and-conditions" element={<MainLayout><TermsAndConditions /></MainLayout>} />
+ {/* Public Routes - Pass currentUser to MainLayout */}
+ <Route path="/" element={<MainLayout user={currentUser}><LandingPage /></MainLayout>} />
+        <Route path="/faqs" element={<MainLayout user={currentUser}><FAQs /></MainLayout>} />
+        <Route path="/contact-us" element={<MainLayout user={currentUser}><ContactUs /></MainLayout>} />
+        <Route path="/privacy-policy" element={<MainLayout user={currentUser}><PrivacyPolicy /></MainLayout>} />
+        <Route path="/terms-and-conditions" element={<MainLayout user={currentUser}><TermsAndConditions /></MainLayout>} />
 
         {/* Protected Routes */}
         <Route element={<PrivateRoute />}>
           {/* Redirect to home page if authenticated */}
           <Route path="/home" element={
-            <DashboardLayout>
+            <DashboardLayout user={currentUser}>
               <HomePage />
             </DashboardLayout>
           } />
@@ -90,83 +93,83 @@ const AnimatedRoutes = () => {
 
           {/* Portfolio Routes */}
           <Route path="/portfolioHome" element={
-            <DashboardLayout>
+            <DashboardLayout user={currentUser}>
               <PortfolioHome />
             </DashboardLayout>
           } />
           <Route path="/portfolio/add" element={
-            <DashboardLayout>
+            <DashboardLayout user={currentUser}>
               <AddProject />
             </DashboardLayout>
           } />
 
           <Route path="/portfolio/view/:id" element={
-            <DashboardLayout>
+            <DashboardLayout user={currentUser}>
               <PortfolioItemDetail />
             </DashboardLayout>
           } />
 
           <Route path="/portfolio/edit/:id" element={
-            <DashboardLayout>
+            <DashboardLayout user={currentUser}>
               <AddProject isEditing={true} />
             </DashboardLayout>
           } />
           <Route path="/portfolio/tracking" element={
-            <DashboardLayout>
+            <DashboardLayout user={currentUser}>
               <ProjectTracking />
             </DashboardLayout>
           } />
           <Route path="/portfolio/team" element={
-            <DashboardLayout>
+            <DashboardLayout user={currentUser}>
               <TeamCollab />
             </DashboardLayout>
           } />
 
           {/* Resume Routes */}
           <Route path="/resume-builder-home" element={
-            <DashboardLayout>
+            <DashboardLayout user={currentUser}>
               <ResumeBuilderHome />
             </DashboardLayout>
           } />
           <Route path="/resume-builder" element={
-            <DashboardLayout>
+            <DashboardLayout user={currentUser}>
               <BuildResume />
             </DashboardLayout>
           } />
           <Route path="/resume/templates" element={
-            <DashboardLayout>
+            <DashboardLayout user={currentUser}>
               <TemplateGallery />
             </DashboardLayout>
           } />
           <Route path="/resume/create" element={
-            <DashboardLayout>
+            <DashboardLayout user={currentUser}>
               <BuildResume />
             </DashboardLayout>
           } />
 
           {/* ATS Routes */}
           <Route path="/ats/home" element={
-            <DashboardLayout>
+            <DashboardLayout user={currentUser}>
               <AtsHome />
             </DashboardLayout>
           } />
           <Route path="/ats/tracker" element={
-            <DashboardLayout>
+            <DashboardLayout user={currentUser}>
               <ATSTracker />
             </DashboardLayout>
           } />
           <Route path="/ats/analysis/:analysisId" element={
-            <DashboardLayout>
+            <DashboardLayout user={currentUser}>
               <AnalysisView />
             </DashboardLayout>
           } />
           <Route path="/ats/results" element={
-            <DashboardLayout>
+            <DashboardLayout user={currentUser}>
               <AnalysisResults />
             </DashboardLayout>
           } />
           <Route path="/ats/keywords" element={
-            <DashboardLayout>
+            <DashboardLayout user={currentUser}>
               <KeywordAnalysis />
             </DashboardLayout>
           } />
@@ -176,7 +179,7 @@ const AnimatedRoutes = () => {
         <Route path="/index.html" element={<Navigate to="/" replace />} />
 
         {/* 404 Page */}
-        <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
+        <Route path="*" element={<MainLayout user={currentUser}><NotFound /></MainLayout>} />
       </Routes>
     </PageTransition>
   );

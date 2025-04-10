@@ -1,48 +1,48 @@
-// Updated Sidebar.jsx for ATS Home Sub-item
-
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { Link, useLocation } from 'react-router-dom';
+import { FiHome, FiBriefcase, FiFileText, FiActivity, FiChevronRight, FiHelpCircle, FiMessageSquare, FiPlus, FiTrello, FiUsers, FiPieChart, FiBarChart2, FiSearch } from 'react-icons/fi';
 import './Sidebar.css';
 
 const Sidebar = ({ user, isOpen, onClose }) => {
   const location = useLocation();
+  const sidebarRef = useRef(null);
 
   const menuItems = [
     {
       title: 'Dashboard',
       path: '/home',
-      icon: '📊'
+      icon: <FiHome className="sidebar-icon-svg" />
     },
     {
       title: 'Portfolio',
       path: '/portfolioHome',
-      icon: '📁',
+      icon: <FiBriefcase className="sidebar-icon-svg" />,
       subItems: [
-        { title: 'Add Project', path: '/portfolio/add' },
-        { title: 'Project Tracking', path: '/portfolio/tracking' },
-        { title: 'Team Collaboration', path: '/portfolio/team' }
+        { title: 'Add Project', path: '/portfolio/add', icon: <FiPlus size={14} /> },
+        { title: 'Project Tracking', path: '/portfolio/tracking', icon: <FiTrello size={14} /> },
+        { title: 'Team Collaboration', path: '/portfolio/team', icon: <FiUsers size={14} /> }
       ]
     },
     {
       title: 'Resume',
       path: '/resume-builder-home',
-      icon: '📝',
+      icon: <FiFileText className="sidebar-icon-svg" />,
       subItems: [
-        { title: 'Create Resume', path: '/resume/create' },
-        { title: 'Templates', path: '/resume/templates' }
+        { title: 'Create Resume', path: '/resume/create', icon: <FiPlus size={14} /> },
+        { title: 'Templates', path: '/resume/templates', icon: <FiFileText size={14} /> }
       ]
     },
     {
       title: 'ATS Tracker',
-      path: '/ats/home', // Changed the main path to /ats/home
-      icon: '📈',
+      path: '/ats/home',
+      icon: <FiActivity className="sidebar-icon-svg" />,
       subItems: [
-        { title: 'ATS Home', path: '/ats/home' },
-        { title: 'Tracker', path: '/ats/tracker' },
-        { title: 'Analysis', path: '/ats/analysis' },
-        { title: 'Results', path: '/ats/results' },
-        { title: 'Keywords', path: '/ats/keywords' },
+        { title: 'ATS Home', path: '/ats/home', icon: <FiHome size={14} /> },
+        { title: 'Tracker', path: '/ats/tracker', icon: <FiTrello size={14} /> },
+        { title: 'Analysis', path: '/ats/analysis', icon: <FiPieChart size={14} /> },
+        { title: 'Results', path: '/ats/results', icon: <FiBarChart2 size={14} /> },
+        { title: 'Keywords', path: '/ats/keywords', icon: <FiSearch size={14} /> },
       ]
     }
   ];
@@ -51,7 +51,7 @@ const Sidebar = ({ user, isOpen, onClose }) => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
-  const [expandedItems, setExpandedItems] = React.useState({});
+  const [expandedItems, setExpandedItems] = useState({});
 
   const toggleSubMenu = (title) => {
     setExpandedItems({
@@ -60,8 +60,20 @@ const Sidebar = ({ user, isOpen, onClose }) => {
     });
   };
 
+  // Click outside handler to close sidebar on mobile
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isOpen && onClose && sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen, onClose]);
+
   // Determine if any paths in a section are active to auto-expand that section
-  React.useEffect(() => {
+  useEffect(() => {
     const newExpandedState = {};
 
     menuItems.forEach(item => {
@@ -89,10 +101,15 @@ const Sidebar = ({ user, isOpen, onClose }) => {
         <div
           className="sidebar-overlay"
           onClick={onClose}
+          aria-hidden="true"
         ></div>
       )}
 
-      <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+      <aside 
+        ref={sidebarRef}
+        className={`sidebar ${isOpen ? 'open' : ''}`}
+        aria-label="Main navigation"
+      >
         <div className="sidebar-container">
           {/* User Profile Section */}
           <div className="sidebar-header">
@@ -136,20 +153,25 @@ const Sidebar = ({ user, isOpen, onClose }) => {
                         className={`sidebar-toggle ${expandedItems[item.title] ? 'expanded' : ''}`}
                         onClick={() => toggleSubMenu(item.title)}
                         aria-label={`Toggle ${item.title} submenu`}
+                        aria-expanded={expandedItems[item.title] || false}
                       >
-                        <span className="toggle-icon"></span>
+                        <FiChevronRight className="toggle-icon" />
                       </button>
                     )}
                   </div>
 
                   {item.subItems && (
-                    <ul className={`sidebar-submenu ${expandedItems[item.title] ? 'expanded' : ''}`}>
+                    <ul 
+                      className={`sidebar-submenu ${expandedItems[item.title] ? 'expanded' : ''}`}
+                      aria-hidden={!expandedItems[item.title]}
+                    >
                       {item.subItems.map((subItem) => (
                         <li key={subItem.path} className="sidebar-subitem">
                           <Link
                             to={subItem.path}
                             className={`sidebar-sublink ${isActive(subItem.path) ? 'active' : ''}`}
                           >
+                            <span className="subitem-icon">{subItem.icon}</span>
                             {subItem.title}
                           </Link>
                         </li>
@@ -164,8 +186,14 @@ const Sidebar = ({ user, isOpen, onClose }) => {
           {/* Bottom Section */}
           <div className="sidebar-footer">
             <div className="sidebar-footer-links">
-              <Link to="/faqs" className="footer-link">Help & FAQs</Link>
-              <Link to="/contact-us" className="footer-link">Contact</Link>
+              <Link to="/faqs" className="footer-link">
+                <FiHelpCircle size={16} />
+                <span>Help & FAQs</span>
+              </Link>
+              <Link to="/contact-us" className="footer-link">
+                <FiMessageSquare size={16} />
+                <span>Contact</span>
+              </Link>
             </div>
             <div className="sidebar-copyright">
               <p>TrackFolio © 2025</p>

@@ -75,11 +75,14 @@ export const AuthProvider = ({ children }) => {
         }
 
         setIsAuthenticated(true);
+        console.log("isAUthenticated set to true");
         await fetchUserDetails(); // Fetch user details after login
         return result;
       } else {
+        console.log("isAUthenticated set to false");;
         setError(result.message || "Login failed.");
         throw new Error(result.message || "Login failed.");
+     
       }
     } catch (error) {
       console.error("Login error:", error);
