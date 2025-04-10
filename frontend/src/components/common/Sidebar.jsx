@@ -1,3 +1,5 @@
+// Updated Sidebar.jsx for ATS Home Sub-item
+
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Link, useLocation } from 'react-router-dom';
@@ -5,15 +7,15 @@ import './Sidebar.css';
 
 const Sidebar = ({ user, isOpen, onClose }) => {
   const location = useLocation();
-  
+
   const menuItems = [
-    { 
-      title: 'Dashboard', 
+    {
+      title: 'Dashboard',
       path: '/home',
       icon: '📊'
     },
-    { 
-      title: 'Portfolio', 
+    {
+      title: 'Portfolio',
       path: '/portfolioHome',
       icon: '📁',
       subItems: [
@@ -23,7 +25,7 @@ const Sidebar = ({ user, isOpen, onClose }) => {
       ]
     },
     {
-      title: 'Resume', 
+      title: 'Resume',
       path: '/resume-builder-home',
       icon: '📝',
       subItems: [
@@ -32,11 +34,15 @@ const Sidebar = ({ user, isOpen, onClose }) => {
       ]
     },
     {
-      title: 'ATS Tracker', 
-      path: '/ats',
+      title: 'ATS Tracker',
+      path: '/ats/home', // Changed the main path to /ats/home
       icon: '📈',
       subItems: [
-        { title: 'ATS Home', path: '/ats/home' }
+        { title: 'ATS Home', path: '/ats/home' },
+        { title: 'Tracker', path: '/ats/tracker' },
+        { title: 'Analysis', path: '/ats/analysis' },
+        { title: 'Results', path: '/ats/results' },
+        { title: 'Keywords', path: '/ats/keywords' },
       ]
     }
   ];
@@ -57,22 +63,22 @@ const Sidebar = ({ user, isOpen, onClose }) => {
   // Determine if any paths in a section are active to auto-expand that section
   React.useEffect(() => {
     const newExpandedState = {};
-    
+
     menuItems.forEach(item => {
       if (item.subItems) {
         // Auto-expand if current path is in this section
-        const shouldExpand = isActive(item.path) || 
+        const shouldExpand = isActive(item.path) ||
           item.subItems.some(subItem => isActive(subItem.path));
-          
+
         if (shouldExpand) {
           newExpandedState[item.title] = true;
         }
       }
     });
-    
+
     // Only update if we have new sections to expand
     if (Object.keys(newExpandedState).length > 0) {
-      setExpandedItems(prev => ({...prev, ...newExpandedState}));
+      setExpandedItems(prev => ({ ...prev, ...newExpandedState }));
     }
   }, [location.pathname]);
 
@@ -80,21 +86,21 @@ const Sidebar = ({ user, isOpen, onClose }) => {
     <>
       {/* Overlay for mobile */}
       {isOpen && onClose && (
-        <div 
+        <div
           className="sidebar-overlay"
           onClick={onClose}
         ></div>
       )}
-      
+
       <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-container">
           {/* User Profile Section */}
           <div className="sidebar-header">
             <div className="sidebar-user">
               {user?.photos?.[0]?.value ? (
-                <img 
-                  src={user.photos[0].value} 
-                  alt="Profile" 
+                <img
+                  src={user.photos[0].value}
+                  alt="Profile"
                   className="sidebar-avatar"
                 />
               ) : (
@@ -110,23 +116,23 @@ const Sidebar = ({ user, isOpen, onClose }) => {
               </div>
             </div>
           </div>
-          
+
           {/* Navigation Links */}
           <nav className="sidebar-content">
             <ul className="sidebar-menu">
               {menuItems.map((item) => (
                 <li key={item.path} className="sidebar-item">
                   <div className="sidebar-link-container">
-                    <Link 
+                    <Link
                       to={item.path}
                       className={`sidebar-link ${isActive(item.path) ? 'active' : ''}`}
                     >
                       <span className="sidebar-icon">{item.icon}</span>
                       <span className="sidebar-link-text">{item.title}</span>
                     </Link>
-                    
+
                     {item.subItems && (
-                      <button 
+                      <button
                         className={`sidebar-toggle ${expandedItems[item.title] ? 'expanded' : ''}`}
                         onClick={() => toggleSubMenu(item.title)}
                         aria-label={`Toggle ${item.title} submenu`}
@@ -135,12 +141,12 @@ const Sidebar = ({ user, isOpen, onClose }) => {
                       </button>
                     )}
                   </div>
-                  
+
                   {item.subItems && (
                     <ul className={`sidebar-submenu ${expandedItems[item.title] ? 'expanded' : ''}`}>
                       {item.subItems.map((subItem) => (
                         <li key={subItem.path} className="sidebar-subitem">
-                          <Link 
+                          <Link
                             to={subItem.path}
                             className={`sidebar-sublink ${isActive(subItem.path) ? 'active' : ''}`}
                           >
@@ -154,7 +160,7 @@ const Sidebar = ({ user, isOpen, onClose }) => {
               ))}
             </ul>
           </nav>
-          
+
           {/* Bottom Section */}
           <div className="sidebar-footer">
             <div className="sidebar-footer-links">

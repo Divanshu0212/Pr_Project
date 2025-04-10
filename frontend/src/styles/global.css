@@ -196,3 +196,23 @@ ul, ol {
 .no-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
+
+/* global.css or a theme-specific CSS file */
+body[data-theme='light'] {
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+body[data-theme='dark'] {
+  background-color: #121212;
+  color: #eee;
+}
+
+/* Example for other elements */
+.some-component {
+  border: 1px solid #ccc; /* Light theme border */
+}
+
+body[data-theme='dark'] .some-component {
+  border: 1px solid #555; /* Dark theme border */
+}

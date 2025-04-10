@@ -1,6 +1,7 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
-const LoadingState = () => {
+const LoadingState = ({ message = "Analyzing your resume..." }) => {
   return (
     <div className="bg-[#0D1117] text-[#00FFFF] p-4 rounded-lg flex items-center justify-center border border-[#9C27B0]">
       <svg
@@ -22,9 +23,13 @@ const LoadingState = () => {
           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
         />
       </svg>
-      <span className="text-[#E5E5E5]">Analyzing your resume...</span>
+      <span className="text-[#E5E5E5]">{message}</span>
     </div>
   );
+};
+
+LoadingState.propTypes = {
+  message: PropTypes.string,
 };
 
 export default LoadingState;

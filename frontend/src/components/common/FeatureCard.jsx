@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import './Card.css';
+import './FeatureCard.css';
 
 const FeatureCard = ({ feature }) => {
   const { title, description, icon, image, link, isSpecial } = feature;
