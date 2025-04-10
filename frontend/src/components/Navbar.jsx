@@ -35,7 +35,7 @@ const Navbar = ({ user, onToggleSidebar }) => {
     }
     
     // On mobile, also close the menu when toggling sidebar
-    if (isMobile && menuOpen) {
+    if (isMobile) {
       setMenuOpen(false);
     }
   };
@@ -54,7 +54,7 @@ const Navbar = ({ user, onToggleSidebar }) => {
         <div className="navbar-left">
           {isAuthenticated && (
             <button 
-              className="sidebar-toggle-btn visible" 
+              className="sidebar-toggle-btn" 
               onClick={handleToggleSidebar}
               aria-label="Toggle sidebar"
             >

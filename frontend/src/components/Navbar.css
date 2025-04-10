@@ -43,16 +43,10 @@
   justify-content: center;
   color: #E5E5E5;
   transition: color 0.2s ease;
-  position: relative;
 }
 
 .sidebar-toggle-btn:hover {
   color: #00FFFF;
-}
-
-.sidebar-toggle-btn.visible {
-  opacity: 1; /* Ensure it's visible */
-  visibility: visible;
 }
 
 .toggle-icon {
@@ -487,11 +481,6 @@
   .navbar-brand .brand-text {
     font-size: 1.25rem;
   }
-  
-  /* Ensure sidebar toggle is visible on mobile */
-  .sidebar-toggle-btn {
-    margin-right: 0.75rem;
-  }
 }
 
 /* Animations */
@@ -529,5 +518,67 @@
 @media (prefers-color-scheme: dark) {
   .navbar {
     background-color: #161B22;
+  }
+}
+
+/* Sidebar toggle button styles */
+.sidebar-toggle-btn {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  margin-right: 0.5rem; /* Adjust spacing from logo */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color); /* Or a visible color */
+  transition: color var(--transition-fast);
+  position: relative;
+  z-index: 10; /* Ensure it's above other elements */
+}
+
+.sidebar-toggle-btn:hover {
+  color: var(--accent-color);
+}
+
+.toggle-icon {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toggle-line,
+.toggle-line::before,
+.toggle-line::after {
+  content: '';
+  display: block;
+  position: absolute;
+  width: 20px;
+  height: 2px;
+  background-color: currentColor;
+  transition: all 0.3s ease;
+  border-radius: 3px;
+}
+
+.toggle-line::before {
+  top: -6px;
+}
+
+.toggle-line::after {
+  bottom: -6px;
+}
+
+/* Make it visible by default when authenticated and onToggleSidebar is provided */
+.sidebar-toggle-btn {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (max-width: 768px) {
+  .sidebar-toggle-btn {
+    margin-right: 1rem; /* Adjust spacing on mobile */
   }
 }
