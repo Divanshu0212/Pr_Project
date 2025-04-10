@@ -9,19 +9,17 @@ const DashboardLayout = ({ children, user }) => {
     // Initialize sidebar state based on screen size
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-    const [contentShifted, setContentShifted] = useState(window.innerWidth > 768);
 
     useEffect(() => {
         const handleResize = () => {
             const mobile = window.innerWidth <= 768;
             setIsMobile(mobile);
 
-            // Auto-open sidebar on desktop, but keep state on mobile
-            if (!mobile) {
+            // Auto-open sidebar on desktop, close on mobile by default
+            if (!mobile && !isSidebarOpen) {
                 setIsSidebarOpen(true);
-                setContentShifted(true);
-            } else {
-                setContentShifted(false);
+            } else if (mobile && isSidebarOpen) {
+                setIsSidebarOpen(false);
             }
         };
 
@@ -30,19 +28,10 @@ const DashboardLayout = ({ children, user }) => {
 
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, []);
-
-    // Effect to handle content shift when sidebar opens/closes
-    useEffect(() => {
-        if (!isMobile) {
-            setContentShifted(true);
-        } else {
-            setContentShifted(isSidebarOpen);
-        }
-    }, [isSidebarOpen, isMobile]);
+    }, [isSidebarOpen]);
 
     const toggleSidebar = () => {
-        setIsSidebarOpen(!isSidebarOpen);
+        setIsSidebarOpen(prev => !prev);
     };
 
     return (
@@ -54,7 +43,7 @@ const DashboardLayout = ({ children, user }) => {
             />
 
             <div
-                className={`dashboard-content ${contentShifted ? 'content-shifted' : ''}`}
+                className={`dashboard-content ${isSidebarOpen && !isMobile ? 'content-shifted' : ''}`}
             >
                 <Navbar user={user} onToggleSidebar={toggleSidebar} />
 

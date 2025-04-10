@@ -1,3 +1,5 @@
+// Updated App.jsx (Theme Removed)
+
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
@@ -35,10 +37,12 @@ import ResumeBuilderHome from './pages/resume/ResumeBuilderHome';
 import BuildResume from './pages/resume/BuildResume';
 import TemplateGallery from './pages/resume/TemplateGallery';
 
-// ATS Pages 
+// ATS Pages
 import ATSTracker from './pages/ats/ATSTracker';
 import AtsHome from './pages/ats/AtsHome';
 import AnalysisView from './pages/ats/AnalysisView';
+import AnalysisResults from './pages/ats/AnalysisResults'; // Assuming this page exists
+import KeywordAnalysis from './pages/ats/KeywordAnalysis'; // Assuming this page exists
 
 // Post
 import Post from './pages/Post';
@@ -49,150 +53,160 @@ import './styles/global.css';
 import './App.css';
 
 function App() {
-    const [isLoading, setIsLoading] = useState(true);
-    const [authError, setAuthError] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [authError, setAuthError] = useState(null);
 
-    // Simulate initial loading
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 1500);
-        
-        return () => clearTimeout(timer);
-    }, []);
+  // Simulate initial loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1500);
 
-    // Handle errors in auth process
-    const handleAuthError = (error) => {
-        setAuthError(error);
-        console.error('Authentication error:', error);
-    };
+    return () => clearTimeout(timer);
+  }, []);
 
-    if (isLoading) {
-        return <Loader />;
-    }
+  // Handle errors in auth process
+  const handleAuthError = (error) => {
+    setAuthError(error);
+    console.error('Authentication error:', error);
+  };
 
-    return (
-        <AuthProvider onError={handleAuthError}>
-            <Router>
-                <div className="app-container bg-[#0D1117] min-h-screen">
-                    <Routes>
-                        {/* Auth Routes */}
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/signup" element={<SignUp />} />
+  if (isLoading) {
+    return <Loader />;
+  }
 
-                        {/* Public Routes */}
-                        <Route path="/" element={<MainLayout><LandingPage /></MainLayout>} />
-                        <Route path="/faqs" element={<MainLayout><FAQs /></MainLayout>} />
-                        <Route path="/contact-us" element={<MainLayout><ContactUs /></MainLayout>} />
-                        <Route path="/privacy-policy" element={<MainLayout><PrivacyPolicy /></MainLayout>} />
-                        <Route path="/terms-and-conditions" element={<MainLayout><TermsAndConditions /></MainLayout>} />
+  return (
+    <AuthProvider onError={handleAuthError}>
+      <Router>
+        <div className="app-container bg-[#0D1117] min-h-screen">
+          <Routes>
+            {/* Auth Routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
 
-                        {/* Protected Routes */}
-                        <Route element={<PrivateRoute />}>
-                            {/* Redirect to home page if authenticated */}
-                            <Route path="/home" element={
-                                <DashboardLayout>
-                                    <HomePage />
-                                </DashboardLayout>
-                            } />
-                            
-                            {/* Post */}
-                            <Route path="/post/:id" element={
-                                <MainLayout>
-                                    <Post />
-                                </MainLayout>
-                            } />
-                            
-                            {/* Portfolio Routes */}
-                            <Route path="/portfolioHome" element={
-                                <DashboardLayout>
-                                    <PortfolioHome />
-                                </DashboardLayout>
-                            } />
-                            <Route path="/portfolio/add" element={
-                                <DashboardLayout>
-                                    <AddProject />
-                                </DashboardLayout>
-                            } />
+            {/* Public Routes */}
+            <Route path="/" element={<MainLayout><LandingPage /></MainLayout>} />
+            <Route path="/faqs" element={<MainLayout><FAQs /></MainLayout>} />
+            <Route path="/contact-us" element={<MainLayout><ContactUs /></MainLayout>} />
+            <Route path="/privacy-policy" element={<MainLayout><PrivacyPolicy /></MainLayout>} />
+            <Route path="/terms-and-conditions" element={<MainLayout><TermsAndConditions /></MainLayout>} />
 
-                            <Route path="/portfolio/view/:id" element={
-                                <DashboardLayout>
-                                <PortfolioItemDetail />
-                                </DashboardLayout>
-                            } />
+            {/* Protected Routes */}
+            <Route element={<PrivateRoute />}>
+              {/* Redirect to home page if authenticated */}
+              <Route path="/home" element={
+                <DashboardLayout>
+                  <HomePage />
+                </DashboardLayout>
+              } />
 
-                            <Route path="/portfolio/edit/:id" element={
-                                <DashboardLayout>
-                                <AddProject isEditing={true} />
-                                </DashboardLayout>
-                            } />
-                            <Route path="/portfolio/tracking" element={
-                                <DashboardLayout>
-                                    <ProjectTracking />
-                                </DashboardLayout>
-                            } />
-                            <Route path="/portfolio/team" element={
-                                <DashboardLayout>
-                                    <TeamCollab />
-                                </DashboardLayout>
-                            } />
-                            
-                            {/* Resume Routes */}
-                            <Route path="/resume-builder-home" element={
-                                <DashboardLayout>
-                                    <ResumeBuilderHome />
-                                </DashboardLayout>
-                            } />
-                            <Route path="/resume-builder" element={
-                                <DashboardLayout>
-                                    <BuildResume />
-                                </DashboardLayout>
-                            } />
-                            <Route path="/resume/templates" element={
-                                <DashboardLayout>
-                                    <TemplateGallery />
-                                </DashboardLayout>
-                            } />
-                            <Route path="/resume/create" element={
-                                <DashboardLayout>
-                                    <BuildResume />
-                                </DashboardLayout>
-                            } />
-                            
-                            {/* ATS Routes */}
-                            <Route path="/ats" element={
-                                <DashboardLayout>
-                                    <ATSTracker />
-                                </DashboardLayout>
-                            } />
-                            <Route path="/ats/home" element={
-                                <DashboardLayout>
-                                    <AtsHome />
-                                </DashboardLayout>
-                            } />
-                            <Route path="/ats/analysis/:id" element={
-                                <DashboardLayout>
-                                    <AnalysisView />
-                                </DashboardLayout>
-                            } />
-                        </Route>
+              {/* Post */}
+              <Route path="/post/:id" element={
+                <MainLayout>
+                  <Post />
+                </MainLayout>
+              } />
 
-                        {/* Redirect unknown routes to home when authenticated */}
-                        <Route path="/index.html" element={<Navigate to="/" replace />} />
-                        
-                        {/* 404 Page */}
-                        <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
-                    </Routes>
-                    
-                    {authError && (
-                        <div className="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg">
-                            Authentication error: {authError.message}
-                        </div>
-                    )}
-                </div>
-            </Router>
-        </AuthProvider>
-    );
+              {/* Portfolio Routes */}
+              <Route path="/portfolioHome" element={
+                <DashboardLayout>
+                  <PortfolioHome />
+                </DashboardLayout>
+              } />
+              <Route path="/portfolio/add" element={
+                <DashboardLayout>
+                  <AddProject />
+                </DashboardLayout>
+              } />
+
+              <Route path="/portfolio/view/:id" element={
+                <DashboardLayout>
+                  <PortfolioItemDetail />
+                </DashboardLayout>
+              } />
+
+              <Route path="/portfolio/edit/:id" element={
+                <DashboardLayout>
+                  <AddProject isEditing={true} />
+                </DashboardLayout>
+              } />
+              <Route path="/portfolio/tracking" element={
+                <DashboardLayout>
+                  <ProjectTracking />
+                </DashboardLayout>
+              } />
+              <Route path="/portfolio/team" element={
+                <DashboardLayout>
+                  <TeamCollab />
+                </DashboardLayout>
+              } />
+
+              {/* Resume Routes */}
+              <Route path="/resume-builder-home" element={
+                <DashboardLayout>
+                  <ResumeBuilderHome />
+                </DashboardLayout>
+              } />
+              <Route path="/resume-builder" element={
+                <DashboardLayout>
+                  <BuildResume />
+                </DashboardLayout>
+              } />
+              <Route path="/resume/templates" element={
+                <DashboardLayout>
+                  <TemplateGallery />
+                </DashboardLayout>
+              } />
+              <Route path="/resume/create" element={
+                <DashboardLayout>
+                  <BuildResume />
+                </DashboardLayout>
+              } />
+
+              {/* ATS Routes */}
+              <Route path="/ats/home" element={
+                <DashboardLayout>
+                  <AtsHome />
+                </DashboardLayout>
+              } />
+              <Route path="/ats/tracker" element={
+                <DashboardLayout>
+                  <ATSTracker />
+                </DashboardLayout>
+              } />
+              <Route path="/ats/analysis/:analysisId" element={
+                <DashboardLayout>
+                  <AnalysisView />
+                </DashboardLayout>
+              } />
+              <Route path="/ats/results" element={
+                <DashboardLayout>
+                  <AnalysisResults />
+                </DashboardLayout>
+              } />
+              <Route path="/ats/keywords" element={
+                <DashboardLayout>
+                  <KeywordAnalysis />
+                </DashboardLayout>
+              } />
+            </Route>
+
+            {/* Redirect unknown routes to home when authenticated */}
+            <Route path="/index.html" element={<Navigate to="/" replace />} />
+
+            {/* 404 Page */}
+            <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
+          </Routes>
+
+          {authError && (
+            <div className="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg">
+              Authentication error: {authError.message}
+            </div>
+          )}
+        </div>
+      </Router>
+    </AuthProvider>
+  );
 }
 
 export default App;

@@ -43,10 +43,16 @@
   justify-content: center;
   color: #E5E5E5;
   transition: color 0.2s ease;
+  position: relative;
 }
 
 .sidebar-toggle-btn:hover {
   color: #00FFFF;
+}
+
+.sidebar-toggle-btn.visible {
+  opacity: 1; /* Ensure it's visible */
+  visibility: visible;
 }
 
 .toggle-icon {
@@ -480,6 +486,11 @@
   
   .navbar-brand .brand-text {
     font-size: 1.25rem;
+  }
+  
+  /* Ensure sidebar toggle is visible on mobile */
+  .sidebar-toggle-btn {
+    margin-right: 0.75rem;
   }
 }
 

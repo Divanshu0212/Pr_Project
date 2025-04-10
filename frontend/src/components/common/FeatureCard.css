@@ -1,0 +1,176 @@
+/* frontend/src/components/common/FeatureCard.css */
+
+.feature-card {
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+  display: flex; /* Use flexbox for layout */
+  flex-direction: column; /* Stack items vertically by default */
+  gap: var(--spacing-sm);
+  transition: transform var(--transition-normal);
+  min-height: 150px; /* Ensure a minimum height to accommodate content */
+}
+
+.feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.feature-icon {
+  font-size: 2.5rem; /* Increased icon size */
+  color: var(--text-accent);
+  margin-bottom: var(--spacing-xs);
+  display: flex; /* Center the icon */
+  justify-content: center;
+  align-items: center;
+  width: 100%; /* Ensure it takes full width to be centered */
+}
+
+.feature-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-content h3 {
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xxs);
+  font-size: 1.1rem; /* Slightly larger title */
+  text-align: center; /* Center the title */
+}
+
+.feature-content p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  text-align: center; /* Center the description */
+  margin-bottom: var(--spacing-sm); /* Add some space below the description */
+}
+
+.feature-link {
+  display: inline-block;
+  color: var(--link-color);
+  text-decoration: none;
+  margin-top: auto; /* Push the link to the bottom */
+  text-align: center; /* Center the link */
+  font-size: 0.95rem;
+  transition: color var(--transition-fast);
+}
+
+.feature-link:hover {
+  color: var(--link-hover-color);
+  text-decoration: underline;
+}
+
+.feature-img {
+  margin-top: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+}
+
+.feature-img img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.special-feature-card {
+  background-color: #1e293b; /* A darker shade for special cards */
+  border: 1px solid #334155;
+}
+
+.special-feature-content h3 {
+  color: #f8fafc;
+}
+
+.special-feature-content p {
+  color: #cbd5e1;
+}a/* frontend/src/components/common/FeatureCard.css */
+
+.feature-card {
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex; /* Use flexbox for a horizontal layout of icon and content */
+  gap: var(--spacing-md); /* Space between icon and content */
+  transition: transform var(--transition-normal);
+  align-items: center; /* Vertically align icon and content */
+  min-height: 100px; /* Adjust minimum height as needed */
+}
+
+.feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.feature-icon {
+  font-size: 1.5rem; /* Make the icon smaller */
+  color: var(--text-accent);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 30px; /* Adjust icon container width */
+  height: 30px; /* Adjust icon container height */
+  /* Optional: Add a background or shape for the icon */
+  /* background-color: rgba(0, 255, 255, 0.15);
+  border-radius: 50%; */
+}
+
+.feature-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  flex-grow: 1; /* Allow content to take remaining space */
+}
+
+.feature-content h3 {
+  color: var(--text-primary);
+  font-size: 1rem; /* Adjust title size */
+  margin-bottom: 0;
+}
+
+.feature-content p {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.feature-link {
+  display: inline-block;
+  color: var(--link-color);
+  text-decoration: none;
+  margin-top: var(--spacing-sm);
+  font-size: 0.9rem;
+  transition: color var(--transition-fast);
+}
+
+.feature-link:hover {
+  color: var(--link-hover-color);
+  text-decoration: underline;
+}
+
+.feature-img {
+  margin-top: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+}
+
+.feature-img img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.special-feature-card {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+}
+
+.special-feature-content h3 {
+  color: #f8fafc;
+}
+
+.special-feature-content p {
+  color: #cbd5e1;
+}
