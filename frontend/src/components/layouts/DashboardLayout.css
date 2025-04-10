@@ -13,7 +13,8 @@
   flex-direction: column;
   min-height: 100vh;
   width: 100%;
-  transition: margin-left 0.3s ease, width 0.3s ease;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: margin-left, width;
 }
 
 .dashboard-content.content-shifted {
@@ -21,11 +22,16 @@
   width: calc(100% - 16rem);
 }
 
+.dashboard-content.is-transitioning {
+  pointer-events: none; /* Prevent user interaction during transition */
+}
+
 .dashboard-main {
   flex: 1 0 auto;
   background-color: #0D1117;
   padding: 1.5rem;
   overflow-y: auto;
+  position: relative;
 }
 
 .dashboard-container {
@@ -34,7 +40,14 @@
   width: 100%;
 }
 
-/* Glowing accent border for content areas */
+.content-wrapper {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Glowing accent border for content areas with enhanced effects */
 .dashboard-main .card,
 .dashboard-main .panel {
   border: 1px solid rgba(156, 39, 176, 0.3);
@@ -42,12 +55,35 @@
   background-color: #161B22;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .dashboard-main .card:hover,
 .dashboard-main .panel:hover {
   border-color: rgba(0, 255, 255, 0.5);
   box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15), 0 0 5px rgba(0, 255, 255, 0.2);
+}
+
+.dashboard-main .card::after,
+.dashboard-main .panel::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(0, 255, 255, 0.1) 0%, rgba(156, 39, 176, 0.05) 50%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dashboard-main .card:hover::after,
+.dashboard-main .panel:hover::after {
+  opacity: 1;
+  transform: scale(1.05);
 }
 
 /* Custom scrollbar for dashboard main content */
@@ -68,7 +104,36 @@
   background: rgba(0, 255, 255, 0.5);
 }
 
-/* Responsive adjustments */
+/* Enhanced animation for content loading */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  70% {
+    opacity: 0.8;
+    transform: translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Micro-interaction for content transitions */
+@keyframes pulseGlow {
+  0% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.2); }
+  70% { box-shadow: 0 0 10px 5px rgba(0, 255, 255, 0.4); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0); }
+}
+
+/* Enhanced responsive design */
+@media (max-width: 1024px) {
+  .dashboard-container {
+    padding: 0 0.5rem;
+  }
+}
+
 @media (max-width: 768px) {
   .dashboard-content {
     margin-left: 0 !important;
@@ -76,22 +141,48 @@
   }
   
   .dashboard-main {
-    padding: 1rem;
+    padding: 1rem 0.75rem;
+  }
+  
+  .dashboard-container {
+    padding: 0;
   }
 }
 
-/* Animation for content loading */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+/* Additional media query for very small screens */
+@media (max-width: 480px) {
+  .dashboard-main {
+    padding: 0.75rem 0.5rem;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  
+  .dashboard-main .card,
+  .dashboard-main .panel {
+    border-radius: 0.35rem;
   }
 }
 
-.dashboard-container {
-  animation: fadeIn 0.3s ease-out;
+/* Improve focus states for accessibility */
+.dashboard-main a:focus,
+.dashboard-main button:focus,
+.dashboard-main input:focus,
+.dashboard-main select:focus,
+.dashboard-main textarea:focus {
+  outline: 2px solid #00FFFF;
+  outline-offset: 2px;
+}
+
+/* Add dark mode preference support */
+@media (prefers-color-scheme: dark) {
+  .dashboard-layout {
+    background-color: #0D1117;
+  }
+  
+  .dashboard-main {
+    background-color: #0D1117;
+  }
+  
+  .dashboard-main .card,
+  .dashboard-main .panel {
+    background-color: #161B22;
+  }
 }

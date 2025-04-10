@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import Navbar from '../Navbar';
 import Sidebar from '../common/Sidebar';
@@ -9,29 +9,37 @@ const DashboardLayout = ({ children, user }) => {
     // Initialize sidebar state based on screen size
     const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const [isTransitioning, setIsTransitioning] = useState(false);
+
+    // Memoize the resize handler to prevent unnecessary recreations
+    const handleResize = useCallback(() => {
+        const mobile = window.innerWidth <= 768;
+        setIsMobile(mobile);
+
+        // Auto-open sidebar on desktop, close on mobile by default
+        if (!mobile && !isSidebarOpen) {
+            setIsSidebarOpen(true);
+        } else if (mobile && isSidebarOpen) {
+            setIsSidebarOpen(false);
+        }
+    }, [isSidebarOpen]);
 
     useEffect(() => {
-        const handleResize = () => {
-            const mobile = window.innerWidth <= 768;
-            setIsMobile(mobile);
-
-            // Auto-open sidebar on desktop, close on mobile by default
-            if (!mobile && !isSidebarOpen) {
-                setIsSidebarOpen(true);
-            } else if (mobile && isSidebarOpen) {
-                setIsSidebarOpen(false);
-            }
-        };
-
         // Initialize on component mount
         handleResize();
 
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
-    }, [isSidebarOpen]);
+    }, [handleResize]);
 
     const toggleSidebar = () => {
+        setIsTransitioning(true);
         setIsSidebarOpen(prev => !prev);
+        
+        // Reset transitioning state after animation completes
+        setTimeout(() => {
+            setIsTransitioning(false);
+        }, 300); // Match transition time from CSS
     };
 
     return (
@@ -43,13 +51,17 @@ const DashboardLayout = ({ children, user }) => {
             />
 
             <div
-                className={`dashboard-content ${isSidebarOpen && !isMobile ? 'content-shifted' : ''}`}
+                className={`dashboard-content 
+                    ${isSidebarOpen && !isMobile ? 'content-shifted' : ''} 
+                    ${isTransitioning ? 'is-transitioning' : ''}`}
             >
                 <Navbar user={user} onToggleSidebar={toggleSidebar} />
 
                 <main className="dashboard-main">
                     <div className="dashboard-container">
-                        {children}
+                        <div className="content-wrapper">
+                            {children}
+                        </div>
                     </div>
                 </main>
 

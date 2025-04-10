@@ -1,0 +1,63 @@
+/* MainLayout.css */
+.main-layout {
+  position: relative;
+  overflow-x: hidden;
+}
+
+.main-content {
+  position: relative;
+}
+
+.main-container {
+  transition: opacity 0.3s ease;
+}
+
+.content-animation {
+  animation: contentFadeIn 0.4s ease-out;
+}
+
+@keyframes contentFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Add responsive margin/padding adjustments */
+@media (max-width: 640px) {
+  .main-content {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}
+
+/* Enhance links and interactive elements in main content */
+.main-content a {
+  color: #00FFFF;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+}
+
+.main-content a:hover {
+  color: #9C27B0;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
+}
+
+/* Add a subtle animation to the main layout on load */
+.main-layout {
+  animation: layoutReveal 0.5s ease-out;
+}
+
+@keyframes layoutReveal {
+  from {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
