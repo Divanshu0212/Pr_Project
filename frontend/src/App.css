@@ -1,27 +1,35 @@
+/* Combined Global Styles */
+
+/* Keep the transition for all elements */
 * {
   transition: all 0.5s;
 }
 
+/* Style for the root element */
 #root {
-  width:100%;
+  width: 100%;
   margin: 0 auto;
   text-align: center;
-  overflow-x  : hidden;
+  overflow-x: hidden; /* Prevent horizontal scrollbars */
 }
 
+/* Logo styles */
 .logo {
   height: 6em;
   padding: 1.5em;
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
+/* Logo spin animation */
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
@@ -31,16 +39,90 @@
   }
 }
 
+/* Apply logo spin animation if no reduced motion preference */
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
   }
 }
 
+/* Card style */
 .card {
   padding: 2em;
 }
 
+/* Read the docs text color */
 .read-the-docs {
   color: #888;
+}
+
+/* App-specific styles */
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom scrollbar for the whole app */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(229, 229, 229, 0.2);
+  border-radius: var(--border-radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-cyan);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes slideInFromRight {
+  from { transform: translateX(30px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.slide-in {
+  animation: slideInFromRight 0.5s ease-in-out;
+}
+
+/* Status indicators */
+.status-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--border-radius-full);
+  margin-right: var(--spacing-xs);
+}
+
+.status-success {
+  background-color: #4CAF50;
+}
+
+.status-warning {
+  background-color: #FFC107;
+}
+
+.status-error {
+  background-color: #F44336;
+}
+
+.status-info {
+  background-color: var(--accent-cyan);
 }

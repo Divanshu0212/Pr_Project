@@ -1,0 +1,102 @@
+/* Enhanced DashboardLayout.css */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+  color: #E5E5E5;
+  background-color: #0D1117;
+  overflow-x: hidden;
+}
+
+.dashboard-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+.dashboard-content.content-shifted {
+  margin-left: 16rem; /* Width of the sidebar */
+  width: calc(100% - 16rem);
+}
+
+.dashboard-main {
+  flex: 1 0 auto;
+  background-color: #0D1117;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.dashboard-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Glowing accent border for content areas */
+.dashboard-main .card,
+.dashboard-main .panel {
+  border: 1px solid rgba(156, 39, 176, 0.3);
+  border-radius: 0.5rem;
+  background-color: #161B22;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.dashboard-main .card:hover,
+.dashboard-main .panel:hover {
+  border-color: rgba(0, 255, 255, 0.5);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15), 0 0 5px rgba(0, 255, 255, 0.2);
+}
+
+/* Custom scrollbar for dashboard main content */
+.dashboard-main::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dashboard-main::-webkit-scrollbar-track {
+  background: #0D1117;
+}
+
+.dashboard-main::-webkit-scrollbar-thumb {
+  background: rgba(156, 39, 176, 0.5);
+  border-radius: 3px;
+}
+
+.dashboard-main::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 255, 0.5);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dashboard-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+  
+  .dashboard-content.content-shifted {
+    margin-left: 0;
+    width: 100%;
+  }
+  
+  .dashboard-main {
+    padding: 1rem;
+  }
+}
+
+/* Animation for content loading */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dashboard-container {
+  animation: fadeIn 0.3s ease-out;
+}

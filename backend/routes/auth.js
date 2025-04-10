@@ -14,7 +14,7 @@ const authToken = require('../middleware/authToken');
 // Specific limiter for signup and signin routes
 const authLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5, // limit each IP to 5 attempts per hour
+  max: 20, // limit each IP to 5 attempts per hour
   message: "Too many signup or login attempts, please try again later."
 });
 
