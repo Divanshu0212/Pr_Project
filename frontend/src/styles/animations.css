@@ -1,15 +1,23 @@
 /* animations.css - Central file for all animation definitions */
 
-/* 1. Page Transitions */
+/* Define transition durations as CSS variables for consistency */
+:root {
+  --transition-fast: 0.25s ease-in-out; /* Slightly slower fast transition */
+  --transition-normal: 0.4s ease-in-out; /* Slower normal transition */
+  --transition-slow: 0.6s ease-in-out; /* Even slower for page transitions */
+  --hover-shadow: 0 10px 20px rgba(0, 0, 0, 0.08); /* Softer hover shadow */
+}
+
+/* 1. Page Transitions - Slower and Smoother */
 .page-enter {
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(6px); /* Even less initial movement */
 }
 
 .page-enter-active {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity var(--transition-normal), transform var(--transition-normal);
+  transition: opacity var(--transition-slow), transform var(--transition-slow); /* Use the slowest transition */
 }
 
 .page-exit {
@@ -19,15 +27,40 @@
 
 .page-exit-active {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-6px); /* Even less exit movement */
+  transition: opacity var(--transition-slow), transform var(--transition-slow); /* Use the slowest transition */
+}
+
+/* Optional: Fade and Scale for a very smooth, subtle transition */
+
+/* .page-enter {
+  opacity: 0.9;
+  transform: scale(0.99);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: scale(1);
   transition: opacity var(--transition-normal), transform var(--transition-normal);
 }
 
+.page-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.page-exit-active {
+  opacity: 0.9;
+  transform: scale(0.99);
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+} */
+
+
 /* 2. Loading Animations */
 @keyframes pulse {
-  0% { opacity: 0.6; transform: scale(0.98); }
+  0% { opacity: 0.5; transform: scale(0.99); } /* Even subtler pulse */
   50% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0.6; transform: scale(0.98); }
+  100% { opacity: 0.5; transform: scale(0.99); }
 }
 
 @keyframes spin {
@@ -36,83 +69,83 @@
 }
 
 @keyframes shimmer {
-  0% { background-position: -468px 0; }
-  100% { background-position: 468px 0; }
+  0% { background-position: -600px 0; } /* Wider shimmer */
+  100% { background-position: 600px 0; }
 }
 
 .pulse {
-  animation: pulse 1.5s infinite ease-in-out;
+  animation: pulse 2s infinite ease-in-out; /* Slower pulse */
 }
 
 .spin {
-  animation: spin 1s infinite linear;
+  animation: spin 1.2s infinite linear; /* Slightly slower spin */
 }
 
 .shimmer {
-  background: linear-gradient(90deg, 
-    var(--bg-secondary) 8%, 
-    rgba(0, 255, 255, 0.1) 18%, 
-    var(--bg-secondary) 33%);
-  background-size: 800px 104px;
-  animation: shimmer 1.5s infinite linear;
+  background: linear-gradient(90deg,
+    var(--bg-secondary) 10%,
+    rgba(0, 255, 255, 0.08) 20%, /* More subtle shimmer color */
+    var(--bg-secondary) 30%);
+  background-size: 1200px 104px; /* Wider shimmer size */
+  animation: shimmer 2s infinite linear; /* Slower shimmer */
 }
 
-/* 3. Hover and Focus Effects */
+/* 3. Hover and Focus Effects - Even Subtler */
 .hover-lift {
-  transition: transform var(--transition-fast);
+  transition: transform var(--transition-normal); /* Slightly slower */
 }
 
 .hover-lift:hover, .hover-lift:focus {
-  transform: translateY(-5px);
+  transform: translateY(-2px); /* Very gentle lift */
 }
 
 .hover-glow {
-  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal); /* Slightly slower */
 }
 
 .hover-glow:hover, .hover-glow:focus {
-  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-  transform: translateY(-2px);
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.2); /* Even subtler glow */
+  transform: translateY(-0.5px); /* Minimal movement */
 }
 
 .hover-scale {
-  transition: transform var(--transition-fast);
+  transition: transform var(--transition-normal); /* Slightly slower */
 }
 
 .hover-scale:hover, .hover-scale:focus {
-  transform: scale(1.02);
+  transform: scale(1.005); /* Very subtle scale */
 }
 
-/* 4. Feedback Animations */
+/* 4. Feedback Animations - Softer */
 @keyframes success-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.4); }
-  70% { box-shadow: 0 0 0 10px rgba(0, 255, 255, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.2); } /* Very subtle initial pulse */
+  70% { box-shadow: 0 0 0 6px rgba(0, 255, 255, 0); } /* Smaller, softer pulse */
   100% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0); }
 }
 
 @keyframes error-shake {
   0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-5px); }
-  40%, 80% { transform: translateX(5px); }
+  20%, 60% { transform: translateX(-2px); } /* Very small shake */
+  40%, 80% { transform: translateX(2px); } /* Very small shake */
 }
 
 .success-pulse {
-  animation: success-pulse 1.5s ease-out;
+  animation: success-pulse 1.8s ease-out; /* Slower pulse */
 }
 
 .error-shake {
-  animation: error-shake 0.5s ease-in-out;
+  animation: error-shake 0.6s ease-in-out; /* Slower shake */
 }
 
-/* 5. Micro-interactions */
+/* 5. Micro-interactions - More Relaxed */
 @keyframes buttonClick {
   0% { transform: scale(1); }
-  50% { transform: scale(0.97); }
+  50% { transform: scale(0.99); } /* Very subtle click */
   100% { transform: scale(1); }
 }
 
 .button-click {
-  animation: buttonClick 0.3s ease-in-out;
+  animation: buttonClick 0.4s ease-in-out; /* Slower click */
 }
 
 @keyframes fadeIn {
@@ -121,15 +154,15 @@
 }
 
 .fade-in {
-  animation: fadeIn 0.3s ease-in-out;
+  animation: fadeIn 0.4s ease-in-out; /* Slower fade-in */
 }
 
-/* 6. Card Animations */
+/* 6. Card Animations - Gentle */
 .card-hover {
   transition: transform var(--transition-normal), box-shadow var(--transition-normal);
 }
 
 .card-hover:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--hover-shadow);
+  transform: translateY(-2px); /* Very gentle lift */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); /* Very subtle shadow */
 }
