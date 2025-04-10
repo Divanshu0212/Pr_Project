@@ -1,0 +1,444 @@
+/* Enhanced Auth.css */
+
+.auth-wrapper {
+  display: flex;
+  flex-direction: column; /* Stack on smaller screens */
+  min-height: 100vh; /* Use min-height for better content flow */
+  width: 100%;
+  overflow: auto; /* Allow scrolling if content overflows */
+  background-color: #0D1117; /* Primary Background */
+}
+
+/* Left Section */
+.left-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-image: linear-gradient(to bottom, #0D1117, #161B22); /* Gradient */
+  padding: 2rem;
+  text-align: center;
+  color: #E5E5E5; /* Font Color */
+  width: 100%; /* Full width on mobile */
+  min-height: 40vh; /* Minimum height on mobile if displayed */
+}
+
+@media (min-width: 768px) {
+  .auth-wrapper {
+      flex-direction: row; /* Side by side on larger screens */
+  }
+
+  .left-section {
+      display: flex; /* Ensure it's shown on larger screens */
+      width: 40%;
+      min-height: 100vh;
+      padding: 3rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .left-section {
+      display: none; /* Still hidden by default on small screens */
+      /* If you wanted to show a simplified left section on mobile,
+         you would adjust the display and other styles here:
+      display: flex;
+      width: 100%;
+      min-height: auto;
+      padding: 1.5rem;
+      */
+  }
+}
+
+.left-section .glow-effect {
+  border-radius: 50%;
+  filter: blur(50px);
+  opacity: 0.6;
+  z-index: 0;
+  position: absolute;
+}
+
+.left-section .glow-effect.cyan {
+  background-color: #00FFFF; /* Accent Color */
+}
+
+.left-section .glow-effect.purple {
+  background-color: #9C27B0; /* Highlight Color */
+}
+
+.left-section .brand-logo {
+  z-index: 10;
+  margin-bottom: 2rem; /* Adjusted margin */
+}
+
+.left-section .brand-logo .animate-glow {
+  background-clip: text;
+  color: transparent;
+  font-size: 2.5rem; /* Slightly smaller on mobile if shown */
+  font-weight: bold;
+  text-align: center;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@media (min-width: 768px) {
+  .left-section .brand-logo .animate-glow {
+      font-size: 3rem;
+  }
+}
+
+@keyframes glow {
+  from {
+      text-shadow: 0 0 10px #00FFFF, 0 0 20px #00FFFF, 0 0 30px #9C27B0;
+  }
+  to {
+      text-shadow: 0 0 5px #00FFFF, 0 0 15px #00FFFF, 0 0 25px #9C27B0;
+  }
+}
+
+.left-section .animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
+.left-section .message-container {
+  z-index: 10;
+  margin-bottom: 1rem; /* Adjusted margin */
+  min-height: 4rem; /* Adjusted height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.left-section .animated-message {
+  position: absolute;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+  font-size: 1.2rem; /* Smaller on mobile */
+  font-weight: bold;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .left-section .animated-message {
+      font-size: 1.5rem;
+  }
+}
+
+.left-section .animated-message.opacity-100 {
+  opacity: 1;
+}
+
+.left-section .gradient-button {
+  z-index: 10;
+  margin-top: 1.5rem; /* Adjusted margin */
+  padding: 0.75rem 2rem;
+  font-weight: medium;
+  color: #0D1117; /* Primary Background */
+  border-radius: 0.5rem;
+  background-image: linear-gradient(to right, #00FFFF, #9C27B0); /* Gradient */
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.left-section .gradient-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.left-section .animate-pulse-slow {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+      opacity: 1;
+  }
+  50% {
+      opacity: 0.8;
+  }
+}
+
+.left-section .wave-svg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+}
+
+/* Right Section - Login Form */
+.right-section {
+  display: flex;
+  flex: 1; /* Take remaining space */
+  align-items: center;
+  justify-content: center;
+  background-color: #161B22; /* Secondary Background */
+  padding: 2rem; /* Adjusted padding */
+  width: 100%; /* Full width on mobile */
+}
+
+@media (min-width: 768px) {
+  .right-section {
+      padding: 3rem;
+      width: 60%;
+  }
+}
+
+.right-section .form-container {
+  width: 100%;
+  max-width: 400px; /* Adjusted max-width */
+  padding: 2rem;
+}
+
+@media (min-width: 576px) {
+  .right-section .form-container {
+      padding: 2.5rem; /* Slightly more padding on larger mobile */
+  }
+}
+
+@media (min-width: 768px) {
+  .right-section .form-container {
+      padding: 3rem;
+  }
+}
+
+.right-section .animate-fade-in {
+  animation: fadein 0.5s ease-in-out;
+}
+
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.right-section h2 {
+  margin-bottom: 1.5rem; /* Adjusted margin */
+  font-size: 2rem; /* Smaller on mobile */
+  font-weight: bold;
+  color: #00FFFF; /* Accent Color */
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .right-section h2 {
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+  }
+}
+
+.right-section .space-y-6 > * + * {
+  margin-top: 1rem; /* Adjusted spacing between form elements */
+}
+
+.right-section label {
+  display: block;
+  font-weight: medium;
+  color: #E5E5E5; /* Font Color */
+  margin-bottom: 0.375rem; /* Adjusted margin */
+}
+
+.right-section .input-container {
+  position: relative;
+  border-radius: 0.375rem;
+}
+
+.right-section input[type="email"],
+.right-section input[type="password"],
+.right-section input[type="text"] {
+  width: 100%;
+  border: none;
+  background-color: #0D1117; /* Primary Background */
+  padding: 0.6rem 1rem; /* Slightly reduced padding */
+  color: #E5E5E5; /* Font Color */
+  border-radius: 0.375rem;
+  outline: none;
+  font-size: 1rem; /* Ensure decent font size */
+}
+
+.right-section input::placeholder {
+  color: #6E7B8B; /* Placeholder text color */
+}
+
+.right-section .password-toggle {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: #6E7B8B;
+  transition: color 0.2s ease-in-out;
+}
+
+.right-section .password-toggle:hover {
+  color: #00FFFF; /* Accent Color on hover */
+}
+
+.right-section .error-alert {
+  padding: 0.75rem; /* Adjusted padding */
+  border-radius: 0.375rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.right-section .error-alert svg {
+  fill: currentColor;
+}
+
+.right-section .flex-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-top: 0.5rem; /* Added top margin */
+}
+
+.right-section .flex-wrap .flex {
+  display: flex;
+  align-items: center;
+}
+
+.right-section .flex-wrap input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+.right-section .flex-wrap label {
+  margin-bottom: 0;
+  font-size: 0.9rem;
+}
+
+.right-section .gradient-button {
+  width: 100%;
+  padding: 0.75rem 2rem;
+  font-weight: medium;
+  color: #0D1117; /* Primary Background */
+  border-radius: 0.5rem;
+  background-image: linear-gradient(to right, #00FFFF, #9C27B0); /* Gradient */
+  transition: all 0.3s ease-in-out;
+  font-size: 1rem;
+  margin-top: 1.5rem; /* Adjusted margin */
+}
+
+.right-section .gradient-button:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.right-section .gradient-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.right-section .loading-spinner {
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #E5E5E5;
+  border-radius: 50%;
+  width: 1.2rem;
+  height: 1.2rem;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.right-section .divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #6E7B8B;
+  margin-top: 1.5rem; /* Adjusted margin */
+  margin-bottom: 1.5rem; /* Adjusted margin */
+  font-size: 0.9rem;
+}
+
+.right-section .divider::before,
+.right-section .divider::after {
+  content: '';
+  flex-grow: 1;
+  background-color: #30363D;
+  height: 1px;
+}
+
+.right-section .divider::before {
+  margin-right: 0.75rem; /* Adjusted margin */
+}
+
+.right-section .divider::after {
+  margin-left: 0.75rem; /* Adjusted margin */
+}
+
+.right-section .divider-text {
+  padding: 0 0.75rem; /* Adjusted padding */
+}
+
+.right-section .social-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: medium;
+  transition: background-color 0.2s ease-in-out;
+  margin-top: 0.5rem; /* Added margin */
+}
+
+.right-section .social-btn-icon {
+  font-size: 1.1rem; /* Slightly smaller icon */
+  margin-right: 0.5rem; /* Adjusted margin */
+}
+
+.right-section .social-btn-text {
+  font-size: 0.9rem;
+}
+
+.right-section .social-btn[onClick*="Google"] {
+  background-color: white;
+  color: #212529;
+}
+
+.right-section .social-btn[onClick*="Google"]:hover {
+  background-color: #f8f9fa;
+}
+
+.right-section .social-btn[onClick*="Github"] {
+  background-color: #333;
+  color: white;
+}
+
+.right-section .social-btn[onClick*="Github"]:hover {
+  background-color: #555;
+}
+
+.right-section .mt-8.text-center {
+  margin-top: 1.5rem; /* Adjusted margin */
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.right-section .mt-8.text-center a {
+  font-weight: medium;
+  color: #00FFFF; /* Accent Color */
+  transition: color 0.2s ease-in-out;
+}
+
+.right-section .mt-8.text-center a:hover {
+  color: #9C27B0; /* Highlight Color on hover */
+}
+
+/* Hide left section on smaller screens */
+@media (max-width: 767px) {
+  .left-section {
+      display: none;
+  }
+}

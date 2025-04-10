@@ -1,0 +1,74 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Variants */
+.button-primary {
+  background-color: var(--accent-cyan);
+  color: var(--bg-primary);
+}
+
+.button-primary:hover:not(:disabled) {
+  background-color: var(--accent-purple);
+  color: var(--text-primary);
+}
+
+.button-secondary {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--accent-cyan);
+}
+
+.button-secondary:hover:not(:disabled) {
+  border-color: var(--accent-purple);
+  color: var(--accent-cyan);
+}
+
+.button-ghost {
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+.button-ghost:hover:not(:disabled) {
+  background-color: rgba(229, 229, 229, 0.1);
+  color: var(--accent-cyan);
+}
+
+/* Sizes */
+.button-small {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-sm);
+}
+
+.button-medium {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-md);
+}
+
+.button-large {
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-size: var(--font-size-lg);
+}
+
+.button-full-width {
+  width: 100%;
+}
+
+.button-icon {
+  display: flex;
+  align-items: center;
+}

@@ -1,0 +1,186 @@
+import React, { createContext, useState, useEffect } from 'react';
+import SummaryApi from '../config';
+import PropTypes from 'prop-types';
+
+export const AuthContext = createContext();
+
+export const AuthProvider = ({ children }) => {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    localStorage.getItem('isAuthenticated') === 'true'
+  );
+
+  // Function to fetch current user details
+  const fetchUserDetails = async () => {
+    try {
+      if (!isAuthenticated) {
+        setLoading(false);
+        return;
+      }
+
+      const response = await fetch(SummaryApi.current_user.url, {
+        method: SummaryApi.current_user.method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Important for cookies
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setCurrentUser(result.data);
+        setIsAuthenticated(true);
+      } else {
+        // Token is invalid or expired
+        setIsAuthenticated(false);
+        localStorage.removeItem('isAuthenticated');
+      }
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      setIsAuthenticated(false);
+      localStorage.removeItem('isAuthenticated');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Check auth status on mount
+  useEffect(() => {
+    fetchUserDetails();
+  }, []);
+
+  // Regular email/password login
+  const login = async (email, password) => {
+    setError(null);
+    try {
+      const response = await fetch(SummaryApi.signIn.url, {
+        method: SummaryApi.signIn.method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // Important for cookies to be sent/received
+        body: JSON.stringify({ email, password }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem("isAuthenticated", "true");
+        // Check if we have a token in the result
+        if (result.data) {
+          localStorage.setItem("token", result.data); // Store token in localStorage as backup
+        }
+
+        setIsAuthenticated(true);
+        await fetchUserDetails(); // Fetch user details after login
+        return result;
+      } else {
+        setError(result.message || "Login failed.");
+        throw new Error(result.message || "Login failed.");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setError(error.message || "An error occurred. Please try again.");
+      throw error;
+    }
+  };
+
+  // Regular email/password signup
+  const signup = async (email, password, username) => {
+    setError(null);
+    try {
+      const response = await fetch(SummaryApi.signUp.url, {
+        method: SummaryApi.signUp.method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include', // Important for cookies
+        body: JSON.stringify({ username, email, password }),
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        return result;
+      } else {
+        setError(result.message || 'Signup failed.');
+        throw new Error(result.message || 'Signup failed.');
+      }
+    } catch (error) {
+      console.error('Signup error:', error);
+      setError(error.message || 'An error occurred. Please try again.');
+      throw error;
+    }
+  };
+
+  // Logout function
+  const logout = async () => {
+    try {
+      await fetch(SummaryApi.logout_user.url, {
+        method: SummaryApi.logout_user.method,
+        credentials: 'include',
+      });
+
+      // Clear auth state regardless of server response
+      setCurrentUser(null);
+      setIsAuthenticated(false);
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('token');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still clear auth state even if server request fails
+      setCurrentUser(null);
+      setIsAuthenticated(false);
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('token');
+    }
+  };
+
+  // Google OAuth login
+  const signInWithGoogle = () => {
+    window.open(SummaryApi.googleAuth.url || "http://localhost:5000/auth/google", "_self");
+  };
+
+  // GitHub OAuth login
+  const signInWithGithub = () => {
+    window.open(SummaryApi.githubAuth.url || "http://localhost:5000/auth/github", "_self");
+  };
+
+  // OAuth callback handler
+  const handleOAuthCallback = (token, user) => {
+    if (token && user) {
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('token', token);
+      setCurrentUser(user);
+      setIsAuthenticated(true);
+      return true;
+    }
+    return false;
+  };
+
+  const value = {
+    currentUser,
+    isAuthenticated,
+    loading,
+    error,
+    setCurrentUser,
+    setIsAuthenticated,
+    login,
+    signup,
+    logout,
+    signInWithGoogle,
+    signInWithGithub,
+    handleOAuthCallback,
+    refreshUserDetails: fetchUserDetails,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+// Define propTypes for AuthProvider
+AuthProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+};

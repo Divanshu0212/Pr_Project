@@ -1,49 +1,218 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import PropTypes from 'prop-types';
+import './Navbar.css';
 
-const Navbar = ({ user }) => {
+const Navbar = ({ user, onToggleSidebar }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+  const isAuthenticated = !!user;
+  const isMobile = window.innerWidth <= 768;
+
+  // Listen for scroll events to add navbar styling
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Close the mobile menu when navigating
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
+  const toggleMobileMenu = () => {
+    setMenuOpen(!menuOpen);
+  };
+
+  const handleToggleSidebar = () => {
+    if (onToggleSidebar) {
+      onToggleSidebar();
+    }
+    
+    // On mobile, also close the menu when toggling sidebar
+    if (isMobile) {
+      setMenuOpen(false);
+    }
+  };
+
   const logout = () => {
     window.open("http://localhost:5000/auth/logout", "_self");
   };
 
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleNavbar = () => {
-    setIsOpen(!isOpen);
+  const isActive = (path) => {
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
   return (
-    <div>
-      <button
-        className={`focus:outline-none focus:ring-0 active:outline-none active:ring-0 flex fixed -left-3 -top-1 items-center bg-gray-800 text-white border-0 z-50 bg-transparent `}
-        onClick={toggleNavbar}
-      >
-        <div className="items-center justify-center">☰</div>
-      </button>
-      <div className={`fixed left-0 top-0 h-full bg-gray-800 p-4 transition-transform z-40 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <span className="logo text-white text-xl">
-          <Link className="link" to="/" onClick={toggleNavbar}>
-            TrackFolio
+    <header className={`navbar ${scrolled ? 'scrolled' : ''}`}>
+      <div className="navbar-container">
+        <div className="navbar-left">
+          {isAuthenticated && (
+            <button 
+              className="sidebar-toggle-btn" 
+              onClick={handleToggleSidebar}
+              aria-label="Toggle sidebar"
+            >
+              <span className="toggle-icon">
+                <span className="toggle-line"></span>
+              </span>
+            </button>
+          )}
+          <Link to="/" className="navbar-brand">
+            <span className="brand-text">TrackFolio</span>
           </Link>
-        </span>
-        {user ? (
-          <ul className="list mt-4">
-            <li className="listItem mb-4 ml-10">
-              <img src={user.photos[0].value} alt="" className="avatar rounded-full w-16 h-16" />
-            </li>
-            <li className="listItem text-white mb-4">{user.displayName}</li>
-            <li className="listItem text-white cursor-pointer" onClick={logout}>
+        </div>
+
+        <div className="navbar-right">
+          {/* Desktop Navigation Links */}
+          <nav className="navbar-nav">
+            {isAuthenticated ? (
+              <>
+                <Link 
+                  to="/portfolioHome" 
+                  className={`nav-link ${isActive('/portfolioHome') ? 'active' : ''}`}
+                >
+                  Portfolio
+                </Link>
+                <Link 
+                  to="/resume-builder-home" 
+                  className={`nav-link ${isActive('/resume-builder-home') ? 'active' : ''}`}
+                >
+                  Resume
+                </Link>
+                <Link 
+                  to="/ats" 
+                  className={`nav-link ${isActive('/ats') ? 'active' : ''}`}
+                >
+                  ATS
+                </Link>
+              </>
+            ) : null}
+          </nav>
+
+          {/* User Profile or Auth Buttons */}
+          <div className="navbar-auth">
+            {isAuthenticated ? (
+              <div className="user-profile">
+                <div className="user-info">
+                  {user?.photos?.[0]?.value ? (
+                    <img 
+                      src={user.photos[0].value} 
+                      alt="Profile" 
+                      className="user-avatar"
+                    />
+                  ) : (
+                    <div className="user-default-avatar">
+                      {user?.displayName?.charAt(0) || 'U'}
+                    </div>
+                  )}
+                  <span className="username">{user?.displayName || 'User'}</span>
+                </div>
+                <button 
+                  onClick={logout}
+                  className="logout-btn"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div className="auth-buttons">
+                <Link to="/login" className="login-btn">
+                  Login
+                </Link>
+                <Link to="/signup" className="signup-btn">
+                  Sign Up
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile Menu Toggle Button */}
+          <button
+            className={`mobile-menu-btn ${menuOpen ? 'active' : ''}`}
+            onClick={toggleMobileMenu}
+            aria-label="Toggle menu"
+          >
+            <span className="menu-icon">
+              <span className="menu-icon-line"></span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu Panel */}
+      <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
+        {isAuthenticated ? (
+          <>
+            <div className="mobile-user">
+              {user?.photos?.[0]?.value ? (
+                <img 
+                  src={user.photos[0].value} 
+                  alt="Profile" 
+                  className="mobile-avatar"
+                />
+              ) : (
+                <div className="mobile-default-avatar">
+                  {user?.displayName?.charAt(0) || 'U'}
+                </div>
+              )}
+              <span className="mobile-username">{user?.displayName || 'User'}</span>
+            </div>
+            <nav className="mobile-nav">
+              <Link 
+                to="/portfolioHome" 
+                className={`mobile-nav-link ${isActive('/portfolioHome') ? 'active' : ''}`}
+              >
+                Portfolio
+              </Link>
+              <Link 
+                to="/resume-builder-home" 
+                className={`mobile-nav-link ${isActive('/resume-builder-home') ? 'active' : ''}`}
+              >
+                Resume
+              </Link>
+              <Link 
+                to="/ats" 
+                className={`mobile-nav-link ${isActive('/ats') ? 'active' : ''}`}
+              >
+                ATS
+              </Link>
+            </nav>
+            <button 
+              onClick={logout}
+              className="mobile-logout"
+            >
               Logout
-            </li>
-          </ul>
+            </button>
+          </>
         ) : (
-          <Link className="link text-white mt-4" to="authPage" onClick={toggleNavbar}>
-            Login
-          </Link>
+          <div className="mobile-auth">
+            <Link to="/login" className="mobile-login">
+              Login
+            </Link>
+            <Link to="/signup" className="mobile-signup">
+              Sign Up
+            </Link>
+          </div>
         )}
       </div>
-    </div>
+      
+      {/* Mobile Menu Overlay */}
+      {menuOpen && (
+        <div className="mobile-overlay" onClick={toggleMobileMenu}></div>
+      )}
+    </header>
   );
+};
+
+Navbar.propTypes = {
+  user: PropTypes.object,
+  onToggleSidebar: PropTypes.func,
 };
 
 export default Navbar;
