@@ -1,0 +1,93 @@
+.profession-selector {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.profession-selector .card {
+    text-align: center;
+}
+
+.profession-selector h2 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+}
+
+.profession-selector p {
+    margin-bottom: 2rem;
+    color: var(--gray-dark);
+}
+
+.profession-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.profession-button {
+    background-color: var(--light-color);
+    color: var(--dark-color);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.profession-button:hover {
+    background-color: #dfe6e9;
+    transform: translateY(-2px);
+}
+
+.profession-button.selected {
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+
+.profession-button.custom-button {
+    background-color: #e0e0e0;
+    border: 2px dashed var(--gray-color);
+    font-weight: 600;
+}
+
+.profession-button.custom-button:hover {
+    background-color: #d0d0d0;
+}
+
+.custom-input-container {
+    margin-bottom: 2rem;
+}
+
+.custom-profession-input {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.back-button {
+    background-color: var(--light-color);
+    color: var(--dark-color);
+    margin-right: 1rem;
+}
+
+.back-button:hover {
+    background-color: #dfe6e9;
+}
+
+.submit-button {
+    background-color: var(--primary-color);
+    color: var(--white);
+    min-width: 150px;
+}
+
+.submit-button:hover:not(:disabled) {
+    background-color: var(--primary-dark);
+}
+
+@media (max-width: 768px) {
+    .profession-options {
+        grid-template-columns: 1fr;
+    }
+}
