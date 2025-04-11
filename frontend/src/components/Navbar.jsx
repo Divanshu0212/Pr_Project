@@ -4,18 +4,20 @@ import PropTypes from 'prop-types';
 import { FiMenu, FiX, FiUser, FiLogOut, FiSearch, FiBell, FiSettings, 
          FiChevronDown, FiInfo, FiHelpCircle, FiFolder, FiFileText, FiTarget } from 'react-icons/fi';
 import './Navbar.css';
+import { useAuth } from '../hooks/useAuth';
 
-const Navbar = ({ user, onToggleSidebar }) => {
+const Navbar = ({ onToggleSidebar }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const { currentUser: user, isAuthenticated, logout } = useAuth();
+  console.log(user)
   
   const location = useLocation();
   const navigate = useNavigate();
-  const isAuthenticated = !!user;
   const isMobile = window.innerWidth <= 768;
   
   const userMenuRef = useRef(null);
@@ -124,8 +126,8 @@ const Navbar = ({ user, onToggleSidebar }) => {
     }
   };
 
-  const logout = () => {
-    window.open("http://localhost:5000/auth/logout", "_self");
+  const handleLogout = () => {
+    logout(); // This is the logout function from AuthContext
   };
 
   const isActive = (path) => {
@@ -311,7 +313,7 @@ const Navbar = ({ user, onToggleSidebar }) => {
                       {user?.displayName?.charAt(0) || 'U'}
                     </div>
                   )}
-                  <span className="username">{user?.displayName || 'User'}</span>
+                  <span className="username">{user?.username || 'User'}</span>
                   <FiChevronDown className={`dropdown-arrow ${userMenuOpen ? 'open' : ''}`} />
                 </button>
 
@@ -354,7 +356,7 @@ const Navbar = ({ user, onToggleSidebar }) => {
                     </div>
                     <div className="dropdown-footer">
                       <button 
-                        onClick={logout}
+                        onClick={handleLogout}
                         className="logout-btn"
                       >
                         <FiLogOut className="dropdown-icon" />
@@ -501,7 +503,6 @@ const Navbar = ({ user, onToggleSidebar }) => {
 };
 
 Navbar.propTypes = {
-  user: PropTypes.object,
   onToggleSidebar: PropTypes.func,
 };
 
