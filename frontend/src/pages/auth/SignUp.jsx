@@ -26,7 +26,6 @@ const SignUp = () => {
   });
   const [messageIndex, setMessageIndex] = useState(0);
 
-  // Rotating messages
   const messages = [
     "Build Your Professional Identity Today",
     "Create a Resume That Stands Out",
@@ -45,20 +44,21 @@ const SignUp = () => {
   // Update errors if auth context has an error
   useEffect(() => {
     if (authError) {
-      setErrors({
-        ...errors,
+      setErrors(prevErrors => ({
+        ...prevErrors,
         submit: authError
-      });
+      }));
     }
-  }, [authError, errors]);
+  }, [authError]); // Removed errors from dependencies
 
   // Rotating messages with fade effect
   useEffect(() => {
     const interval = setInterval(() => {
-      setMessageIndex((prevIndex) => (prevIndex + 1) % messages.length);
+      setMessageIndex(prevIndex => (prevIndex + 1) % messages.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, []); // Empty dependency array for interval setup
+
 
   const calculatePasswordStrength = (password) => {
     const messages = [];
@@ -122,10 +122,10 @@ const SignUp = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [name]: value
-    });
+    }));
 
     // Calculate password strength if the password field is being changed
     if (name === 'password') {
@@ -134,10 +134,10 @@ const SignUp = () => {
 
     // Clear the error for this field when user starts typing
     if (errors[name]) {
-      setErrors({
-        ...errors,
+      setErrors(prev => ({
+        ...prev,
         [name]: ''
-      });
+      }));
     }
   };
 

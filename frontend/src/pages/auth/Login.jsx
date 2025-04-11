@@ -103,6 +103,37 @@ const Login = () => {
     }
   };
 
+  // OAuth handlers - integrated from second component
+  const handleGoogleLogin = async () => {
+    try {
+      setIsSubmitting(true);
+      await signInWithGoogle();
+      // Navigation handled by the useEffect watching isAuthenticated
+    } catch (error) {
+      setErrors({
+        ...errors,
+        submit: error.message || 'Google login failed'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGithubLogin = async () => {
+    try {
+      setIsSubmitting(true);
+      await signInWithGithub();
+      // Navigation handled by the useEffect watching isAuthenticated
+    } catch (error) {
+      setErrors({
+        ...errors,
+        submit: error.message || 'GitHub login failed'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="auth-wrapper">
       {/* Left Section - Branding & Messaging */}
@@ -125,9 +156,8 @@ const Login = () => {
           {messages.map((message, index) => (
             <h1
               key={index}
-              className={`animated-message text-center text-3xl font-bold ${
-                index === messageIndex ? 'opacity-100' : 'opacity-0'
-              }`}
+              className={`animated-message text-center text-3xl font-bold ${index === messageIndex ? 'opacity-100' : 'opacity-0'
+                }`}
             >
               {message}
             </h1>
@@ -263,15 +293,17 @@ const Login = () => {
           {/* Social Login */}
           <div className="mt-8 grid grid-cols-2 gap-4">
             <button
-              onClick={signInWithGoogle}
-              className="social-btn flex items-center justify-center rounded-lg bg-white px-4 py-3 text-gray-800 transition-colors hover:bg-gray-100"
+              onClick={handleGoogleLogin}
+              disabled={isSubmitting}
+              className="social-btn flex items-center justify-center rounded-lg bg-white px-4 py-3 text-gray-800 transition-colors hover:bg-gray-100 disabled:opacity-50"
             >
               <FaGoogle className="social-btn-icon mr-2" />
               <span className="social-btn-text">Google</span>
             </button>
             <button
-              onClick={signInWithGithub}
-              className="social-btn flex items-center justify-center rounded-lg bg-gray-800 px-4 py-3 text-white transition-colors hover:bg-gray-700"
+              onClick={handleGithubLogin}
+              disabled={isSubmitting}
+              className="social-btn flex items-center justify-center rounded-lg bg-gray-800 px-4 py-3 text-white transition-colors hover:bg-gray-700 disabled:opacity-50"
             >
               <FaGithub className="social-btn-icon mr-2" />
               <span className="social-btn-text">GitHub</span>
