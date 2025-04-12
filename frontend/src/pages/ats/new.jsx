@@ -34,17 +34,21 @@ const ResumeATSScanner = () => {
       setError('Please select a profession first');
       return;
     }
-
+  
     setKeywordsLoading(true);
     setError('');
-
+  
     try {
       const response = await axios.post('http://localhost:8000/api/profession-keywords', {
         profession,
         experience_level: experienceLevel
       });
-
-      setKeywords(response.data.keywords);
+      
+      const newKeywords = response.data.keywords;
+      setKeywords(newKeywords);
+      
+      // Log the keywords after state has been updated
+      console.log("Fetched keywords:", newKeywords);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to fetch keywords');
     } finally {
@@ -74,19 +78,35 @@ const ResumeATSScanner = () => {
       setError('Please upload a resume file');
       return;
     }
-
+  
     if (!keywords) {
       setError('Please wait for keywords to load or select a profession');
       return;
     }
-
+  
     setLoading(true);
     setError('');
     setResults(null);
-
+  
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('keywords', JSON.stringify(keywords));
+    
+    // Check if keywords is an array instead of an object
+    let keywordsToSend = keywords;
+    if (Array.isArray(keywords)) {
+      // Convert the array to the expected object format
+      keywordsToSend = {
+        "technical_skills": keywords[0]?.technical_skills || [],
+        "soft_skills": keywords[0]?.soft_skills || [],
+        "certifications": keywords[0]?.certifications || [],
+        "experience_terms": keywords[0]?.experience_terms || [],
+        "education_requirements": keywords[0]?.education_requirements || []
+      };
+    }
+    
+    console.log("Sending keywords to backend:", keywordsToSend);
+    formData.append('keywords', JSON.stringify(keywordsToSend));
+  
 
     try {
       const response = await axios.post('http://localhost:8000/api/analyze-resume', formData, {
