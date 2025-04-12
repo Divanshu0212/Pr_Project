@@ -121,47 +121,67 @@ const initializePassport = (passport) => {
     clientID: process.env.GITHUB_CLIENT_ID,
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
     callbackURL: `http://localhost:5000/api/auth/github/callback`,
+    scope: ['user:email'], // Explicitly request email scope
     passReqToCallback: true
   },
-    async (req, accessToken, refreshToken, profile, done) => {
-      try {
-        // First try to find by githubId
-        let user = await User.findOne({ githubId: profile.id });
-
-        if (user) {
-          return done(null, user);
-        }
-
-        // If not found by githubId, check if email exists
-        const email = profile.emails ? profile.emails[0].value : `${profile.username}@github.com`;
-        user = await User.findOne({ email });
-
-        if (user) {
-          // If user exists but doesn't have githubId, add it to their account
-          if (!user.githubId) {
-            user.githubId = profile.id;
-            user.provider = 'github';
-            await user.save();
-          }
-          return done(null, user);
-        }
-
-        // If no user exists with this email or githubId, create new user
-        user = new User({
-          githubId: profile.id,
-          email: email,
-          username: profile.username,
-          password: await bcrypt.hash(Math.random().toString(36).slice(-8), 10), // Random password
-          isVerified: true,
-          provider: 'github'
+  async (req, accessToken, refreshToken, profile, done) => {
+    try {
+      // First try to find by githubId
+      let user = await User.findOne({ githubId: profile.id });
+  
+      if (user) {
+        return done(null, user);
+      }
+  
+      // Get primary email from GitHub profile
+      let email;
+      if (profile.emails && profile.emails.length > 0) {
+        // Try to find primary email
+        const primaryEmail = profile.emails.find(email => email.primary);
+        email = primaryEmail ? primaryEmail.value : profile.emails[0].value;
+      } else {
+        // If no email is available, redirect to a page asking for email
+        return done(null, false, { 
+          message: 'No email available from GitHub. Please link your account manually.' 
         });
-
+      }
+  
+      // Check if a user with this email already exists
+      user = await User.findOne({ email });
+  
+      if (user) {
+        // If user exists but doesn't have githubId, add it to their account
+        // IMPORTANT: Preserve the original password!
+        const originalPassword = user.password;
+        
+        user.githubId = profile.id;
+        user.provider = user.provider || 'github'; // Only update if not set
+        // Don't modify the password
+        user.markModified('githubId');
+        user.markModified('provider');
+        
         await user.save();
         return done(null, user);
-      } catch (err) {
-        return done(err);
       }
-    }));
+  
+      // If no user exists with this email or githubId, create new user
+      const randomPassword = await bcrypt.hash(Math.random().toString(36).slice(-8), 10);
+      
+      user = new User({
+        githubId: profile.id,
+        email: email,
+        username: profile.username || email.split('@')[0],
+        password: randomPassword,
+        isVerified: true,
+        provider: 'github'
+      });
+  
+      await user.save();
+      return done(null, user);
+    } catch (err) {
+      return done(err);
+    }
+  }));
 
   // Serialize user
 
