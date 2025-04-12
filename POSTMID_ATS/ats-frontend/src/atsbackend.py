@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 import PyPDF2
 import docx
 import nltk
+nltk.download('punkt_tab')
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 import string
@@ -18,7 +19,7 @@ CORS(app)
 
 # Configure environment variables
 # In production, use proper environment variable management
-GEMINI_API_KEY = "YOUR_GEMINI_API_KEY"  # Replace with your actual API key
+GEMINI_API_KEY = "AIzaSyBjCoY3uemTDJdOTfFSWTb1lGoosUsvh_Y"  # Replace with your actual API key
 UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {"pdf", "docx", "txt"}
 
@@ -61,11 +62,25 @@ def extract_text(file_path):
         return extract_text_from_txt(file_path)
     return ""
 
-def get_keywords_for_profession(profession):
-    """Get relevant keywords for the given profession using Gemini API"""
-    model = genai.GenerativeModel('gemini-pro')
+def get_keywords_for_profession(profession, experience_level="mid"):
+    """Get relevant keywords for the given profession and experience level using Gemini API"""
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    
+    level_description = {
+        "entry": "entry-level/junior professionals with 0-2 years of experience",
+        "mid": "mid-level professionals with 3-5 years of experience",
+        "senior": "senior-level professionals with 6+ years of experience, leadership roles"
+    }
+    
+    level_desc = level_description.get(experience_level.lower(), level_description["mid"])
+    
     prompt = f"""
-    Generate a comprehensive list of relevant ATS keywords for the profession: {profession}.
+    Generate a comprehensive list of relevant ATS keywords for {level_desc} in the profession: {profession}.
+    
+    Customize the keywords specifically for {experience_level} level positions by:
+    - For entry-level: Focus on foundational skills, education, internships, and entry certifications
+    - For mid-level: Include more specialized skills, project management terms, and mid-tier certifications
+    - For senior-level: Emphasize leadership, strategic skills, advanced certifications, and management terms
     
     Format your response as a JSON array with the following structure:
     {{
@@ -81,6 +96,7 @@ def get_keywords_for_profession(profession):
     
     response = model.generate_content(prompt)
     response_text = response.text
+    print(f"Response from Gemini: {response_text}")
     
     # Extract JSON from response (handling potential markdown code blocks)
     if "```json" in response_text:
@@ -104,28 +120,55 @@ def get_keywords_for_profession(profession):
 
 def calculate_keyword_score(resume_text, keywords_data):
     """Calculate score based on keywords presence (40% of total)"""
+    # Check if keywords_data is a dictionary
+    if not isinstance(keywords_data, dict):
+        print(f"Warning: keywords_data is not a dictionary: {type(keywords_data)}")
+        return 0, [], []
+    
     # Flatten all keywords into one list
     all_keywords = []
-    for category in keywords_data.values():
-        all_keywords.extend(category)
+    for category, keywords_list in keywords_data.items():
+        if isinstance(keywords_list, list):  # Ensure it's a list before extending
+            all_keywords.extend(keywords_list)
     
-    # Preprocess resume text
+    # Match keywords with proper word boundary checking
     resume_lower = resume_text.lower()
-    tokens = word_tokenize(resume_lower)
-    stop_words = set(stopwords.words('english'))
-    tokens = [word for word in tokens if word not in stop_words and word not in string.punctuation]
+    keywords_found = []
+    missing_keywords = []
     
-    # Count keywords found
-    keywords_found = sum(1 for keyword in all_keywords if keyword.lower() in resume_lower)
+    import re
+    for keyword in all_keywords:
+        if not isinstance(keyword, str):
+            continue
+            
+        keyword_lower = keyword.lower()
+        
+        # Check if it's a multi-word phrase
+        if ' ' in keyword_lower:
+            # For phrases, use more flexible matching (words can be separated by whitespace)
+            # Create a pattern that allows any whitespace between words
+            words = [re.escape(word) for word in keyword_lower.split()]
+            pattern = r'(?:\b' + r'\b\s+\b'.join(words) + r'\b)'
+            if re.search(pattern, resume_lower):
+                keywords_found.append(keyword)
+            else:
+                missing_keywords.append(keyword)
+        else:
+            # For single words, use strict word boundary matching
+            pattern = r'\b' + re.escape(keyword_lower) + r'\b'
+            if re.search(pattern, resume_lower):
+                keywords_found.append(keyword)
+            else:
+                missing_keywords.append(keyword)
     
     # Calculate score (scaled to 40 points maximum)
     total_keywords = len(all_keywords)
     if total_keywords == 0:
-        return 0
+        return 0, [], []
     
-    raw_score = (keywords_found / total_keywords) * 100
+    raw_score = (len(keywords_found) / total_keywords) * 100
     # Cap at 40 points (40% of total score)
-    return min(40, raw_score)
+    return min(40, raw_score), keywords_found, missing_keywords
 
 def calculate_format_score(resume_text):
     """Calculate score based on formatting and structure (30% of total)"""
@@ -202,9 +245,15 @@ def calculate_achievements_score(resume_text, keywords_data):
     verb_score = min(10, (verb_matches / len(achievement_verbs)) * 10)
     
     # Check for experience relevance (10 points)
-    experience_terms = keywords_data.get("experience_terms", [])
-    experience_matches = sum(1 for term in experience_terms if term.lower() in resume_text.lower())
-    experience_score = min(10, (experience_matches / max(1, len(experience_terms))) * 10)
+    experience_terms = []
+    if isinstance(keywords_data, dict) and isinstance(keywords_data.get("experience_terms", []), list):
+        experience_terms = keywords_data.get("experience_terms", [])
+    
+    if experience_terms:
+        experience_matches = sum(1 for term in experience_terms if isinstance(term, str) and term.lower() in resume_text.lower())
+        experience_score = min(10, (experience_matches / len(experience_terms)) * 10)
+    else:
+        experience_score = 0
     
     # Sum up achievement subscores
     achievement_score = number_score + verb_score + experience_score
@@ -216,12 +265,13 @@ def calculate_achievements_score(resume_text, keywords_data):
 def profession_keywords():
     data = request.get_json()
     profession = data.get("profession", "")
+    experience_level = data.get("experience_level", "mid")
     
     if not profession:
         return jsonify({"error": "Profession is required"}), 400
     
     try:
-        keywords = get_keywords_for_profession(profession)
+        keywords = get_keywords_for_profession(profession, experience_level)
         return jsonify({"keywords": keywords})
     except Exception as e:
         print(f"Error: {str(e)}")
@@ -249,11 +299,49 @@ def analyze_resume():
             if not resume_text.strip():
                 return jsonify({"error": "Could not extract text from the file"}), 400
             
-            # Parse keywords
-            keywords_data = json.loads(keywords_json)
+            # Parse keywords - adding error handling and validation
+            try:
+                keywords_data = json.loads(keywords_json)
+                
+                # Validate that keywords_data is a dictionary, not a list
+                if isinstance(keywords_data, list):
+                    # Convert the list to dictionary if it's a list
+                    keywords_data = {
+                        "keywords": keywords_data
+                    }
+                
+                # Ensure all expected categories exist
+                if not any(category in keywords_data for category in ["technical_skills", "soft_skills", "certifications", "experience_terms", "education_requirements"]):
+                    # If none of the expected categories exist, restructure the data
+                    all_keywords = []
+                    if isinstance(keywords_data.get("keywords", []), list):
+                        all_keywords = keywords_data.get("keywords", [])
+                    elif "keywords" not in keywords_data:
+                        # Flatten all values if they are lists
+                        for value in keywords_data.values():
+                            if isinstance(value, list):
+                                all_keywords.extend(value)
+                            
+                    keywords_data = {
+                        "technical_skills": all_keywords,
+                        "soft_skills": [],
+                        "certifications": [],
+                        "experience_terms": [],
+                        "education_requirements": []
+                    }
+            except Exception as e:
+                print(f"Error parsing keywords: {str(e)}")
+                # Fallback with empty keywords
+                keywords_data = {
+                    "technical_skills": [],
+                    "soft_skills": [],
+                    "certifications": [],
+                    "experience_terms": [],
+                    "education_requirements": []
+                }
             
-            # Calculate scores
-            keyword_score = calculate_keyword_score(resume_text, keywords_data)
+            # Calculate scores using improved keyword matching
+            keyword_score, keywords_found, missing_keywords = calculate_keyword_score(resume_text, keywords_data)
             format_score = calculate_format_score(resume_text)
             achievements_score = calculate_achievements_score(resume_text, keywords_data)
             
@@ -268,8 +356,8 @@ def analyze_resume():
                 "format_score": round(format_score, 1),
                 "achievements_score": round(achievements_score, 1),
                 "detailed_analysis": {
-                    "keywords_found": [kw for category in keywords_data.values() for kw in category if kw.lower() in resume_text.lower()],
-                    "missing_keywords": [kw for category in keywords_data.values() for kw in category if kw.lower() not in resume_text.lower()],
+                    "keywords_found": keywords_found,
+                    "missing_keywords": missing_keywords,
                 }
             }
             
@@ -281,4 +369,4 @@ def analyze_resume():
     return jsonify({"error": "File type not allowed"}), 400
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True,port=8000)

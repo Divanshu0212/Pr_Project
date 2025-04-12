@@ -7,6 +7,7 @@ const ExtractJwt = require('passport-jwt').ExtractJwt;
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+require('dotenv').config()
 
 // JWT options
 const jwtOptions = {
@@ -75,21 +76,36 @@ const initializePassport = (passport) => {
   },
   async (req, accessToken, refreshToken, profile, done) => {
     try {
-      let user = await User.findOne({ googleId: profile.id });
-
+      const email = profile.emails[0].value;
+      const password=await bcrypt.hash(Math.random().toString(36).slice(-8),10)
+      
+      // Try to find user by Google ID or email
+      let user = await User.findOne({ 
+        $or: [
+          { googleId: profile.id },
+          { email: email }
+        ]
+      });
+  
       if (!user) {
         // Create new user if not found
         user = new User({
           googleId: profile.id,
-          email: profile.emails[0].value,
-          username: profile.displayName || profile.emails[0].value.split('@')[0],
-          password: await bcrypt.hash(Math.random().toString(36).slice(-8), 10), // Random password
+          email: email,
+          username: profile.displayName || email.split('@')[0],
+          password: password,
           isVerified: true,
-          provider: 'google'
+          provider: 'google',
+          avatar: profile.photos[0]?.value
         });
         await user.save();
+      } else if (!user.googleId) {
+        // Link existing account with Google
+        user.googleId = profile.id;
+        user.provider = 'google';
+        await user.save();
       }
-
+  
       return done(null, user);
     } catch (err) {
       return done(err);
@@ -100,26 +116,43 @@ const initializePassport = (passport) => {
   passport.use(new GitHubStrategy({
     clientID: process.env.GITHUB_CLIENT_ID,
     clientSecret: process.env.GITHUB_CLIENT_SECRET,
-    callbackURL: `${process.env.BACKEND_DOMAIN}/api/auth/github/callback`,
+    callbackURL: `http://localhost:5000/api/auth/github/callback`,
     passReqToCallback: true
   },
   async (req, accessToken, refreshToken, profile, done) => {
     try {
+      // First try to find by githubId
       let user = await User.findOne({ githubId: profile.id });
-
-      if (!user) {
-        // Create new user if not found
-        user = new User({
-          githubId: profile.id,
-          email: profile.emails ? profile.emails[0].value : `${profile.username}@github.com`,
-          username: profile.username,
-          password: await bcrypt.hash(Math.random().toString(36).slice(-8), 10), // Random password
-          isVerified: true,
-          provider: 'github'
-        });
-        await user.save();
+  
+      if (user) {
+        return done(null, user);
       }
-
+  
+      // If not found by githubId, check if email exists
+      const email = profile.emails ? profile.emails[0].value : `${profile.username}@github.com`;
+      user = await User.findOne({ email });
+  
+      if (user) {
+        // If user exists but doesn't have githubId, add it to their account
+        if (!user.githubId) {
+          user.githubId = profile.id;
+          user.provider = 'github';
+          await user.save();
+        }
+        return done(null, user);
+      }
+  
+      // If no user exists with this email or githubId, create new user
+      user = new User({
+        githubId: profile.id,
+        email: email,
+        username: profile.username,
+        password: await bcrypt.hash(Math.random().toString(36).slice(-8),10), // Random password
+        isVerified: true,
+        provider: 'github'
+      });
+  
+      await user.save();
       return done(null, user);
     } catch (err) {
       return done(err);
