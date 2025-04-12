@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
         const token = localStorage.getItem('token');
         const response = await fetch(`http://localhost:5000/api/auth/me`, {
           method: 'GET',
-          credentials: 'include', // CRUCIAL for sending cookies!
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
@@ -46,8 +46,6 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
 
-  // Function to fetch current user details
-  // In AuthContext.jsx, modify the fetchUserDetails function:
 
   const fetchUserDetails = async () => {
     try {
@@ -62,7 +60,7 @@ export const AuthProvider = ({ children }) => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`  // Ensure proper space after "Bearer"
+          'Authorization': `Bearer ${token}`
         }
       });
 
