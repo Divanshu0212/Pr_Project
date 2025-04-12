@@ -99,15 +99,19 @@ router.post('/login', (req, res, next) => {
 });
 
 
+// In routes/auth.js
 router.get('/verify-token', passport.authenticate('jwt', { session: false }), (req, res) => {
-  res.json({ 
+  res.json({
     success: true,
     user: {
-      id: req.user._id,
-      email: req.user.email
+      _id: req.user._id,
+      username: req.user.username,
+      email: req.user.email,
+      avatar: req.user.avatar
     }
   });
 });
+
 
 // Google OAuth routes
 router.get('/google', passport.authenticate('google', {
@@ -115,16 +119,27 @@ router.get('/google', passport.authenticate('google', {
   session: false
 }));
 
-router.get('/google/callback', passport.authenticate('google', {
-  failureRedirect: `${process.env.FRONTEND_URL}/login?error=google-auth-failed`,
-  session: false
-}), (req, res) => {
-  // Generate token
-  const token = generateToken(req.user);
-  
-  // Redirect to frontend with token
-  res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${token}`);
-});
+router.get('/google/callback', 
+  passport.authenticate('google', {
+    failureRedirect: '/login',
+    session: false
+  }),
+  (req, res) => {
+    // Successful authentication
+    const token = generateToken(req.user);
+    
+    // Set the token in a secure, HTTP-only cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000 // 1 day
+    });
+    
+    // Redirect to frontend with user data in the URL (temporarily)
+    res.redirect(`${process.env.CLIENT_URL}/oauth-callback?token=${token}&userId=${req.user._id}`);
+  }
+);
 
 // routes/auth.js
 router.get('/check', (req, res) => {
@@ -151,9 +166,18 @@ router.get('/github/callback', passport.authenticate('github', {
 }), (req, res) => {
   // Generate token
   const token = generateToken(req.user);
+  console.log(token)
+
+  res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 24 * 60 * 60 * 1000 // 1 day
+  });
+  
   
   // Redirect to frontend with token
-  res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${token}`);
+  res.redirect(`http://localhost:5173/oauth-callback?token=${token}&userId=${req.user._id}`);
 });
 
 // Logout

@@ -26,6 +26,8 @@ import PrivacyPolicy from './pages/static/Privacy';
 import TermsAndConditions from './pages/static/Terms';
 import NotFound from './pages/static/NotFound';
 
+import OAuthCallback from './pages/OAuthCallback';
+
 // Portfolio Pages
 import PortfolioHome from './pages/portfolio/PortfolioHome';
 import AddProject from './pages/portfolio/AddProject';
@@ -56,11 +58,12 @@ import './styles/variables.css';
 import './styles/global.css';
 import './App.css';
 import './styles/animations.css'; // Ensure animations.css is imported
+import ResumeATSScanner from './pages/ats/new';
 
 // AnimatedRoutes component wraps all routes with transitions
 const AnimatedRoutes = () => {
   const location = useLocation();
-  const { currentUser } = useAuth(); 
+  const { currentUser } = useAuth();
 
   return (
     <PageTransition location={location}>
@@ -68,13 +71,13 @@ const AnimatedRoutes = () => {
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
- {/* Public Routes - Pass currentUser to MainLayout */}
- <Route path="/" element={<MainLayout user={currentUser}><LandingPage /></MainLayout>} />
+        {/* Public Routes - Pass currentUser to MainLayout */}
+        <Route path="/" element={<MainLayout user={currentUser}><LandingPage /></MainLayout>} />
         <Route path="/faqs" element={<MainLayout user={currentUser}><FAQs /></MainLayout>} />
         <Route path="/contact-us" element={<MainLayout user={currentUser}><ContactUs /></MainLayout>} />
         <Route path="/privacy-policy" element={<MainLayout user={currentUser}><PrivacyPolicy /></MainLayout>} />
         <Route path="/terms-and-conditions" element={<MainLayout user={currentUser}><TermsAndConditions /></MainLayout>} />
-
+        <Route path="/oauth-callback" element={<OAuthCallback />} />
         {/* Protected Routes */}
         <Route element={<PrivateRoute />}>
           {/* Redirect to home page if authenticated */}
@@ -83,6 +86,8 @@ const AnimatedRoutes = () => {
               <HomePage />
             </DashboardLayout>
           } />
+
+          
 
           {/* Post */}
           <Route path="/post/:id" element={
@@ -155,7 +160,7 @@ const AnimatedRoutes = () => {
           } />
           <Route path="/ats/tracker" element={
             <DashboardLayout user={currentUser}>
-              <ATSTracker />
+              <ResumeATSScanner />
             </DashboardLayout>
           } />
           <Route path="/ats/analysis/:analysisId" element={
