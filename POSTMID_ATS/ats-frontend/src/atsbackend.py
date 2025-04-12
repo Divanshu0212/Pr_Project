@@ -125,50 +125,68 @@ def calculate_keyword_score(resume_text, keywords_data):
         print(f"Warning: keywords_data is not a dictionary: {type(keywords_data)}")
         return 0, [], []
     
-    # Flatten all keywords into one list
-    all_keywords = []
+    # Ensure resume_text is a string
+    if not isinstance(resume_text, str):
+        print(f"Warning: resume_text is not a string: {type(resume_text)}")
+        resume_text = str(resume_text)
+    
+    # Preprocess resume text - convert to lowercase and remove punctuation
+    resume_lower = resume_text.lower()
+    
+    # Flatten all keywords into one list with de-duplication
+    all_keywords = set()
     for category, keywords_list in keywords_data.items():
         if isinstance(keywords_list, list):  # Ensure it's a list before extending
-            all_keywords.extend(keywords_list)
+            all_keywords.update([k for k in keywords_list if isinstance(k, str)])
+    
+    # Convert back to list
+    all_keywords = list(all_keywords)
+    print(f"Total unique keywords to check: {len(all_keywords)}")
     
     # Match keywords with proper word boundary checking
-    resume_lower = resume_text.lower()
     keywords_found = []
     missing_keywords = []
     
     import re
     for keyword in all_keywords:
-        if not isinstance(keyword, str):
-            continue
-            
         keyword_lower = keyword.lower()
         
-        # Check if it's a multi-word phrase
+        # For multi-word phrases
         if ' ' in keyword_lower:
-            # For phrases, use more flexible matching (words can be separated by whitespace)
-            # Create a pattern that allows any whitespace between words
+            # Create pattern that allows flexible matching with word boundaries
             words = [re.escape(word) for word in keyword_lower.split()]
             pattern = r'(?:\b' + r'\b\s+\b'.join(words) + r'\b)'
-            if re.search(pattern, resume_lower):
+            
+            # Check for exact phrase or words appearing separately
+            if re.search(pattern, resume_lower) or all(re.search(r'\b' + re.escape(word) + r'\b', resume_lower) for word in keyword_lower.split()):
                 keywords_found.append(keyword)
+                print(f"Found keyword: '{keyword}'")
             else:
                 missing_keywords.append(keyword)
         else:
-            # For single words, use strict word boundary matching
-            pattern = r'\b' + re.escape(keyword_lower) + r'\b'
-            if re.search(pattern, resume_lower):
+            # For single words, use word boundary matching
+            if re.search(r'\b' + re.escape(keyword_lower) + r'\b', resume_lower):
                 keywords_found.append(keyword)
+                print(f"Found keyword: '{keyword}'")
             else:
                 missing_keywords.append(keyword)
     
-    # Calculate score (scaled to 40 points maximum)
+    # Calculate score
     total_keywords = len(all_keywords)
     if total_keywords == 0:
+        print("Warning: No keywords to match against")
         return 0, [], []
     
-    raw_score = (len(keywords_found) / total_keywords) * 100
+    # Calculate raw score (0-100 scale)
+    found_count = len(keywords_found)
+    raw_score = (found_count / total_keywords) * 100
+    
+    print(f"Keywords found: {found_count}/{total_keywords} = {raw_score}%")
+    
     # Cap at 40 points (40% of total score)
-    return min(40, raw_score), keywords_found, missing_keywords
+    final_score = min(40, raw_score)
+    
+    return final_score, keywords_found, missing_keywords
 
 def calculate_format_score(resume_text):
     """Calculate score based on formatting and structure (30% of total)"""
