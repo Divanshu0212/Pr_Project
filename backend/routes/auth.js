@@ -4,28 +4,54 @@ const passport = require('passport');
 const { generateToken } = require('../config/passport');
 const User = require('../models/User');
 
+const errorResponse = (res, status, message) => {
+  return res.status(status).json({
+    success: false,
+    message
+  });
+};
+
 // Local signup
-router.post('/signup', async (req, res) => {
+router.post('/signup', async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
 
-    // Check if user exists
+    // Validate required fields
+    if (!username || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required',
+        missingFields: {
+          username: !username,
+          email: !email,
+          password: !password
+        }
+      });
+    }
+
+    // Validate email format
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid email format'
+      });
+    }
+
+    // Check for existing user
     const existingUser = await User.findOne({ $or: [{ email }, { username }] });
     if (existingUser) {
       return res.status(400).json({ 
         success: false,
-        message: 'User with this email or username already exists'
+        message: 'User already exists',
+        conflict: {
+          email: existingUser.email === email,
+          username: existingUser.username === username
+        }
       });
     }
 
-    // Create new user
-    const user = new User({
-      username,
-      email,
-      password,
-      provider: 'local'
-    });
-
+    // Create and save user
+    const user = new User({ username, email, password });
     await user.save();
 
     // Generate token
@@ -33,20 +59,30 @@ router.post('/signup', async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'User created successfully',
-      data: {
-        token,
-        user: {
-          id: user._id,
-          username: user.username,
-          email: user.email,
-          provider: user.provider
-        }
+      message: 'User registered successfully',
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        profileImage: user.profileImage
       }
     });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ 
+    console.error('Signup error:', err);
+    
+    // Handle Mongoose validation errors
+    if (err.name === 'ValidationError') {
+      const errors = Object.values(err.errors).map(e => e.message);
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors
+      });
+    }
+    
+    res.status(500).json({
       success: false,
       message: 'Server error during signup'
     });
@@ -54,19 +90,18 @@ router.post('/signup', async (req, res) => {
 });
 
 // Local login
-// Local login
 
 // routes/auth.js
 router.post('/login', (req, res, next) => {
   passport.authenticate('local', (err, user, info) => {
     if (err) {
-      return res.status(500).json({ 
+      return res.status(500).json({
         success: false,
         message: 'Server error during authentication'
       });
     }
     if (!user) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         success: false,
         message: info.message || 'Authentication failed'
       });
@@ -77,7 +112,7 @@ router.post('/login', (req, res, next) => {
       if (err) {
         return next(err);
       }
-      
+
       // Generate token if you also want JWT
       const token = generateToken(user);
 
@@ -98,12 +133,28 @@ router.post('/login', (req, res, next) => {
   })(req, res, next);
 });
 
+// Session check endpoint
+router.get('/check-session', (req, res) => {
+  if (req.isAuthenticated()) {
+    return res.json({
+      success: true,
+      user: {
+        id: req.user._id,
+        username: req.user.username,
+        email: req.user.email,
+        provider: req.user.provider
+      }
+    });
+  }
+  errorResponse(res, 401, 'Not authenticated');
+});
 
 router.get('/verify-token', passport.authenticate('jwt', { session: false }), (req, res) => {
-  res.json({ 
+  res.json({
     success: true,
     user: {
       id: req.user._id,
+      username: req.user.username,
       email: req.user.email
     }
   });
@@ -121,23 +172,23 @@ router.get('/google/callback', passport.authenticate('google', {
 }), (req, res) => {
   // Generate token
   const token = generateToken(req.user);
-  
+
   // Redirect to frontend with token
-  res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${token}`);
+  res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${token}&provider=google`);
 });
 
 // routes/auth.js
-router.get('/check', (req, res) => {
-  if (req.isAuthenticated()) { // If using sessions
-    return res.json({
-      id: req.user._id,
-      displayName: req.user.username,
-      email: req.user.email,
-      photos: req.user.avatar ? [{ value: req.user.avatar }] : []
-    });
-  }
-  res.status(401).json({ error: 'Not authenticated' });
-});
+// router.get('/check', (req, res) => {
+//   if (req.isAuthenticated()) { // If using sessions
+//     return res.json({
+//       id: req.user._id,
+//       displayName: req.user.username,
+//       email: req.user.email,
+//       photos: req.user.avatar ? [{ value: req.user.avatar }] : []
+//     });
+//   }
+//   res.status(401).json({ error: 'Not authenticated' });
+// });
 
 // GitHub OAuth routes
 router.get('/github', passport.authenticate('github', {
@@ -151,9 +202,9 @@ router.get('/github/callback', passport.authenticate('github', {
 }), (req, res) => {
   // Generate token
   const token = generateToken(req.user);
-  
+
   // Redirect to frontend with token
-  res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${token}`);
+  res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${token}&provider=github`);
 });
 
 // Logout
@@ -164,14 +215,14 @@ router.get('/logout', (req, res) => {
       console.error('Logout error:', err);
       return res.status(500).json({ success: false, message: 'Logout failed' });
     }
-    
+
     // Clear the session cookie
     req.session.destroy((err) => {
       if (err) {
         console.error('Session destruction error:', err);
         return res.status(500).json({ success: false, message: 'Session destruction failed' });
       }
-      
+
       res.clearCookie('connect.sid'); // The default session cookie name
       res.json({ success: true, message: 'Logged out successfully' });
     });
@@ -179,12 +230,19 @@ router.get('/logout', (req, res) => {
 });
 
 // routes/auth.js
-router.get('/me', passport.authenticate('jwt', { session: false }), (req, res) => {
-  res.json({
-    username: req.user.username,
-    name: req.user.displayName,
-    email: req.user.email,
-  });
-});
+router.get('/me',
+  passport.authenticate(['jwt', 'session'], { session: false }),
+  (req, res) => {
+    res.json({
+      success: true,
+      user: {
+        username: req.user.username,
+        email: req.user.email,
+        id: req.user._id,
+        profileImage: req.user.profileImage
+      }
+    });
+  }
+);
 
 module.exports = router;

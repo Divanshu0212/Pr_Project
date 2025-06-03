@@ -3,16 +3,24 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FaGoogle, FaGithub, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useAuth } from '../../hooks/useAuth';
 import '../../styles/Auth.css';
+import ProfileImageUpload from '../../components/common/ProfileImageUpload';
+import SummaryApi from '../../config';
+import { AuthContext } from '../../context/AuthContext';
+import { useContext } from 'react';
 
 const SignUp = () => {
   const navigate = useNavigate();
   const { signup, signInWithGoogle, signInWithGithub, isAuthenticated, error: authError } = useAuth();
-
+  const context =  useContext(AuthContext);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
     confirmPassword: '',
+  });
+  const [profileImage, setProfileImage] = useState({
+    file: null,
+    url: ''
   });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
@@ -34,14 +42,12 @@ const SignUp = () => {
     "Get Noticed By Top Employers"
   ];
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/home');
     }
   }, [isAuthenticated, navigate]);
 
-  // Update errors if auth context has an error
   useEffect(() => {
     if (authError) {
       setErrors(prevErrors => ({
@@ -49,26 +55,22 @@ const SignUp = () => {
         submit: authError
       }));
     }
-  }, [authError]); // Removed errors from dependencies
+  }, [authError]);
 
-  // Rotating messages with fade effect
   useEffect(() => {
     const interval = setInterval(() => {
       setMessageIndex(prevIndex => (prevIndex + 1) % messages.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []); // Empty dependency array for interval setup
-
+  }, []);
 
   const calculatePasswordStrength = (password) => {
     const messages = [];
     let score = 0;
 
-    // Length check
     if (password.length >= 8) score += 1;
     else messages.push('At least 8 characters');
 
-    // Character type checks
     if (/[A-Z]/.test(password)) score += 1;
     else messages.push('One uppercase letter');
 
@@ -81,7 +83,6 @@ const SignUp = () => {
     if (/[^A-Za-z0-9]/.test(password)) score += 1;
     else messages.push('One special character');
 
-    // Determine label based on score
     let label = '';
     if (score === 0) label = 'Very Weak';
     else if (score === 1) label = 'Weak';
@@ -127,12 +128,10 @@ const SignUp = () => {
       [name]: value
     }));
 
-    // Calculate password strength if the password field is being changed
     if (name === 'password') {
       setPasswordStrength(calculatePasswordStrength(value));
     }
 
-    // Clear the error for this field when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
@@ -150,28 +149,52 @@ const SignUp = () => {
       setSuccessMessage('');
 
       try {
-        // Use the auth context signup if available
-        if (signup) {
-          await signup(formData.email, formData.password, formData.username);
-        }
-        setSuccessMessage('Signup successful! You can now log in.');
+        const signupResponse = await signup(
+          formData.email,
+          formData.password,
+          formData.username
+        );
 
-        // Reset form
-        setFormData({
-          username: '',
-          email: '',
-          password: '',
-          confirmPassword: '',
+        // 2. Upload image if exists
+        if (profileImage.file) {
+          const uploadFormData = new FormData();
+          uploadFormData.append('profileImage', profileImage.file);
+
+          const uploadResponse = await fetch(SummaryApi.profileImage.url, {
+            method: SummaryApi.profileImage.method,
+            headers: {
+              'Authorization': `Bearer ${signupResponse.token}`
+            },
+            body: uploadFormData
+          });
+
+          const uploadResult = await uploadResponse.json();
+
+          if (!uploadResponse.ok) {
+            throw new Error(uploadResult.message || 'Image upload failed');
+          }
+
+          console.log('Image upload result:', uploadResult); // Debug log
+        }
+
+        // 3. Refresh user data
+        await context.fetchUserDetails();
+
+        setSuccessMessage('Account created successfully! Redirecting...');
+        setTimeout(() => navigate('/home'), 2000);
+
+        console.log('Submitting:', {
+          username: formData.username,
+          email: formData.email,
+          password: formData.password,
+          profileImage: profileImage.file ? profileImage.file.name : 'No image uploaded'
         });
 
-        // Redirect to login after successful signup
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
       } catch (error) {
+        console.error('Signup error:', error);
         setErrors({
-          ...errors,
-          submit: error.message || 'An error occurred during signup'
+          submit: error.message || 'An error occurred during signup',
+          ...(error.fieldErrors || {})
         });
       } finally {
         setIsSubmitting(false);
@@ -180,9 +203,9 @@ const SignUp = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-[#0D1117] overflow-hidden">
+    <div className="flex flex-col md:flex-row h-screen bg-[#0D1117]">
       {/* Left Section - Branding & Messaging */}
-      <div className="left-section relative md:w-2/5 bg-gradient-to-b from-[#0D1117] to-[#161B22] text-white flex flex-col justify-center items-center p-8 overflow-hidden min-h-[50vh] md:min-h-screen">
+      <div className="left-section relative w-full md:w-2/5 bg-gradient-to-b from-[#0D1117] to-[#161B22] text-white flex flex-col justify-center items-center p-6 md:p-8 py-12 md:py-0">
         {/* Decorative Elements */}
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="glow-effect cyan absolute top-1/4 left-1/4 w-64 h-64"></div>
@@ -190,8 +213,8 @@ const SignUp = () => {
         </div>
 
         {/* Logo Placeholder */}
-        <div className="brand-logo mb-12 z-10 animate-float">
-          <div className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] animate-glow">
+        <div className="brand-logo mb-8 z-10 animate-float">
+          <div className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] animate-glow">
             ResumeBuilder
           </div>
         </div>
@@ -199,11 +222,10 @@ const SignUp = () => {
         {/* Animated Message */}
         <div className="message-container z-10 h-24 mb-6">
           {messages.map((message, index) => (
-            <h1 
-              key={index} 
-              className={`animated-message text-3xl md:text-4xl font-bold text-center ${
-                index === messageIndex ? 'opacity-100' : 'opacity-0'
-              }`}
+            <h1
+              key={index}
+              className={`animated-message text-3xl md:text-4xl font-bold text-center ${index === messageIndex ? 'opacity-100' : 'opacity-0'
+                }`}
             >
               {message}
             </h1>
@@ -233,8 +255,8 @@ const SignUp = () => {
       </div>
 
       {/* Right Section - Signup Form */}
-      <div className="right-section w-full md:w-3/5 flex justify-center items-center bg-[#161B22] p-6 md:p-12">
-        <div className="form-container w-full max-w-md animate-fade-in">
+      <div className="right-section w-full md:w-3/5 flex justify-center items-start md:items-center bg-[#161B22] p-4 md:p-8 lg:p-12 overflow-y-auto h-[60vh] md:h-full pt-16 md:pt-0">
+        <div className="form-container w-full max-w-md animate-fade-in mb-8 md:mb-0 md:mt-[calc(400px)] mt-0">
           <h2 className="text-3xl font-bold text-[#00FFFF] mb-8">Create Account</h2>
 
           {/* Success/Error Messages */}
@@ -280,6 +302,20 @@ const SignUp = () => {
 
           {/* Signup Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Profile Image Upload */}
+            <div className="form-group">
+              <label className="text-[#E5E5E5] block font-medium mb-2">Profile Picture (Optional)</label>
+              <ProfileImageUpload
+                onImageChange={(imageData) => {
+                  setProfileImage({
+                    file: imageData.file,
+                    url: imageData.previewUrl
+                  });
+                }}
+                initialImage={profileImage.url}
+              />
+            </div>
+
             {/* Username Field */}
             <div className="space-y-2">
               <label htmlFor="username" className="text-[#E5E5E5] block font-medium">Username</label>
@@ -351,12 +387,14 @@ const SignUp = () => {
                     ></div>
                   </div>
                   <div className="flex justify-between items-center mt-1">
-                    <span className="text-sm" style={{ color: 
-                      passwordStrength.score === 0 ? '#ff4d4d' : 
-                      passwordStrength.score === 1 ? '#ff8533' : 
-                      passwordStrength.score === 2 ? '#ffcc00' : 
-                      passwordStrength.score === 3 ? '#99cc00' : 
-                      '#33cc33' }}>
+                    <span className="text-sm" style={{
+                      color:
+                        passwordStrength.score === 0 ? '#ff4d4d' :
+                          passwordStrength.score === 1 ? '#ff8533' :
+                            passwordStrength.score === 2 ? '#ffcc00' :
+                              passwordStrength.score === 3 ? '#99cc00' :
+                                '#33cc33'
+                    }}>
                       {passwordStrength.label}
                     </span>
                     {passwordStrength.message.length > 0 && (

@@ -14,7 +14,6 @@ const Navbar = ({ onToggleSidebar }) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { currentUser: user, isAuthenticated, logout } = useAuth();
-  console.log(user)
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -310,7 +309,7 @@ const Navbar = ({ onToggleSidebar }) => {
                     />
                   ) : (
                     <div className="user-default-avatar">
-                      {user?.displayName?.charAt(0) || 'U'}
+                      {user?.username?.charAt(0) || 'U'}
                     </div>
                   )}
                   <span className="username">{user?.username || 'User'}</span>
@@ -326,12 +325,12 @@ const Navbar = ({ onToggleSidebar }) => {
                             <img src={user.photos[0].value} alt="Profile" />
                           ) : (
                             <div className="dropdown-default-avatar">
-                              {user?.displayName?.charAt(0) || 'U'}
+                              {user?.username?.charAt(0) || 'U'}
                             </div>
                           )}
                         </div>
                         <div className="dropdown-user-details">
-                          <h4>{user?.displayName || 'User'}</h4>
+                          <h4>{user?.username || 'User'}</h4>
                           <p>{user?.email || 'user@example.com'}</p>
                         </div>
                       </div>

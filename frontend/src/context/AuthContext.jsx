@@ -48,6 +48,7 @@ export const AuthProvider = ({ children }) => {
   // Function to fetch current user details
   // In AuthContext.jsx, modify the fetchUserDetails function:
 
+// In AuthContext.jsx, update the fetchUserDetails function:
 const fetchUserDetails = async () => {
   try {
     const token = localStorage.getItem('token');
@@ -57,17 +58,22 @@ const fetchUserDetails = async () => {
       return;
     }
     
-    const response = await fetch(`http://localhost:5000/api/auth/me`, {
+    const response = await fetch(SummaryApi.current_user.url, {
       method: 'GET',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`  // Ensure proper space after "Bearer"
+        'Authorization': `Bearer ${token}`
       }
     });
 
     if (response.ok) {
       const userData = await response.json();
-      setCurrentUser(userData);
+      setCurrentUser({
+        ...userData.data,
+        displayName: userData.data.username || 'User',
+        profileImage: userData.data.profileImage || null
+      });
       setIsAuthenticated(true);
     } else {
       // Token is invalid or expired
@@ -221,6 +227,7 @@ const login = async (email, password) => {
     signInWithGithub,
     handleOAuthCallback,
     refreshUserDetails: fetchUserDetails,
+    fetchUserDetails
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

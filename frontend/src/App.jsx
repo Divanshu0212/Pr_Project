@@ -60,7 +60,7 @@ import './styles/animations.css'; // Ensure animations.css is imported
 // AnimatedRoutes component wraps all routes with transitions
 const AnimatedRoutes = () => {
   const location = useLocation();
-  const { currentUser } = useAuth(); 
+  const { currentUser } = useAuth();
 
   return (
     <PageTransition location={location}>
@@ -68,8 +68,8 @@ const AnimatedRoutes = () => {
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
- {/* Public Routes - Pass currentUser to MainLayout */}
- <Route path="/" element={<MainLayout user={currentUser}><LandingPage /></MainLayout>} />
+        {/* Public Routes - Pass currentUser to MainLayout */}
+        <Route path="/" element={<MainLayout user={currentUser}><LandingPage /></MainLayout>} />
         <Route path="/faqs" element={<MainLayout user={currentUser}><FAQs /></MainLayout>} />
         <Route path="/contact-us" element={<MainLayout user={currentUser}><ContactUs /></MainLayout>} />
         <Route path="/privacy-policy" element={<MainLayout user={currentUser}><PrivacyPolicy /></MainLayout>} />
