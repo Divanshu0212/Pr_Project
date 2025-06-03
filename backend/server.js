@@ -7,6 +7,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const { initializePassport } = require('./config/passport');
+const MongoStore = require('connect-mongo');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -14,16 +15,22 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors({
   origin: 'http://localhost:5173',
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Session configuration
 app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
+  secret: process.env.SESSION_SECRET || 'your_super_secret_session_key',
+  resave: true,
   saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI,
+    ttl: 24 * 60 * 60,
+  }),
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
