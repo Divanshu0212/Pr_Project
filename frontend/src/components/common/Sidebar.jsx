@@ -115,9 +115,9 @@ const Sidebar = ({ user, isOpen, onClose }) => {
           {/* User Profile Section */}
           <div className="sidebar-header">
             <div className="sidebar-user">
-              {user?.photos?.[0]?.value ? (
+              {user?.profileImage?.url ? (
                 <img
-                  src={user.photos[0].value}
+                  src={user.profileImage.url}
                   alt="Profile"
                   className="sidebar-avatar"
                 />
