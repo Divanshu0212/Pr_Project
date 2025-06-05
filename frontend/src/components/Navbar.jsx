@@ -301,9 +301,9 @@ const Navbar = ({ onToggleSidebar }) => {
                   aria-expanded={userMenuOpen}
                   aria-haspopup="true"
                 >
-                  {user?.photos?.[0]?.value ? (
+                  {user?.profileImage?.url ? (
                     <img 
-                      src={user.photos[0].value} 
+                      src={user.profileImage.url} 
                       alt="Profile" 
                       className="user-avatar"
                     />
@@ -321,8 +321,8 @@ const Navbar = ({ onToggleSidebar }) => {
                     <div className="dropdown-header">
                       <div className="dropdown-user-info">
                         <div className="dropdown-avatar">
-                          {user?.photos?.[0]?.value ? (
-                            <img src={user.photos[0].value} alt="Profile" />
+                          {user?.profileImage?.url ? (
+                            <img src={user.profileImage.url} alt="Profile" />
                           ) : (
                             <div className="dropdown-default-avatar">
                               {user?.username?.charAt(0) || 'U'}

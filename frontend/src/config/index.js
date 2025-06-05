@@ -22,10 +22,6 @@ const SummaryApi = {
     },
     githubAuth: {
         url: `${backendDomain}/api/auth/github`
-    },
-    profileImage: {
-        url: `${backendDomain}/api/profile-image`,
-        method: "post"
     }
 };
 
