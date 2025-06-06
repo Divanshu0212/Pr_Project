@@ -13,7 +13,6 @@ export const AuthProvider = ({ children }) => {
   );
 
   const token = localStorage.getItem('token');
-
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -48,7 +47,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
       }
     };
-    
+
     checkAuth();
   }, []);
 
@@ -97,7 +96,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     fetchUserDetails();
   }, []);
-
   const login = async (email, password) => {
     setError(null);
     try {
@@ -112,9 +110,9 @@ export const AuthProvider = ({ children }) => {
 
       const result = await response.json();
 
+
       if (response.ok) {
         const token = result.data?.token || result.data;
-        
         if (token) {
           localStorage.setItem("token", token);
           localStorage.setItem("isAuthenticated", "true");
@@ -150,7 +148,7 @@ export const AuthProvider = ({ children }) => {
       });
 
       const result = await response.json();
-      
+
       if (response.ok) {
         return result;
       } else {
@@ -196,12 +194,26 @@ export const AuthProvider = ({ children }) => {
     if (token && user) {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('token', token);
-      setCurrentUser(user);
+      localStorage.setItem('isAuthenticated', 'true');
+      
+      setCurrentUser({
+        id: userData._id,
+        displayName: userData.username || userData.displayName || 'User',
+        email: userData.email,
+      });
+      
       setIsAuthenticated(true);
+      await fetchUserDetails(); 
       return true;
+    } else {
+      throw new Error('Token verification failed');
     }
+  } catch (error) {
+    console.error('OAuth callback error:', error);
+    logout(); // Clear any existing auth state
     return false;
-  };
+  }
+};
 
   const value = {
     currentUser,

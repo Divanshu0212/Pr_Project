@@ -32,7 +32,14 @@ function App() {
       }
       
       const data = await response.json();
-      setKeywords(data.keywords);
+      
+      // Ensure keywords data is properly structured
+      const formattedKeywords = {};
+      for (const [category, terms] of Object.entries(data.keywords)) {
+        formattedKeywords[category] = Array.isArray(terms) ? terms : [terms].filter(Boolean);
+      }
+      
+      setKeywords(formattedKeywords);
       setStep(2);
     } catch (error) {
       console.error('Error fetching keywords:', error);

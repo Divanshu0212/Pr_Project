@@ -16,6 +16,38 @@ function ResultsDisplay({ results, profession, keywords, onReset }) {
     return '#F44336';
   }
 
+  // Helper function to format category names
+  const formatCategoryName = (name) => {
+    return name
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  // Function to render keywords by category
+  const renderKeywordsByCategory = () => {
+    if (!keywords || typeof keywords !== 'object') return null;
+
+    return Object.entries(keywords).map(([category, terms]) => {
+      // Ensure terms is always an array
+      const termList = Array.isArray(terms) ? terms : 
+                      (terms ? [terms] : []);
+
+      return (
+        <div key={category} className="keyword-category">
+          <h4>{formatCategoryName(category)}</h4>
+          <div className="keyword-tags">
+            {termList.map((term, index) => (
+              <span key={`${category}-${index}`} className="keyword-tag">
+                {term}
+              </span>
+            ))}
+          </div>
+        </div>
+      );
+    });
+  };
+
   const scoreData = {
     labels: ['Keywords & Relevance (40%)', 'Format & Structure (30%)', 'Achievements & Data (30%)'],
     datasets: [
@@ -56,7 +88,6 @@ function ResultsDisplay({ results, profession, keywords, onReset }) {
   const getRecommendations = () => {
     const recommendations = [];
     
-    // Keywords recommendations
     if (results.keyword_score < 30) {
       recommendations.push({
         title: "Improve Keyword Optimization",
@@ -69,7 +100,6 @@ function ResultsDisplay({ results, profession, keywords, onReset }) {
       });
     }
     
-    // Format recommendations
     if (results.format_score < 20) {
       recommendations.push({
         title: "Enhance Resume Structure",
@@ -83,7 +113,6 @@ function ResultsDisplay({ results, profession, keywords, onReset }) {
       });
     }
     
-    // Achievements recommendations
     if (results.achievements_score < 20) {
       recommendations.push({
         title: "Strengthen Achievements",
@@ -182,7 +211,7 @@ function ResultsDisplay({ results, profession, keywords, onReset }) {
             <div className="keyword-tags">
               {results.detailed_analysis.keywords_found.length > 0 ? (
                 results.detailed_analysis.keywords_found.map((keyword, index) => (
-                  <span key={index} className="keyword-tag found">{keyword}</span>
+                  <span key={`found-${index}`} className="keyword-tag found">{keyword}</span>
                 ))
               ) : (
                 <p className="no-keywords">No keywords found in your resume</p>
@@ -195,12 +224,20 @@ function ResultsDisplay({ results, profession, keywords, onReset }) {
             <div className="keyword-tags">
               {results.detailed_analysis.missing_keywords.length > 0 ? (
                 results.detailed_analysis.missing_keywords.map((keyword, index) => (
-                  <span key={index} className="keyword-tag missing">{keyword}</span>
+                  <span key={`missing-${index}`} className="keyword-tag missing">{keyword}</span>
                 ))
               ) : (
                 <p className="no-keywords">Great job! You've included all recommended keywords.</p>
               )}
             </div>
+          </div>
+        </div>
+
+        {/* Render the recommended keywords section */}
+        <div className="recommended-keywords-section">
+          <h3>Recommended Keywords for {profession}</h3>
+          <div className="recommended-keywords-container">
+            {renderKeywordsByCategory()}
           </div>
         </div>
         
@@ -218,4 +255,3 @@ function ResultsDisplay({ results, profession, keywords, onReset }) {
 }
 
 export default ResultsDisplay;
-
