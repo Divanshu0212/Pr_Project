@@ -1,20 +1,31 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { FaPlus, FaGithub, FaLinkedin, FaTwitter, FaEnvelope, FaCamera } from 'react-icons/fa';
 import { MdEdit, MdLocationOn, MdWork, MdClose, MdCheck } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import '../../styles/pages/PortfolioHome.css';
+import { AuthContext } from '../../context/AuthContext';
+import SummaryApi from '../../config';
 
-const PortfolioHome = ({ user }) => {
+const PortfolioHome = ({ user: propUser }) => {
     const navigate = useNavigate();
+    const {
+        currentUser,
+        fetchUserDetails,
+        setCurrentUser
+    } = useContext(AuthContext);
+
     const [isEditingBio, setIsEditingBio] = useState(false);
-    const [bio, setBio] = useState(user?.bio || 'As a dedicated professional, I excel in software development with a focus on creating innovative solutions. My experience in diverse projects and passion for excellence make me a valuable asset. I thrive in fast-paced environments, consistently delivering high-quality results and exceeding expectations.');
+    const [bio, setBio] = useState(propUser?.bio || currentUser?.bio || 'As a dedicated professional, I excel in software development with a focus on creating innovative solutions. My experience in diverse projects and passion for excellence make me a valuable asset. I thrive in fast-paced environments, consistently delivering high-quality results and exceeding expectations.');
     const [hoveredProject, setHoveredProject] = useState(null);
     const [activeTab, setActiveTab] = useState('projects');
 
     const [isEditingPic, setIsEditingPic] = useState(false);
     const [newProfilePic, setNewProfilePic] = useState(null);
+    const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = React.useRef(null);
+
+    const user = propUser || currentUser;
 
     const handleEditBioClick = () => {
         setIsEditingBio(!isEditingBio);
@@ -30,14 +41,97 @@ const PortfolioHome = ({ user }) => {
 
     const handlePicChange = (event) => {
         const file = event.target.files[0];
-        if (file) {
-            setNewProfilePic(URL.createObjectURL(file));
+        if (!file) return;
+
+        // Validate file
+        if (!file.type.match('image.*')) {
+            alert('Please select an image file (JPEG, PNG)');
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+            alert('File size should be less than 5MB');
+            return;
+        }
+
+        setNewProfilePic(URL.createObjectURL(file));
+    };
+
+    const handleSavePicClick = async () => {
+        if (!fileInputRef.current?.files?.[0]) {
+            alert('Please select an image first');
+            return;
+        }
+
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append('profileImage', fileInputRef.current.files[0]);
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(SummaryApi.profileImage.url, {
+                method: SummaryApi.profileImage.method,
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to upload image');
+            }
+
+            const data = await response.json();
+
+            // Update user context with new image
+            const updatedUser = {
+                ...user,
+                profileImage: data.profileImage
+            };
+            setCurrentUser(updatedUser);
+
+            setIsEditingPic(false);
+            setNewProfilePic(null);
+            alert('Profile image updated successfully');
+        } catch (error) {
+            console.error('Error uploading profile image:', error);
+            alert('Failed to update profile image');
+        } finally {
+            setIsUploading(false);
         }
     };
 
-    const handleSavePicClick = () => {
-        setIsEditingPic(false);
+    const handleDeletePic = async () => {
+        if (!window.confirm('Are you sure you want to delete your profile image?')) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(SummaryApi.deleteProfileImage.url, {
+                method: SummaryApi.deleteProfileImage.method,
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete image');
+            }
+
+            // Update user context to remove image
+            const updatedUser = {
+                ...user,
+                profileImage: { public_id: '', url: '' }
+            };
+            setCurrentUser(updatedUser);
+
+            alert('Profile image deleted successfully');
+        } catch (error) {
+            console.error('Error deleting profile image:', error);
+            alert('Failed to delete profile image');
+        }
     };
+
 
     const handleCancelPicEdit = () => {
         setNewProfilePic(null);
@@ -129,7 +223,7 @@ const PortfolioHome = ({ user }) => {
 
     // Helper function to get status color
     const getStatusColor = (status) => {
-        switch(status) {
+        switch (status) {
             case 'completed': return 'bg-green-500';
             case 'in-progress': return 'bg-blue-500';
             case 'planned': return 'bg-yellow-500';
@@ -150,11 +244,11 @@ const PortfolioHome = ({ user }) => {
                     <div className="flex-shrink-0 relative group">
                         <div className="relative w-40 h-40 rounded-full overflow-hidden border-4 border-[#00FFFF] shadow-[0_0_15px_rgba(0,255,255,0.3)]">
                             <img
-                                src={newProfilePic || user?.photos?.[0]?.value || '/api/placeholder/150/150'}
+                                src={newProfilePic || user?.profileImage?.url}
                                 alt="Profile"
                                 className="w-full h-full object-cover"
                             />
-                            
+
                             {/* Hover overlay for edit button */}
                             {!isEditingPic && (
                                 <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 flex items-center justify-center transition-all duration-300 cursor-pointer"
@@ -174,22 +268,22 @@ const PortfolioHome = ({ user }) => {
                                     <div className="bg-[#161B22] rounded-lg p-6 max-w-md w-full mx-4">
                                         <div className="flex justify-between items-center mb-4">
                                             <h3 className="text-xl font-semibold text-[#E5E5E5]">Update Profile Picture</h3>
-                                            <button 
+                                            <button
                                                 onClick={handleCancelPicEdit}
                                                 className="text-gray-400 hover:text-white">
                                                 <MdClose size={24} />
                                             </button>
                                         </div>
-                                        
+
                                         <div className="mb-6">
                                             <div className="relative w-32 h-32 mx-auto rounded-full overflow-hidden border-4 border-[#00FFFF] shadow-lg mb-4">
                                                 <img
-                                                    src={newProfilePic || user?.photos?.[0]?.value || '/api/placeholder/150/150'}
+                                                    src={newProfilePic || user?.profileImage?.url}
                                                     alt="Profile Preview"
                                                     className="w-full h-full object-cover"
                                                 />
                                             </div>
-                                            
+
                                             <input
                                                 type="file"
                                                 ref={fileInputRef}
@@ -197,23 +291,28 @@ const PortfolioHome = ({ user }) => {
                                                 accept="image/*"
                                                 className="hidden"
                                             />
-                                            
+
                                             <button
                                                 onClick={triggerFileInput}
                                                 className="w-full py-3 bg-[#2D333B] text-[#E5E5E5] rounded-lg hover:bg-[#444C56] transition-colors flex items-center justify-center gap-2 mb-4">
                                                 <FaPlus /> Select New Image
                                             </button>
-                                            
+
                                             {newProfilePic && (
                                                 <p className="text-sm text-gray-400 text-center mb-4">Preview shown above. Click save to confirm changes.</p>
                                             )}
                                         </div>
-                                        
+
                                         <div className="flex gap-4">
                                             <button
                                                 onClick={handleSavePicClick}
+                                                disabled={isUploading}
                                                 className="flex-1 py-2 bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] text-black font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
-                                                <MdCheck size={20} /> Save Changes
+                                                {isUploading ? 'Uploading...' : (
+                                                    <>
+                                                        <MdCheck size={20} /> Save Changes
+                                                    </>
+                                                )}
                                             </button>
                                             <button
                                                 onClick={handleCancelPicEdit}
@@ -221,6 +320,17 @@ const PortfolioHome = ({ user }) => {
                                                 Cancel
                                             </button>
                                         </div>
+
+                                        {user?.profileImage?.url && (
+                                            <div className="mt-4">
+                                                <button
+                                                    onClick={handleDeletePic}
+                                                    className="w-full py-2 text-red-500 border border-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-colors">
+                                                    Delete Current Image
+                                                </button>
+                                            </div>
+                                        )}
+
                                     </div>
                                 </div>
                             </div>
@@ -231,7 +341,7 @@ const PortfolioHome = ({ user }) => {
                     <div className="flex-grow">
                         <div className="flex justify-between items-start">
                             <div>
-                                <h1 className="text-4xl font-bold text-[#E5E5E5] mb-2">{user?.displayName || 'John Doe'}</h1>
+                                <h1 className="text-4xl font-bold text-[#E5E5E5] mb-2">{user?.username || 'John Doe'}</h1>
                                 <div className="flex items-center gap-4 text-gray-400 mb-4">
                                     <span className="flex items-center gap-1"><MdWork /> Software Developer</span>
                                     <span className="flex items-center gap-1"><MdLocationOn /> San Francisco, CA</span>

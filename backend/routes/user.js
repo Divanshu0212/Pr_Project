@@ -4,6 +4,7 @@ const passport = require('passport');
 const User = require('../models/User');
 const { cloudinary } = require('../config/cloudinary');
 const upload = require('../middleware/upload');
+const multer = require('multer');
 
 // Get user details
 router.get('/user-details', passport.authenticate('jwt', { session: false }), async (req, res) => {

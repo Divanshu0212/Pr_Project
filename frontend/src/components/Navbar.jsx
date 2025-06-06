@@ -164,7 +164,7 @@ const Navbar = ({ onToggleSidebar }) => {
 
           {isAuthenticated && (
             <div className="page-title-container">
-              <h1 className="page-title">{getPageTitle()}</h1>
+              <h1 className="page-title relative top-3">{getPageTitle()}</h1>
             </div>
           )}
         </div>
