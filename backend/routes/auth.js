@@ -187,6 +187,7 @@ router.get('/check-session', (req, res) => {
   errorResponse(res, 401, 'Not authenticated');
 });
 
+// In routes/auth.js
 router.get('/verify-token', passport.authenticate('jwt', { session: false }), (req, res) => {
   if (!req.user) {
     return errorResponse(res, 401, 'Invalid or expired token');
@@ -201,6 +202,7 @@ router.get('/verify-token', passport.authenticate('jwt', { session: false }), (r
     }
   });
 });
+
 
 // Google OAuth routes
 router.get('/google', passport.authenticate('google', {

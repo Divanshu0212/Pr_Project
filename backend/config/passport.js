@@ -77,6 +77,7 @@ const initializePassport = (passport) => {
     callbackURL: `${process.env.BACKEND_URL}/api/auth/github/callback`
   }, async (accessToken, refreshToken, profile, done) => {
     try {
+      // First try to find by githubId
       let user = await User.findOne({ githubId: profile.id });
       if (!user) {
         user = new User({
@@ -85,7 +86,24 @@ const initializePassport = (passport) => {
           email: profile.emails ? profile.emails[0].value : `${profile.username}@github.com`,
           provider: 'github'
         });
+      }
+  
+      // Check if a user with this email already exists
+      user = await User.findOne({ email });
+  
+      if (user) {
+        // If user exists but doesn't have githubId, add it to their account
+        // IMPORTANT: Preserve the original password!
+        const originalPassword = user.password;
+        
+        user.githubId = profile.id;
+        user.provider = user.provider || 'github'; // Only update if not set
+        // Don't modify the password
+        user.markModified('githubId');
+        user.markModified('provider');
+        
         await user.save();
+        return done(null, user);
       }
       return done(null, user);
     } catch (err) {
