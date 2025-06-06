@@ -22,7 +22,15 @@ const SummaryApi = {
     },
     githubAuth: {
         url: `${backendDomain}/api/auth/github`
-    }
+    },
+    profileImage: {
+        url: `${backendDomain}/api/profile-image`,
+        method: "post"
+    },
+    deleteProfileImage: {
+        url: `${backendDomain}/api/profile-image`,
+        method: "delete"
+    },
 };
 
 export default SummaryApi;

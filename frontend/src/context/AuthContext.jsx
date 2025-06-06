@@ -13,14 +13,11 @@ export const AuthProvider = ({ children }) => {
   );
 
   const token = localStorage.getItem('token');
-
-
-
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:5000/api/auth/me`, {
+        const response = await fetch('http://localhost:5000/api/auth/me', {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -28,24 +25,31 @@ export const AuthProvider = ({ children }) => {
             'Authorization': `Bearer ${token}`
           }
         });
-        console.log(response)
         if (response.ok) {
           const userData = await response.json();
           setCurrentUser({
-            displayName: userData.username || userData.name || 'User',
-            email: userData.email
+            displayName: userData.user.username || userData.user.name || 'User',
+            email: userData.user.email,
+            profileImage: userData.user.profileImage || null
           });
           setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+          localStorage.removeItem('token');
+          localStorage.removeItem('isAuthenticated');
         }
       } catch (error) {
         console.error('Auth check failed:', error);
+        setIsAuthenticated(false);
+        localStorage.removeItem('token');
+        localStorage.removeItem('isAuthenticated');
+      } finally {
+        setLoading(false);
       }
     };
 
     checkAuth();
   }, []);
-
-
 
   const fetchUserDetails = async () => {
     try {
@@ -55,21 +59,26 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
         return;
       }
-
-      const response = await fetch(`http://localhost:5000/api/auth/me`, {
+      
+      const response = await fetch(SummaryApi.current_user.url, {
         method: 'GET',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
         }
       });
 
       if (response.ok) {
         const userData = await response.json();
-        setCurrentUser(userData);
+        setCurrentUser({
+          ...userData.data,
+          displayName: userData.data.username || 'User',
+          profileImage: userData.data.profileImage || null
+        });
         setIsAuthenticated(true);
       } else {
-        // Token is invalid or expired
         setIsAuthenticated(false);
         localStorage.removeItem('token');
         localStorage.removeItem('isAuthenticated');
@@ -84,14 +93,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // In your AuthContext or main App component
-  // Check auth status on mount
   useEffect(() => {
     fetchUserDetails();
   }, []);
-
-  // Regular email/password login
-  // In your login function in AuthContext.jsx:
   const login = async (email, password) => {
     setError(null);
     try {
@@ -105,12 +109,10 @@ export const AuthProvider = ({ children }) => {
       });
 
       const result = await response.json();
-      console.log("Login response:", result); // Debug response
+
 
       if (response.ok) {
-        // Make sure you're extracting the token correctly based on your API response
         const token = result.data?.token || result.data;
-
         if (token) {
           localStorage.setItem("token", token);
           localStorage.setItem("isAuthenticated", "true");
@@ -133,7 +135,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Regular email/password signup
   const signup = async (email, password, username) => {
     setError(null);
     try {
@@ -142,7 +143,7 @@ export const AuthProvider = ({ children }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Important for cookies
+        credentials: 'include',
         body: JSON.stringify({ username, email, password }),
       });
 
@@ -161,7 +162,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout function
   const logout = async () => {
     try {
       await fetch(SummaryApi.logout_user.url, {
@@ -169,14 +169,12 @@ export const AuthProvider = ({ children }) => {
         credentials: 'include',
       });
 
-      // Clear auth state regardless of server response
       setCurrentUser(null);
       setIsAuthenticated(false);
       localStorage.removeItem('isAuthenticated');
       localStorage.removeItem('token');
     } catch (error) {
       console.error('Logout error:', error);
-      // Still clear auth state even if server request fails
       setCurrentUser(null);
       setIsAuthenticated(false);
       localStorage.removeItem('isAuthenticated');
@@ -184,34 +182,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Google OAuth login
   const signInWithGoogle = () => {
-    window.open(SummaryApi.googleAuth.url || "http://localhost:5000/auth/google", "_self");
+    window.open(SummaryApi.googleAuth.url || "http://localhost:5000/api/auth/google", "_self");
   };
 
-  // GitHub OAuth login
   const signInWithGithub = () => {
-    window.open(SummaryApi.githubAuth.url || "http://localhost:5000/auth/github", "_self");
+    window.open(SummaryApi.githubAuth.url || "http://localhost:5000/api/auth/github", "_self");
   };
 
-  // OAuth callback handler
-  // In your AuthContext.js
-const handleOAuthCallback = async (token, userId) => {
-  try {
-    // Verify the token first
-    const response = await fetch(`http://localhost:5000/api/auth/verify-token`, {
-      method:'GET',
-      credentials:'include',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    console.log(response)
-
-    if (response.ok) {
-      const userData = await response.json();
-      
+  const handleOAuthCallback = (token, user) => {
+    if (token && user) {
+      localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('token', token);
       localStorage.setItem('isAuthenticated', 'true');
       
@@ -248,12 +229,12 @@ const handleOAuthCallback = async (token, userId) => {
     signInWithGithub,
     handleOAuthCallback,
     refreshUserDetails: fetchUserDetails,
+    fetchUserDetails
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Define propTypes for AuthProvider
 AuthProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };
