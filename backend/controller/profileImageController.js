@@ -17,11 +17,6 @@ const uploadProfileImage = async (req, res) => {
         return res.status(400).json({ success: false, message: 'No file uploaded' });
       }
 
-      console.log('Cloudinary File:', {
-        public_id: req.file.public_id,
-        url: req.file.secure_url
-      });
-
       // Return the uploaded file details (to be used by auth.js or other routes)
       res.status(200).json({
         success: true,

@@ -46,7 +46,6 @@ app.use(passport.session());
 
 // Log routes for debugging
 app.use((req, res, next) => {
-  console.log(`Registering route: ${req.method} ${req.path}`);
   next();
 });
 

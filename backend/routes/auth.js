@@ -16,8 +16,6 @@ const errorResponse = (res, status, message) => {
 
 // Local signup
 router.post('/signup', (req, res, next) => {
-  console.log('Signup Request Headers:', req.headers);
-  console.log('Signup Request Body (before multer):', req.body);
   upload.single('profileImage')(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
       console.error('Multer Error:', err);
@@ -32,9 +30,6 @@ router.post('/signup', (req, res, next) => {
         message: 'File upload error: ' + err.message
       });
     }
-
-    console.log('Signup Request Body (after multer):', req.body);
-    console.log('Signup Request File:', JSON.stringify(req.file, null, 2));
 
     try {
       const { username, email, password } = req.body;
@@ -81,10 +76,6 @@ router.post('/signup', (req, res, next) => {
       if (req.file) {
         const publicId = req.file.public_id || req.file.filename;
         const secureUrl = req.file.secure_url || req.file.path;
-        console.log('Cloudinary Upload:', {
-          public_id: publicId,
-          url: secureUrl
-        });
         profileImage = {
           public_id: publicId,
           url: secureUrl
@@ -96,7 +87,6 @@ router.post('/signup', (req, res, next) => {
 
       // Save user with profile image
       await user.save();
-      console.log('Saved User:', JSON.stringify(user, null, 2));
 
       // Generate token
       const token = generateToken(user);
@@ -119,7 +109,6 @@ router.post('/signup', (req, res, next) => {
       // Rollback: Delete from Cloudinary if upload occurred but save failed
       if (req.file?.public_id || req.file?.filename) {
         await cloudinary.uploader.destroy(req.file.public_id || req.file.filename);
-        console.log('Rolled back Cloudinary upload:', req.file.public_id || req.file.filename);
       }
 
       // Handle Mongoose validation errors
@@ -224,7 +213,6 @@ router.get('/google/callback', passport.authenticate('google', {
   session: false
 }), (req, res) => {
   const token = generateToken(req.user);
-  console.log('Redirecting to:', `${process.env.FRONTEND_URL}/oauth-callback?token=${token}&provider=google`);
   res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${token}&provider=google`);
 });
 

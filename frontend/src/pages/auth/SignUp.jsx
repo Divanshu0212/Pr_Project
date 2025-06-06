@@ -153,10 +153,6 @@ const SignUp = () => {
         signupFormData.append('password', formData.password);
         if (profileImage.file) {
           signupFormData.append('profileImage', profileImage.file);
-          console.log('FormData Contents:');
-          for (let [key, value] of signupFormData.entries()) {
-            console.log(`${key}:`, value instanceof File ? value.name : value);
-          }
         } else {
           console.log('No profile image selected');
         }
@@ -187,13 +183,6 @@ const SignUp = () => {
 
         setSuccessMessage('Account created successfully! Redirecting...');
         setTimeout(() => navigate('/home'), 2000);
-
-        console.log('Submitting:', {
-          username: formData.username,
-          email: formData.email,
-          password: formData.password,
-          profileImage: profileImage.file ? profileImage.file.name : 'No image uploaded'
-        });
 
       } catch (error) {
         console.error('Signup error:', error);

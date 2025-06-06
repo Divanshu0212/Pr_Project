@@ -111,7 +111,6 @@ export const AuthProvider = ({ children }) => {
       });
 
       const result = await response.json();
-      console.log("Login response:", result);
 
       if (response.ok) {
         const token = result.data?.token || result.data;
