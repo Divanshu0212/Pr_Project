@@ -22,12 +22,6 @@ const storage = new CloudinaryStorage({
   }
 });
 
-console.log('Cloudinary Config:', {
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY ? 'Set' : 'Not set',
-  api_secret: process.env.CLOUDINARY_API_SECRET ? 'Set' : 'Not set'
-});
-
 module.exports = {
   cloudinary,
   storage

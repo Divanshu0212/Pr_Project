@@ -36,7 +36,6 @@ const PortfolioHome = ({ user }) => {
     };
 
     const handleSavePicClick = () => {
-        console.log('Saving new profile picture:', newProfilePic);
         setIsEditingPic(false);
     };
 

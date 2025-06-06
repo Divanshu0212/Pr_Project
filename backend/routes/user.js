@@ -8,7 +8,6 @@ const upload = require('../middleware/upload');
 // Get user details
 router.get('/user-details', passport.authenticate('jwt', { session: false }), async (req, res) => {
   try {
-    console.log('Authenticated User:', req.user);
     if (!req.user) {
       return res.status(401).json({ success: false, message: 'Not authenticated' });
     }
@@ -47,7 +46,6 @@ router.post('/profile-image', passport.authenticate('jwt', { session: false }), 
       // Delete old image from Cloudinary if it exists
       if (user.profileImage.public_id) {
         await cloudinary.uploader.destroy(user.profileImage.public_id);
-        console.log('Deleted old Cloudinary image:', user.profileImage.public_id);
       }
 
       // Update user with new image
@@ -79,7 +77,6 @@ router.delete('/profile-image', passport.authenticate('jwt', { session: false })
 
     if (user.profileImage.public_id) {
       await cloudinary.uploader.destroy(user.profileImage.public_id);
-      console.log('Deleted Cloudinary image:', user.profileImage.public_id);
     }
 
     user.profileImage = { public_id: '', url: '' };

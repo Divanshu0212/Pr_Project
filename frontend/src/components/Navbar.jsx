@@ -118,7 +118,6 @@ const Navbar = ({ onToggleSidebar }) => {
     e.preventDefault();
     if (searchTerm.trim()) {
       // Implement your search logic here - this is just a placeholder
-      console.log('Searching for:', searchTerm);
       navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
       setSearchOpen(false);
       setSearchTerm('');

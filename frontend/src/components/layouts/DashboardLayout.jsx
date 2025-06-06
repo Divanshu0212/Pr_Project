@@ -15,13 +15,6 @@ const DashboardLayout = ({ children, user }) => {
     const handleResize = useCallback(() => {
         const mobile = window.innerWidth <= 768;
         setIsMobile(mobile);
-
-        // Auto-open sidebar on desktop, close on mobile by default
-        if (!mobile && !isSidebarOpen) {
-            setIsSidebarOpen(true);
-        } else if (mobile && isSidebarOpen) {
-            setIsSidebarOpen(false);
-        }
     }, [isSidebarOpen]);
 
     useEffect(() => {
