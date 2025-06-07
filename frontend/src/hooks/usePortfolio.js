@@ -16,7 +16,6 @@ const usePortfolio = () => {
       setPortfolioItems(data);
     } catch (err) {
       setError(err.message || 'Failed to fetch portfolio items');
-      console.error('Error fetching portfolio items:', err);
     } finally {
       setLoading(false);
     }
@@ -31,7 +30,6 @@ const usePortfolio = () => {
       return data;
     } catch (err) {
       setError(err.message || 'Failed to fetch portfolio item');
-      console.error('Error fetching portfolio item:', err);
       return null;
     } finally {
       setLoading(false);
@@ -48,7 +46,6 @@ const usePortfolio = () => {
       return data;
     } catch (err) {
       setError(err.message || 'Failed to add portfolio item');
-      console.error('Error adding portfolio item:', err);
       throw err;
     } finally {
       setLoading(false);
@@ -67,7 +64,6 @@ const usePortfolio = () => {
       return data;
     } catch (err) {
       setError(err.message || 'Failed to update portfolio item');
-      console.error('Error updating portfolio item:', err);
       throw err;
     } finally {
       setLoading(false);
@@ -85,7 +81,6 @@ const usePortfolio = () => {
       );
     } catch (err) {
       setError(err.message || 'Failed to delete portfolio item');
-      console.error('Error deleting portfolio item:', err);
       throw err;
     } finally {
       setLoading(false);

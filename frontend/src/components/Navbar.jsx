@@ -16,6 +16,7 @@ const Navbar = ({ onToggleSidebar }) => {
   const { currentUser: user, isAuthenticated, logout } = useAuth();
   console.log(user)
   
+  console.log('User object:', user);
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = window.innerWidth <= 768;
@@ -410,18 +411,18 @@ const Navbar = ({ onToggleSidebar }) => {
       {isAuthenticated && (
         <div className={`mobile-menu ${menuOpen ? 'open' : ''}`}>
           <div className="mobile-user">
-            {user?.photos?.[0]?.value ? (
+            {user?.profileImage?.url ? (
               <img 
-                src={user.photos[0].value} 
+                src={user.profileImage.url} 
                 alt="Profile" 
                 className="mobile-avatar"
               />
             ) : (
               <div className="mobile-default-avatar">
-                {user?.displayName?.charAt(0) || 'U'}
+                {user?.username?.charAt(0) || 'U'}
               </div>
             )}
-            <span className="mobile-username">{user?.displayName || 'User'}</span>
+            <span className="mobile-username">{user?.username || 'User'}</span>
           </div>
           
           <div className="mobile-search">

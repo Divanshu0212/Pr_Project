@@ -23,7 +23,6 @@ const AnalysisView = () => {
         setAnalysis(data);
       } catch (err) {
         setError('Failed to load analysis results. Please try again.');
-        console.error(err);
       } finally {
         setLoading(false);
       }

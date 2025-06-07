@@ -64,7 +64,6 @@ const AtsTracker = () => {
       navigate(`/ats/analysis/${analysisId}`);
     } catch (err) {
       setError(err.message || 'Failed to analyze resume. Please try again.');
-      console.error(err);
     } finally {
       setIsLoading(false);
     }
