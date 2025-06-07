@@ -204,7 +204,6 @@ function App() {
 
   const handleAuthError = (error) => {
     setAuthError(error);
-    console.error('Authentication error:', error);
   };
 
   if (isLoading) {
