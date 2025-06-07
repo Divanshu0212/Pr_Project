@@ -49,17 +49,23 @@ function ResumeUploader({ profession, keywords, onSubmit, onBack }) {
   };
  // Format keywords for display
  const renderKeywordsList = () => {
-    return Object.entries(keywords).map(([category, termsList]) => (
+  return Object.entries(keywords).map(([category, termsList]) => {
+    // Ensure termsList is an array
+    const terms = Array.isArray(termsList) ? termsList : [];
+    
+    return (
       <div key={category} className="keyword-category">
         <h4>{formatCategoryName(category)}</h4>
         <div className="keyword-tags">
-          {termsList.map((term, index) => (
+          {terms.map((term, index) => (
             <span key={index} className="keyword-tag">{term}</span>
           ))}
         </div>
       </div>
-    ));
-  };
+    );
+  });
+};
+
 
   const formatCategoryName = (name) => {
     return name
