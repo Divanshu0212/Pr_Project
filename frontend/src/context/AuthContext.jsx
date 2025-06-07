@@ -253,7 +253,6 @@ export const AuthProvider = ({ children }) => {
   const signInWithGithub = () => {
     window.open(SummaryApi.githubAuth.url || "http://localhost:5000/api/auth/github", "_self");
   };
-
 const handleOAuthCallback = async (token, user) => {
   try {
     if (token && user) {
