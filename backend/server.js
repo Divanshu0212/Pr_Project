@@ -8,6 +8,7 @@ const passport = require('passport');
 const { initializePassport } = require('./config/passport');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
+const portfolioDetailsRoutes = require('./routes/portfolioDetails');
 
 const app = express();
 
@@ -53,6 +54,7 @@ app.use((req, res, next) => {
 try {
   app.use('/api/auth', authRoutes);
   app.use('/api', userRoutes);
+  app.use('/api/portfolio', portfolioDetailsRoutes);
 } catch (err) {
   console.error('Error registering routes:', err);
 }

@@ -12,6 +12,21 @@ export const AuthProvider = ({ children }) => {
     localStorage.getItem('isAuthenticated') === 'true'
   );
 
+  const [portfolioDetails, setPortfolioDetails] = useState({
+    jobTitle: '',
+    location: '',
+    yearsOfExperience: 0,
+    availability: 'available',
+    bio: '',
+    socialLinks: {
+      github: '',
+      linkedin: '',
+      twitter: '',
+      instagram: '',
+      facebook: ''
+    }
+  });
+
   const token = localStorage.getItem('token');
   useEffect(() => {
     const checkAuth = async () => {
@@ -93,8 +108,57 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+   const fetchPortfolioDetails = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(SummaryApi.portfolioDetails.get.url, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.data) {
+          setPortfolioDetails(data.data);
+          return data.data;
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error('Error fetching portfolio details:', error);
+      return null;
+    }
+  };
+
+  const updatePortfolioDetails = async (updatedDetails) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(SummaryApi.portfolioDetails.update.url, {
+        method: SummaryApi.portfolioDetails.update.method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(updatedDetails)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPortfolioDetails(data.data);
+        return data.data;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error updating portfolio details:', error);
+      return null;
+    }
+  };
+
+
   useEffect(() => {
     fetchUserDetails();
+    fetchPortfolioDetails();
   }, []);
   const login = async (email, password) => {
     setError(null);
@@ -219,6 +283,7 @@ const handleOAuthCallback = async (token, user) => {
     isAuthenticated,
     loading,
     error,
+    portfolioDetails,
     setCurrentUser,
     setIsAuthenticated,
     login,
@@ -228,7 +293,9 @@ const handleOAuthCallback = async (token, user) => {
     signInWithGithub,
     handleOAuthCallback,
     refreshUserDetails: fetchUserDetails,
-    fetchUserDetails
+    fetchUserDetails,
+    fetchPortfolioDetails,
+    updatePortfolioDetails
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
