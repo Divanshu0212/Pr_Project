@@ -25,7 +25,6 @@ const ResumeOptimizer = () => {
         setResumeData(response.data);
       } catch (err) {
         setError('Failed to load default resume data. Please ensure the backend is running.');
-        console.error(err);
         // Fallback to a minimal structure if fetch fails
         setResumeData({
           name: "", email: "", phone: "", linkedin: "", github: "", portfolio: "", target_profession: "Software Engineer",
@@ -207,7 +206,6 @@ const ResumeOptimizer = () => {
       const response = await axios.post(`${BACKEND_URL}/api/optimize-resume`, dataToSend);
       setOptimizationResult(response.data);
     } catch (err) {
-       console.error("Optimization Error:", err);
        setError(err.response?.data?.detail || err.message || 'Failed to optimize resume.');
     } finally {
       setOptimizing(false);
