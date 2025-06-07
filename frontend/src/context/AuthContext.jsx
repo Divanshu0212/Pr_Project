@@ -195,16 +195,17 @@ const login = async (email, password) => {
     window.open(SummaryApi.githubAuth.url || "http://localhost:5000/auth/github", "_self");
   };
 
-  const handleOAuthCallback = (token, user) => {
+const handleOAuthCallback = async (token, user) => {
+  try {
     if (token && user) {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('token', token);
       localStorage.setItem('isAuthenticated', 'true');
       
       setCurrentUser({
-        id: userData._id,
-        displayName: userData.username || userData.displayName || 'User',
-        email: userData.email,
+        id: user._id,
+        displayName: user.username || user.displayName || 'User',
+        email: user.email,
       });
       
       setIsAuthenticated(true);
