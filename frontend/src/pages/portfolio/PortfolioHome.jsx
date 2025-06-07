@@ -1,11 +1,12 @@
 import React, { useContext, useState } from 'react';
-import { FaPlus, FaGithub, FaLinkedin, FaTwitter, FaEnvelope, FaCamera } from 'react-icons/fa';
+import { FaPlus, FaGithub, FaLinkedin, FaTwitter, FaEnvelope, FaCamera, FaInstagram, FaFacebook } from 'react-icons/fa';
 import { MdEdit, MdLocationOn, MdWork, MdClose, MdCheck } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import '../../styles/pages/PortfolioHome.css';
 import { AuthContext } from '../../context/AuthContext';
 import SummaryApi from '../../config';
+import PortfolioDetailsForm from './PortfolioDetailsForm';
 
 const PortfolioHome = ({ user: propUser }) => {
     const navigate = useNavigate();
@@ -15,8 +16,6 @@ const PortfolioHome = ({ user: propUser }) => {
         setCurrentUser
     } = useContext(AuthContext);
 
-    const [isEditingBio, setIsEditingBio] = useState(false);
-    const [bio, setBio] = useState(propUser?.bio || currentUser?.bio || 'As a dedicated professional, I excel in software development with a focus on creating innovative solutions. My experience in diverse projects and passion for excellence make me a valuable asset. I thrive in fast-paced environments, consistently delivering high-quality results and exceeding expectations.');
     const [hoveredProject, setHoveredProject] = useState(null);
     const [activeTab, setActiveTab] = useState('projects');
 
@@ -25,10 +24,12 @@ const PortfolioHome = ({ user: propUser }) => {
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = React.useRef(null);
 
-    const user = propUser || currentUser;
+    const { portfolioDetails } = useContext(AuthContext);
+    const [showDetailsForm, setShowDetailsForm] = useState(false);
 
-    const handleEditBioClick = () => {
-        setIsEditingBio(!isEditingBio);
+    const user = propUser || {
+        ...currentUser,
+        ...portfolioDetails
     };
 
     const handleEditPicClick = () => {
@@ -148,15 +149,6 @@ const PortfolioHome = ({ user: propUser }) => {
         'Other': ['rest api', 'graphql', 'figma', 'jira']
     };
 
-    const handleBioChange = (event) => {
-        setBio(event.target.value);
-    };
-
-    const handleSaveBioClick = () => {
-        setIsEditingBio(false);
-        // Save the updated bio to the server or context here if needed
-    };
-
     const handleAddProject = () => {
         navigate('/portfolio/add');
     };
@@ -265,7 +257,7 @@ const PortfolioHome = ({ user: propUser }) => {
                         {isEditingPic && (
                             <div className="absolute top-0 left-0 w-full h-full">
                                 <div className="fixed inset-0 bg-black bg-opacity-75 z-10 flex items-center justify-center">
-                                    <div className="bg-[#161B22] rounded-lg p-6 max-w-md w-full mx-4">
+                                    <div className="bg-[#161B22] rounded-lg p-6 max-w-md w-full mx-4 top-[calc(-500px)] relative">
                                         <div className="flex justify-between items-center mb-4">
                                             <h3 className="text-xl font-semibold text-[#E5E5E5]">Update Profile Picture</h3>
                                             <button
@@ -343,24 +335,27 @@ const PortfolioHome = ({ user: propUser }) => {
                             <div>
                                 <h1 className="text-4xl font-bold text-[#E5E5E5] mb-2">{user?.username || 'John Doe'}</h1>
                                 <div className="flex items-center gap-4 text-gray-400 mb-4">
-                                    <span className="flex items-center gap-1"><MdWork /> Software Developer</span>
-                                    <span className="flex items-center gap-1"><MdLocationOn /> San Francisco, CA</span>
+                                    <span className="flex items-center gap-1"><MdWork /> {portfolioDetails.jobTitle}</span>
+                                    <span className="flex items-center gap-1"><MdLocationOn /> {portfolioDetails.location}</span>
                                 </div>
                             </div>
 
                             {/* Social Links */}
                             <div className="flex gap-4">
-                                <a href="#" className="text-[#E5E5E5] hover:text-[#00FFFF] transition-colors">
+                                <a href={portfolioDetails.socialLinks.github} className="text-[#E5E5E5] hover:text-[#00FFFF] transition-colors">
                                     <FaGithub size={24} />
                                 </a>
-                                <a href="#" className="text-[#E5E5E5] hover:text-[#00FFFF] transition-colors">
+                                <a href={portfolioDetails.socialLinks.linkedin} className="text-[#E5E5E5] hover:text-[#00FFFF] transition-colors">
                                     <FaLinkedin size={24} />
                                 </a>
-                                <a href="#" className="text-[#E5E5E5] hover:text-[#00FFFF] transition-colors">
+                                <a href={portfolioDetails.socialLinks.twitter} className="text-[#E5E5E5] hover:text-[#00FFFF] transition-colors">
                                     <FaTwitter size={24} />
                                 </a>
-                                <a href="#" className="text-[#E5E5E5] hover:text-[#00FFFF] transition-colors">
-                                    <FaEnvelope size={24} />
+                                <a href={portfolioDetails.socialLinks.facebook} className="text-[#E5E5E5] hover:text-[#00FFFF] transition-colors">
+                                    <FaFacebook size={24} />
+                                </a>
+                                <a href={portfolioDetails.socialLinks.instagram} className="text-[#E5E5E5] hover:text-[#00FFFF] transition-colors">
+                                    <FaInstagram size={24} />
                                 </a>
                             </div>
                         </div>
@@ -368,23 +363,7 @@ const PortfolioHome = ({ user: propUser }) => {
                         {/* Bio and remaining code remains the same */}
                         <div className="mb-6">
                             <div className="flex items-start gap-2">
-                                {isEditingBio ? (
-                                    <textarea
-                                        value={bio}
-                                        onChange={handleBioChange}
-                                        className="w-full p-4 bg-[#161B22] text-[#E5E5E5] rounded border border-gray-700 focus:border-[#00FFFF] focus:outline-none"
-                                        rows={4}
-                                    />
-                                ) : (
-                                    <p className="text-gray-400 leading-relaxed">{bio}</p>
-                                )}
-                                <button
-                                    onClick={isEditingBio ? handleSaveBioClick : handleEditBioClick}
-                                    className="p-2 text-[#E5E5E5] hover:text-[#00FFFF] transition-colors"
-                                    title={isEditingBio ? "Save Bio" : "Edit Bio"}
-                                >
-                                    <MdEdit size={20} />
-                                </button>
+                                <p className="text-gray-400 leading-relaxed">{portfolioDetails.bio}</p>
                             </div>
                         </div>
 
@@ -403,12 +382,18 @@ const PortfolioHome = ({ user: propUser }) => {
                                 <p className="text-sm text-gray-400">Certificates</p>
                             </div>
                             <div className="bg-[#161B22] p-4 rounded-lg text-center shadow-md border border-gray-800">
-                                <p className="text-2xl font-bold text-[#00FFFF]">{stats.experience}</p>
+                                <p className="text-2xl font-bold text-[#00FFFF]">{portfolioDetails.yearsOfExperience} Yrs</p>
                                 <p className="text-sm text-gray-400">Experience</p>
                             </div>
                         </div>
                     </div>
                 </div>
+                <button
+                    onClick={() => setShowDetailsForm(true)}
+                    className="relative left-[calc(46%)] px-4 py-2 bg-gray-700 w-10 h-fit hover:bg-gray-600 rounded-full transition-colors"
+                >
+                    <MdEdit className="inline-block relative right-1 bottom-0.5"/>
+                </button>
                 {/* Skills Section */}
                 <div className="mb-16">
                     <h2 className="text-2xl font-bold text-[#00FFFF] mb-6 pb-2 border-b border-gray-700">Skills</h2>
@@ -595,6 +580,20 @@ const PortfolioHome = ({ user: propUser }) => {
                     </div>
                 )}
             </div>
+            
+            {showDetailsForm && (
+                <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+                    <div className="relative w-full max-w-4xl bottom-96">
+                        <button
+                            onClick={() => setShowDetailsForm(false)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-white z-10"
+                        >
+                            <MdClose size={24} />
+                        </button>
+                        <PortfolioDetailsForm onClose={() => setShowDetailsForm(false)} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -608,6 +607,10 @@ PortfolioHome.propTypes = {
             })
         ),
         displayName: PropTypes.string,
+        profileImage: PropTypes.shape({
+            url: PropTypes.string,
+            public_id: PropTypes.string
+        })
     }),
 };
 

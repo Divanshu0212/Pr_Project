@@ -31,6 +31,16 @@ const SummaryApi = {
         url: `${backendDomain}/api/profile-image`,
         method: "delete"
     },
+    portfolioDetails: {
+        get: {
+            url: `${backendDomain}/api/portfolio/portfolio-details`,
+            method: "get"
+        },
+        update: {
+            url: `${backendDomain}/api/portfolio/portfolio-details`,
+            method: "put"
+        }
+    },
 };
 
 export default SummaryApi;
