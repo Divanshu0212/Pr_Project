@@ -13,128 +13,128 @@ export const AuthProvider = ({ children }) => {
   );
 
   const token = localStorage.getItem('token');
-
-
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:5000/api/auth/me`, {
+        const response = await fetch('http://localhost:5000/api/auth/me', {
           method: 'GET',
-          credentials: 'include', // CRUCIAL for sending cookies!
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           }
         });
-        console.log(response)
         if (response.ok) {
           const userData = await response.json();
           setCurrentUser({
-            displayName: userData.username || userData.name || 'User',
-            email: userData.email
+            displayName: userData.user.username || userData.user.name || 'User',
+            email: userData.user.email,
+            profileImage: userData.user.profileImage || null
           });
           setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+          localStorage.removeItem('token');
+          localStorage.removeItem('isAuthenticated');
         }
       } catch (error) {
         console.error('Auth check failed:', error);
+        setIsAuthenticated(false);
+        localStorage.removeItem('token');
+        localStorage.removeItem('isAuthenticated');
+      } finally {
+        setLoading(false);
       }
     };
-    
+
     checkAuth();
   }, []);
 
-
-  // Function to fetch current user details
-  // In AuthContext.jsx, modify the fetchUserDetails function:
-
-const fetchUserDetails = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setIsAuthenticated(false);
-      setLoading(false);
-      return;
-    }
-    
-    const response = await fetch(`http://localhost:5000/api/auth/me`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`  // Ensure proper space after "Bearer"
+  const fetchUserDetails = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setIsAuthenticated(false);
+        setLoading(false);
+        return;
       }
-    });
+      
+      const response = await fetch(SummaryApi.current_user.url, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
 
-    if (response.ok) {
-      const userData = await response.json();
-      setCurrentUser(userData);
-      setIsAuthenticated(true);
-    } else {
-      // Token is invalid or expired
+      if (response.ok) {
+        const userData = await response.json();
+        setCurrentUser({
+          ...userData.data,
+          displayName: userData.data.username || 'User',
+          profileImage: userData.data.profileImage || null
+        });
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+        localStorage.removeItem('token');
+        localStorage.removeItem('isAuthenticated');
+      }
+    } catch (error) {
+      console.error('Error fetching user details:', error);
       setIsAuthenticated(false);
       localStorage.removeItem('token');
       localStorage.removeItem('isAuthenticated');
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Error fetching user details:', error);
-    setIsAuthenticated(false);
-    localStorage.removeItem('token');
-    localStorage.removeItem('isAuthenticated');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-  // In your AuthContext or main App component
-  // Check auth status on mount
   useEffect(() => {
     fetchUserDetails();
   }, []);
+  const login = async (email, password) => {
+    setError(null);
+    try {
+      const response = await fetch(SummaryApi.signIn.url, {
+        method: SummaryApi.signIn.method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
 
-  // Regular email/password login
-  // In your login function in AuthContext.jsx:
-const login = async (email, password) => {
-  setError(null);
-  try {
-    const response = await fetch(SummaryApi.signIn.url, {
-      method: SummaryApi.signIn.method,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ email, password }),
-    });
+      const result = await response.json();
 
-    const result = await response.json();
-    console.log("Login response:", result); // Debug response
 
-    if (response.ok) {
-      // Make sure you're extracting the token correctly based on your API response
-      const token = result.data?.token || result.data;
-      
-      if (token) {
-        localStorage.setItem("token", token);
-        localStorage.setItem("isAuthenticated", "true");
-        setIsAuthenticated(true);
-        await fetchUserDetails();
-        return result;
+      if (response.ok) {
+        const token = result.data?.token || result.data;
+        if (token) {
+          localStorage.setItem("token", token);
+          localStorage.setItem("isAuthenticated", "true");
+          setIsAuthenticated(true);
+          await fetchUserDetails();
+          return result;
+        } else {
+          console.error("No token received from login");
+          setError("Authentication failed - no token received");
+          throw new Error("No token received");
+        }
       } else {
-        console.error("No token received from login");
-        setError("Authentication failed - no token received");
-        throw new Error("No token received");
+        setError(result.message || "Login failed.");
+        throw new Error(result.message || "Login failed.");
       }
-    } else {
-      setError(result.message || "Login failed.");
-      throw new Error(result.message || "Login failed.");
+    } catch (error) {
+      console.error("Login error:", error);
+      setError(error.message || "An error occurred. Please try again.");
+      throw error;
     }
-  } catch (error) {
-    console.error("Login error:", error);
-    setError(error.message || "An error occurred. Please try again.");
-    throw error;
-  }
-};
+  };
 
-  // Regular email/password signup
   const signup = async (email, password, username) => {
     setError(null);
     try {
@@ -143,12 +143,12 @@ const login = async (email, password) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Important for cookies
+        credentials: 'include',
         body: JSON.stringify({ username, email, password }),
       });
 
       const result = await response.json();
-      
+
       if (response.ok) {
         return result;
       } else {
@@ -162,7 +162,6 @@ const login = async (email, password) => {
     }
   };
 
-  // Logout function
   const logout = async () => {
     try {
       await fetch(SummaryApi.logout_user.url, {
@@ -170,14 +169,12 @@ const login = async (email, password) => {
         credentials: 'include',
       });
 
-      // Clear auth state regardless of server response
       setCurrentUser(null);
       setIsAuthenticated(false);
       localStorage.removeItem('isAuthenticated');
       localStorage.removeItem('token');
     } catch (error) {
       console.error('Logout error:', error);
-      // Still clear auth state even if server request fails
       setCurrentUser(null);
       setIsAuthenticated(false);
       localStorage.removeItem('isAuthenticated');
@@ -185,14 +182,12 @@ const login = async (email, password) => {
     }
   };
 
-  // Google OAuth login
   const signInWithGoogle = () => {
-    window.open(SummaryApi.googleAuth.url || "http://localhost:5000/auth/google", "_self");
+    window.open(SummaryApi.googleAuth.url || "http://localhost:5000/api/auth/google", "_self");
   };
 
-  // GitHub OAuth login
   const signInWithGithub = () => {
-    window.open(SummaryApi.githubAuth.url || "http://localhost:5000/auth/github", "_self");
+    window.open(SummaryApi.githubAuth.url || "http://localhost:5000/api/auth/github", "_self");
   };
 
 const handleOAuthCallback = async (token, user) => {
@@ -200,7 +195,6 @@ const handleOAuthCallback = async (token, user) => {
     if (token && user) {
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('token', token);
-      localStorage.setItem('isAuthenticated', 'true');
       
       setCurrentUser({
         id: user._id,
@@ -209,10 +203,17 @@ const handleOAuthCallback = async (token, user) => {
       });
       
       setIsAuthenticated(true);
+      await fetchUserDetails(); 
       return true;
+    } else {
+      throw new Error('Token verification failed');
     }
+  } catch (error) {
+    console.error('OAuth callback error:', error);
+    logout(); // Clear any existing auth state
     return false;
-  };
+  }
+};
 
   const value = {
     currentUser,
@@ -228,12 +229,12 @@ const handleOAuthCallback = async (token, user) => {
     signInWithGithub,
     handleOAuthCallback,
     refreshUserDetails: fetchUserDetails,
+    fetchUserDetails
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-// Define propTypes for AuthProvider
 AuthProvider.propTypes = {
   children: PropTypes.node.isRequired,
 };

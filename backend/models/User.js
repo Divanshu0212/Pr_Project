@@ -1,34 +1,49 @@
-// server/models/User.js
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
 const UserSchema = new mongoose.Schema({
-    username: {
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+    minlength: 8,
+  },
+  profileImage: {
+    public_id: {
       type: String,
-      required: true,
-      unique: true,
+      default: ''
     },
-    email: {
+    url: {
       type: String,
-      required: true,
-      unique: true,
-    },
-    password: {
-      type: String,
-      required: true,
-      minlength: 8,
+      default: ''
     }
-  });
+  }
+}, {
+  timestamps: true
+});
 
 // Hash password before saving
 UserSchema.pre('save', async function(next) {
-  if (this.isModified('password') && this.password) {
+  // Only hash password if it's explicitly modified by the application code
+  // and not during OAuth account linking
+  if (this.isModified('password') && 
+      this.password && 
+      !this._skipPasswordHashing && 
+      !this.password.startsWith('$2a$')) {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
   }
   next();
 });
-
 // Method to validate password
 UserSchema.methods.validatePassword = async function(password) {
   if (!this.password) return false;

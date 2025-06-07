@@ -14,9 +14,7 @@ const Navbar = ({ onToggleSidebar }) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const { currentUser: user, isAuthenticated, logout } = useAuth();
-  console.log(user)
   
-  console.log('User object:', user);
   const location = useLocation();
   const navigate = useNavigate();
   const isMobile = window.innerWidth <= 768;
@@ -120,7 +118,6 @@ const Navbar = ({ onToggleSidebar }) => {
     e.preventDefault();
     if (searchTerm.trim()) {
       // Implement your search logic here - this is just a placeholder
-      console.log('Searching for:', searchTerm);
       navigate(`/search?q=${encodeURIComponent(searchTerm)}`);
       setSearchOpen(false);
       setSearchTerm('');
@@ -167,7 +164,7 @@ const Navbar = ({ onToggleSidebar }) => {
 
           {isAuthenticated && (
             <div className="page-title-container">
-              <h1 className="page-title">{getPageTitle()}</h1>
+              <h1 className="page-title relative top-3">{getPageTitle()}</h1>
             </div>
           )}
         </div>
@@ -303,15 +300,15 @@ const Navbar = ({ onToggleSidebar }) => {
                   aria-expanded={userMenuOpen}
                   aria-haspopup="true"
                 >
-                  {user?.photos?.[0]?.value ? (
+                  {user?.profileImage?.url ? (
                     <img 
-                      src={user.photos[0].value} 
+                      src={user.profileImage.url} 
                       alt="Profile" 
                       className="user-avatar"
                     />
                   ) : (
                     <div className="user-default-avatar">
-                      {user?.displayName?.charAt(0) || 'U'}
+                      {user?.username?.charAt(0) || 'U'}
                     </div>
                   )}
                   <span className="username">{user?.username || 'User'}</span>
@@ -323,16 +320,16 @@ const Navbar = ({ onToggleSidebar }) => {
                     <div className="dropdown-header">
                       <div className="dropdown-user-info">
                         <div className="dropdown-avatar">
-                          {user?.photos?.[0]?.value ? (
-                            <img src={user.photos[0].value} alt="Profile" />
+                          {user?.profileImage?.url ? (
+                            <img src={user.profileImage.url} alt="Profile" />
                           ) : (
                             <div className="dropdown-default-avatar">
-                              {user?.displayName?.charAt(0) || 'U'}
+                              {user?.username?.charAt(0) || 'U'}
                             </div>
                           )}
                         </div>
                         <div className="dropdown-user-details">
-                          <h4>{user?.displayName || 'User'}</h4>
+                          <h4>{user?.username || 'User'}</h4>
                           <p>{user?.email || 'user@example.com'}</p>
                         </div>
                       </div>
