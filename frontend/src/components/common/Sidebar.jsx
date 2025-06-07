@@ -7,6 +7,7 @@ import './Sidebar.css';
 const Sidebar = ({ user, isOpen, onClose }) => {
   const location = useLocation();
   const sidebarRef = useRef(null);
+  
 
   const menuItems = [
     {
@@ -114,20 +115,20 @@ const Sidebar = ({ user, isOpen, onClose }) => {
           {/* User Profile Section */}
           <div className="sidebar-header">
             <div className="sidebar-user">
-              {user?.photos?.[0]?.value ? (
+              {user?.profileImage?.url ? (
                 <img
-                  src={user.photos[0].value}
+                  src={user.profileImage.url}
                   alt="Profile"
                   className="sidebar-avatar"
                 />
               ) : (
                 <div className="sidebar-default-avatar">
-                  {user?.displayName?.charAt(0) || 'U'}
+                  {user?.username?.charAt(0) || 'U'}
                 </div>
               )}
               <div className="sidebar-user-info">
                 <h3 className="sidebar-username">
-                  {user?.displayName || 'Welcome'}
+                  {user?.username || 'Welcome'}
                 </h3>
                 <p className="sidebar-role">Developer</p>
               </div>
