@@ -7,6 +7,7 @@ import '../../styles/pages/PortfolioHome.css';
 import { AuthContext } from '../../context/AuthContext';
 import SummaryApi from '../../config';
 import PortfolioDetailsForm from './PortfolioDetailsForm';
+import { useEffect } from 'react';
 
 const PortfolioHome = ({ user: propUser }) => {
     const navigate = useNavigate();
@@ -27,10 +28,66 @@ const PortfolioHome = ({ user: propUser }) => {
     const { portfolioDetails } = useContext(AuthContext);
     const [showDetailsForm, setShowDetailsForm] = useState(false);
 
+    const [skills, setSkills] = useState([]);
+    const [skillCategories, setSkillCategories] = useState({
+        'Languages': [],
+        'Frontend': [],
+        'Backend': [],
+        'Database': [],
+        'DevOps': [],
+        'Other': []
+    });
+
     const user = propUser || {
         ...currentUser,
         ...portfolioDetails
     };
+
+    useEffect(() => {
+        const fetchSkills = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(SummaryApi.skills.get.url, {
+                    method: SummaryApi.skills.get.method,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch skills');
+                }
+
+                const data = await response.json();
+                setSkills(data);
+
+                // Organize skills by category
+                const organizedCategories = {
+                    'Languages': [],
+                    'Frontend': [],
+                    'Backend': [],
+                    'Database': [],
+                    'DevOps': [],
+                    'Other': []
+                };
+
+                data.forEach(skill => {
+                    if (organizedCategories[skill.category]) {
+                        organizedCategories[skill.category].push(skill.name.toLowerCase());
+                    } else {
+                        organizedCategories['Other'].push(skill.name.toLowerCase());
+                    }
+                });
+
+                setSkillCategories(organizedCategories);
+            } catch (error) {
+                console.error('Error fetching skills:', error);
+            }
+        };
+
+        fetchSkills();
+    }, []);
 
     const handleEditPicClick = () => {
         setIsEditingPic(!isEditingPic);
@@ -137,16 +194,6 @@ const PortfolioHome = ({ user: propUser }) => {
     const handleCancelPicEdit = () => {
         setNewProfilePic(null);
         setIsEditingPic(false);
-    };
-
-    // Organized skills by category for better display
-    const skillCategories = {
-        'Languages': ['javascript', 'python', 'java', 'typescript'],
-        'Frontend': ['react', 'angular', 'vue.js', 'html/css'],
-        'Backend': ['node.js', 'express', 'django', 'spring'],
-        'Database': ['mongodb', 'sql', 'postgresql', 'firebase'],
-        'DevOps': ['aws', 'docker', 'kubernetes', 'ci/cd', 'git'],
-        'Other': ['rest api', 'graphql', 'figma', 'jira']
     };
 
     const handleAddProject = () => {
@@ -392,29 +439,39 @@ const PortfolioHome = ({ user: propUser }) => {
                     onClick={() => setShowDetailsForm(true)}
                     className="relative left-[calc(46%)] px-4 py-2 bg-gray-700 w-10 h-fit hover:bg-gray-600 rounded-full transition-colors"
                 >
-                    <MdEdit className="inline-block relative right-1 bottom-0.5"/>
+                    <MdEdit className="inline-block relative right-1 bottom-0.5" />
                 </button>
                 {/* Skills Section */}
                 <div className="mb-16">
                     <h2 className="text-2xl font-bold text-[#00FFFF] mb-6 pb-2 border-b border-gray-700">Skills</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {Object.entries(skillCategories).map(([category, skills]) => (
-                            <div key={category} className="bg-[#161B22] p-6 rounded-lg shadow-md border border-gray-800">
-                                <h3 className="text-lg font-semibold text-[#E5E5E5] mb-4">{category}</h3>
-                                <div className="flex flex-wrap gap-2">
-                                    {skills.map((skill, index) => (
-                                        <span
-                                            key={index}
-                                            className="px-3 py-1 bg-[#0D1117] border border-[#00FFFF] text-[#00FFFF] rounded-full text-xs"
-                                        >
-                                            {skill}
-                                        </span>
-                                    ))}
+                            skills.length > 0 && (
+                                <div key={category} className="bg-[#161B22] p-6 rounded-lg shadow-md border border-gray-800">
+                                    <h3 className="text-lg font-semibold text-[#E5E5E5] mb-4">{category}</h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {skills.map((skill, index) => (
+                                            <span
+                                                key={index}
+                                                className="px-3 py-1 bg-[#0D1117] border border-[#00FFFF] text-[#00FFFF] rounded-full text-xs"
+                                            >
+                                                {skill}
+                                            </span>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )
                         ))}
                     </div>
                 </div>
+
+                // Add this near your other buttons
+                <button
+                    onClick={() => navigate('/portfolio/skills')}
+                    className="flex items-center gap-2 px-4 py-2 bg-[#00FFFF] text-black rounded hover:opacity-90 transition-opacity"
+                >
+                    <MdEdit /> Manage Skills
+                </button>
 
                 {/* Portfolio Tabs */}
                 <div className="mb-6">
@@ -580,7 +637,7 @@ const PortfolioHome = ({ user: propUser }) => {
                     </div>
                 )}
             </div>
-            
+
             {showDetailsForm && (
                 <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
                     <div className="relative w-full max-w-4xl bottom-96">

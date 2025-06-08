@@ -41,6 +41,28 @@ const SummaryApi = {
             method: "put"
         }
     },
+    skills: {
+        get: {
+            url: `${backendDomain}/api/skills/manage`,
+            method: "get"
+        },
+        create: {
+            url: `${backendDomain}/api/skills/manage`,
+            method: "post"
+        },
+        update: {
+            url: `${backendDomain}/api/skills/manage/:id`,
+            method: "put"
+        },
+        delete: {
+            url: `${backendDomain}/api/skills/manage/:id`,
+            method: "delete"
+        },
+        reorder: {
+            url: `${backendDomain}/api/skills/manage/reorder`,
+            method: "put"
+        }
+    }
 };
 
 export default SummaryApi;

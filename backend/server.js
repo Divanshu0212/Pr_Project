@@ -9,6 +9,7 @@ const { initializePassport } = require('./config/passport');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const portfolioDetailsRoutes = require('./routes/portfolioDetails');
+const skillRoutes = require('./routes/skill');
 
 const app = express();
 
@@ -50,19 +51,30 @@ app.use((req, res, next) => {
   next();
 });
 
+// app.use('/api/skills', skillRoutes);
 // Routes
 try {
   app.use('/api/auth', authRoutes);
   app.use('/api', userRoutes);
   app.use('/api/portfolio', portfolioDetailsRoutes);
+  app.use('/api/skills', skillRoutes);
 } catch (err) {
   console.error('Error registering routes:', err);
 }
 
-// Error handling
+// Replace your current error handler with this:
 app.use((err, req, res, next) => {
   console.error('Server error:', err);
-  res.status(500).json({ success: false, message: 'Server error' });
+  res.status(500).json({ 
+    success: false, 
+    message: 'Server error',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
+
+// Add 404 handler
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: 'Endpoint not found' });
 });
 
 const PORT = process.env.PORT || 5000;
