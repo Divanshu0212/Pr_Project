@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const portfolioDetailsRoutes = require('./routes/portfolioDetails');
 const skillRoutes = require('./routes/skill');
+const projectRoutes = require('./routes/project');
 
 const app = express();
 
@@ -58,6 +59,7 @@ try {
   app.use('/api', userRoutes);
   app.use('/api/portfolio', portfolioDetailsRoutes);
   app.use('/api/skills', skillRoutes);
+  app.use('/api/projects', projectRoutes)
 } catch (err) {
   console.error('Error registering routes:', err);
 }

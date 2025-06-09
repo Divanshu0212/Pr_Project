@@ -1,10 +1,11 @@
 // components/SkillManagement.jsx
 import React, { useState, useEffect, useContext } from 'react';
-import { FaPlus, FaTrash, FaEdit, FaGripVertical } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaEdit, FaGripVertical, FaArrowLeft } from 'react-icons/fa';
 import { MdClose, MdCheck } from 'react-icons/md';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { AuthContext } from '../../context/AuthContext';
 import SummaryApi from '../../config';
+import { useNavigate } from 'react-router-dom';
 
 const SkillManagement = () => {
   const { currentUser, fetchUserDetails } = useContext(AuthContext);
@@ -19,7 +20,7 @@ const SkillManagement = () => {
     isFeatured: false
   });
   const [isLoading, setIsLoading] = useState(false);
-
+  const navigate = useNavigate();
   const categories = ['Languages', 'Frontend', 'Backend', 'Database', 'DevOps', 'Other'];
 
   useEffect(() => {
@@ -88,9 +89,9 @@ const SkillManagement = () => {
         // Try to parse error as JSON, fallback to text
         let errorData;
         try {
-            errorData = await response.json();
+          errorData = await response.json();
         } catch {
-            errorData = { message: await response.text() };
+          errorData = { message: await response.text() };
         }
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
@@ -111,7 +112,7 @@ const SkillManagement = () => {
         category: newSkill.category,
         proficiency: Number(newSkill.proficiency),
         isFeatured: newSkill.isFeatured
-  }));
+      }));
     } catch (error) {
       console.error('Error adding skill:', error);
     } finally {
@@ -186,6 +187,9 @@ const SkillManagement = () => {
     // Update order in backend
     try {
       const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
       const response = await fetch(SummaryApi.skills.reorder.url, {
         method: SummaryApi.skills.reorder.method,
         headers: {
@@ -193,16 +197,20 @@ const SkillManagement = () => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          orderedIds: items.map(item => item._id)
+          skillIds: items.map(item => item._id),
+          userId: currentUser?._id // Assuming currentUser is available in context
         })
       });
 
       if (!response.ok) {
         throw new Error('Failed to reorder skills');
       }
+
+      await fetchSkills();
     } catch (error) {
       console.error('Error reordering skills:', error);
       // Revert if error
+      setSkills([...skills]);
       fetchSkills();
     }
   };
@@ -210,8 +218,14 @@ const SkillManagement = () => {
   return (
     <div className="bg-[#161B22] p-6 rounded-lg shadow-md border border-gray-800 mb-8">
       <h2 className="text-2xl font-bold text-[#00FFFF] mb-6">Manage Skills</h2>
-      
+
       {/* Add New Skill Form */}
+      <button
+        onClick={() => navigate('/portfolioHome')}
+        className="flex items-center gap-2 mb-6 text-[#00FFFF] hover:underline"
+      >
+        <FaArrowLeft /> Back to Portfolio
+      </button>
       <div className="mb-8">
         <h3 className="text-lg font-semibold text-[#E5E5E5] mb-4">Add New Skill</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
@@ -281,7 +295,7 @@ const SkillManagement = () => {
       {/* Skills List */}
       <div>
         <h3 className="text-lg font-semibold text-[#E5E5E5] mb-4">Your Skills</h3>
-        
+
         {isEditing ? (
           <div className="mb-6 p-4 bg-[#0D1117] rounded-lg border border-[#00FFFF]">
             <h4 className="text-md font-semibold text-[#E5E5E5] mb-3">Edit Skill</h4>
@@ -357,18 +371,19 @@ const SkillManagement = () => {
 
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="skills">
-            {(provided) => (
-              <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-3">
+            {(provided, snapshot) => (
+              <div {...provided.droppableProps} ref={provided.innerRef} className={`space-y-3 ${snapshot.isDraggingOver ? 'bg-[#0D1117]' : ''}`}>
                 {skills.length === 0 ? (
                   <p className="text-gray-500 italic">No skills added yet. Add your first skill above.</p>
                 ) : (
                   skills.map((skill, index) => (
                     <Draggable key={skill._id} draggableId={skill._id} index={index}>
-                      {(provided) => (
+                      {(provided, snapshot) => (
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}
-                          className={`p-4 rounded-lg border ${skill.isFeatured ? 'border-[#9C27B0] bg-[#1A1A2E]' : 'border-gray-700'} bg-[#161B22] flex items-center justify-between`}
+                          className={`p-4 rounded-lg border ${skill.isFeatured ? 'border-[#9C27B0] bg-[#1A1A2E]' : 'border-gray-700 bg-[#161B22]'} flex items-center justify-between ${snapshot.isDragging ? 'shadow-lg bg-[#0D1117]' : ''
+                            }`}
                         >
                           <div className="flex items-center gap-4">
                             <div {...provided.dragHandleProps} className="text-gray-400 hover:text-[#00FFFF] cursor-move">

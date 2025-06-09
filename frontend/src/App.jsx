@@ -60,6 +60,8 @@ import './App.css';
 import './styles/animations.css'; // Ensure animations.css is imported
 import ResumeATSScanner from './pages/ats/new';
 import SkillManagement from './components/portfolio/SkillManagement';
+import ProjectForm from './components/portfolio/ProjectForm';
+import ProjectDetails from './pages/portfolio/ProjectDetails';
 
 // AnimatedRoutes component wraps all routes with transitions
 const AnimatedRoutes = () => {
@@ -112,19 +114,19 @@ const AnimatedRoutes = () => {
 
           <Route path="/portfolio/add" element={
             <DashboardLayout user={currentUser}>
-              <AddProject />
+              <ProjectForm />
             </DashboardLayout>
           } />
 
-          <Route path="/portfolio/view/:id" element={
+          <Route path="/portfolio/:id" element={
             <DashboardLayout user={currentUser}>
-              <PortfolioItemDetail />
+              <ProjectDetails />
             </DashboardLayout>
           } />
 
           <Route path="/portfolio/edit/:id" element={
             <DashboardLayout user={currentUser}>
-              <AddProject isEditing={true} />
+              <ProjectForm editMode={true} />
             </DashboardLayout>
           } />
           <Route path="/portfolio/tracking" element={
