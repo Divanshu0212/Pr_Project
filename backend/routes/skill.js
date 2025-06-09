@@ -96,27 +96,28 @@ router.delete('/manage/:id', passport.authenticate('jwt', { session: false }), a
 // @desc    Reorder skills
 // @route   PUT /api/skills/reorder
 // @access  Private
-router.put('/manage/reorder', passport.authenticate('jwt', { session: false }), asyncHandler(async (req, res) => {
-  const { orderedIds } = req.body;
+router.put('/reorder', passport.authenticate('jwt', { session: false }), asyncHandler(async (req, res) => {
+  const { skillIds, userId } = req.body;
 
-  const skills = await Skill.find({ userId: req.user._id });
+  if (!Array.isArray(skillIds)) {
+    return res.status(400).json({ error: 'skillIds must be an array' });
+  }
 
-  // Create a map of id to order
-  const orderMap = {};
-  orderedIds.forEach((id, index) => {
-    orderMap[id] = index;
-  });
+  // Verify all skills belong to this user
+  const skills = await Skill.find({ _id: { $in: skillIds }, userId: userId });
+  if (skills.length !== skillIds.length) {
+    return res.status(403).json({ error: 'Some skills not found or not owned by user' });
+  }
 
-  // Update skills with new order
-  const updatePromises = skills.map(skill => {
-    if (orderMap[skill._id.toString()] !== undefined) {
-      skill.order = orderMap[skill._id.toString()];
-      return skill.save();
+  // Update order for each skill
+  const bulkOps = skillIds.map((id, index) => ({
+    updateOne: {
+      filter: { _id: id },
+      update: { $set: { order: index } }
     }
-    return Promise.resolve();
-  });
+  }));
 
-  await Promise.all(updatePromises);
+  await Skill.bulkWrite(bulkOps);
 
   res.json({ message: 'Skills reordered successfully' });
 }));

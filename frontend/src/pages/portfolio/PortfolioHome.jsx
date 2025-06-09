@@ -8,6 +8,8 @@ import { AuthContext } from '../../context/AuthContext';
 import SummaryApi from '../../config';
 import PortfolioDetailsForm from './PortfolioDetailsForm';
 import { useEffect } from 'react';
+import { useQuery } from 'react-query';
+import ProjectCard from '../../components/portfolio/ProjectCard';
 
 const PortfolioHome = ({ user: propUser }) => {
     const navigate = useNavigate();
@@ -196,57 +198,38 @@ const PortfolioHome = ({ user: propUser }) => {
         setIsEditingPic(false);
     };
 
-    const handleAddProject = () => {
-        navigate('/portfolio/add');
-    };
+    // Fetch projects data
+    const { data: projectsData, isLoading: projectsLoading } = useQuery('pinnedProjects', async () => {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${SummaryApi.projects.get.url}?isPinned=true`, {
+            method: SummaryApi.projects.get.method,
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (!response.ok) throw new Error('Failed to fetch projects');
+        return response.json();
+    });
+
+    // Fetch project counts
+    const { data: countsData } = useQuery('projectCounts', async () => {
+        const token = localStorage.getItem('token');
+        const response = await fetch(SummaryApi.projects.counts.url, {
+            method: SummaryApi.projects.counts.method,
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (!response.ok) throw new Error('Failed to fetch project counts');
+        return response.json();
+    });
+
+    // Filter pinned projects
+    const pinnedProjects = projectsData?.projects || [];
 
     const handleAddCertificate = () => {
         navigate('/portfolio/add');
     };
-
-    // Sample data - in a real app this would come from props or context
-    const projects = [
-        {
-            id: 1,
-            name: 'AskUrDoc',
-            image: '../src/img/askurdoc.jpg',
-            link: 'https://github.com/Speedy2705/DBMS_Project',
-            description: 'A healthcare platform connecting patients with doctors. Built with React, Node.js, and MongoDB.',
-            technologies: ['React', 'Node.js', 'MongoDB', 'Express'],
-            status: 'completed',
-            progress: 100
-        },
-        {
-            id: 2,
-            name: 'E-Commerce',
-            image: '../src/img/E-Commerce.jpg',
-            link: 'https://github.com/Speedy2705/MERN',
-            description: 'A full-stack e-commerce solution with product catalog, cart functionality, and payment integration.',
-            technologies: ['MERN Stack', 'Redux', 'Stripe API'],
-            status: 'in-progress',
-            progress: 85
-        },
-        {
-            id: 3,
-            name: 'TrackFolio',
-            image: '../src/img/TrackFolio.jpg',
-            link: 'https://github.com/Speedy2705/Pr_Project',
-            description: 'Portfolio tracking application for showcasing projects and generating resumes with ATS analysis.',
-            technologies: ['React', 'Firebase', 'Tailwind CSS'],
-            status: 'in-progress',
-            progress: 70
-        },
-        {
-            id: 4,
-            name: 'Gaming Community',
-            image: '../src/img/BigDawgs.png',
-            link: 'https://github.com/Divanshu0212/canuhkit',
-            description: 'A gaming community platform with forum, event scheduling, and team management features.',
-            technologies: ['Vue.js', 'Firebase', 'Socket.io'],
-            status: 'completed',
-            progress: 100
-        },
-    ];
 
     const certificates = [
         { id: 1, name: '12th Certificate', image: '../src/img/12th-Certificate.jpg', link: 'https://example.com/certificate1', issuer: 'CBSE', date: '2019' },
@@ -254,10 +237,10 @@ const PortfolioHome = ({ user: propUser }) => {
     ];
 
     const stats = {
-        projectsCount: 10,
-        completedTasks: 8,
+        projectsCount: countsData?.counts?.total || 0,
+        completedProjects: countsData?.counts?.completed || 0,
         certificates: 2,
-        experience: '3 years'
+        experience: portfolioDetails.yearsOfExperience + 'Yrs' || '3 Yrs'
     };
 
     // Helper function to get status color
@@ -421,7 +404,7 @@ const PortfolioHome = ({ user: propUser }) => {
                                 <p className="text-sm text-gray-400">Projects</p>
                             </div>
                             <div className="bg-[#161B22] p-4 rounded-lg text-center shadow-md border border-gray-800">
-                                <p className="text-2xl font-bold text-[#00FFFF]">{stats.completedTasks}</p>
+                                <p className="text-2xl font-bold text-[#00FFFF]">{stats.completedProjects}</p>
                                 <p className="text-sm text-gray-400">Completed Tasks</p>
                             </div>
                             <div className="bg-[#161B22] p-4 rounded-lg text-center shadow-md border border-gray-800">
@@ -429,7 +412,7 @@ const PortfolioHome = ({ user: propUser }) => {
                                 <p className="text-sm text-gray-400">Certificates</p>
                             </div>
                             <div className="bg-[#161B22] p-4 rounded-lg text-center shadow-md border border-gray-800">
-                                <p className="text-2xl font-bold text-[#00FFFF]">{portfolioDetails.yearsOfExperience} Yrs</p>
+                                <p className="text-2xl font-bold text-[#00FFFF]">{stats.experience}</p>
                                 <p className="text-sm text-gray-400">Experience</p>
                             </div>
                         </div>
@@ -465,10 +448,9 @@ const PortfolioHome = ({ user: propUser }) => {
                     </div>
                 </div>
 
-                // Add this near your other buttons
                 <button
                     onClick={() => navigate('/portfolio/skills')}
-                    className="flex items-center gap-2 px-4 py-2 bg-[#00FFFF] text-black rounded hover:opacity-90 transition-opacity"
+                    className="flex items-center gap-2 px-4 py-2 bg-[#00FFFF] text-black rounded hover:opacity-90 transition-opacity mb-8"
                 >
                     <MdEdit /> Manage Skills
                 </button>
@@ -497,161 +479,119 @@ const PortfolioHome = ({ user: propUser }) => {
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-2xl font-bold text-[#00FFFF]">Pinned Projects</h2>
                             <button
-                                onClick={handleAddProject}
-                                className="flex items-center gap-2 px-4 py-2 bg-[#9C27B0] text-white rounded hover:bg-purple-700 transition-colors"
+                                onClick={() => navigate('/portfolio/add')}
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] text-black rounded-lg hover:opacity-90 transition-opacity"
                             >
                                 <FaPlus /> Add Project
                             </button>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {projects.map((project, index) => (
-                                <div
-                                    key={project.id}
-                                    className="bg-[#161B22] rounded-lg shadow-lg overflow-hidden border border-gray-800 hover:border-[#00FFFF] transition-all duration-300"
-                                    onMouseEnter={() => setHoveredProject(index)}
-                                    onMouseLeave={() => setHoveredProject(null)}
+                        {projectsLoading ? (
+                            <div className="flex justify-center items-center h-64">
+                                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#00FFFF]"></div>
+                            </div>
+                        ) : pinnedProjects.length === 0 ? (
+                            <div className="bg-[#161B22] rounded-lg p-8 text-center border border-dashed border-gray-600">
+                                <p className="text-gray-400 mb-4">No pinned projects yet</p>
+                                <button
+                                    onClick={() => navigate('/portfolio/add')}
+                                    className="px-4 py-2 bg-[#00FFFF] text-black rounded-lg hover:opacity-90"
                                 >
-                                    <div className="p-6">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <h3 className="text-xl font-semibold text-[#E5E5E5]">{project.name}</h3>
-                                            <div className={`px-3 py-1 rounded-full text-xs text-white ${getStatusColor(project.status)}`}>
-                                                {project.status.replace('-', ' ')}
-                                            </div>
-                                        </div>
+                                    Add Your First Project
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {pinnedProjects.map((project) => (
+                                    <ProjectCard key={project._id} project={project} />
+                                ))}
+                            </div>
+                        )}
 
-                                        <div className="flex gap-4 mb-4">
-                                            <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                                                <img
-                                                    src={project.image}
-                                                    alt={project.name}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            </div>
-                                            <div>
-                                                <p className="text-gray-400 mb-3 line-clamp-3">{project.description}</p>
-                                                <div className="flex flex-wrap gap-2 mb-3">
-                                                    {project.technologies.slice(0, 3).map((tech, idx) => (
-                                                        <span key={idx} className="text-xs bg-[#0D1117] px-2 py-1 rounded text-[#00FFFF]">
-                                                            {tech}
-                                                        </span>
-                                                    ))}
-                                                    {project.technologies.length > 3 && (
-                                                        <span className="text-xs bg-[#0D0D1117] px-2 py-1 rounded text-gray-400">
-                                                            +{project.technologies.length - 3}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="mb-4">
-                                            <div className="flex justify-between mb-1">
-                                                <span className="text-sm text-gray-400">Progress</span>
-                                                <span className="text-sm text-gray-400">{project.progress}%</span>
-                                            </div>
-                                            <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-[#00FFFF]"
-                                                    style={{ width: `${project.progress}%` }}
-                                                ></div>
-                                            </div>
-                                        </div>
-
-                                        <div className="flex justify-between">
-                                            <a
-                                                href={project.link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex items-center gap-2 text-[#00FFFF] hover:underline"
-                                            >
-                                                <FaGithub /> View Code
-                                            </a>
-                                            <button
-                                                onClick={() => viewProjectDetails(project.id)}
-                                                className="px-4 py-2 bg-[#161B22] border border-[#00FFFF] text-[#00FFFF] rounded hover:bg-[#0D1117] transition-colors"
-                                            >
-                                                Details
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
-                {/* Certificates Grid */}
-                {activeTab === 'certificates' && (
-                    <div>
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-bold text-[#00FFFF]">Certificates</h2>
+                        <div className="mt-8 text-center">
                             <button
-                                onClick={handleAddCertificate}
-                                className="flex items-center gap-2 px-4 py-2 bg-[#9C27B0] text-white rounded hover:bg-purple-700 transition-colors"
+                                onClick={() => navigate('/portfolio/tracking')}
+                                className="px-6 py-3 border border-[#00FFFF] text-[#00FFFF] rounded-lg hover:bg-[#00FFFF]/10 transition-colors"
                             >
-                                <FaPlus /> Add Certificate
+                                View All Projects
                             </button>
                         </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {certificates.map((certificate) => (
-                                <div key={certificate.id} className="bg-[#161B22] rounded-lg shadow-lg overflow-hidden border border-gray-800">
-                                    <div className="h-48 overflow-hidden">
-                                        <img
-                                            src={certificate.image}
-                                            alt={certificate.name}
-                                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                                        />
-                                    </div>
-                                    <div className="p-4">
-                                        <h3 className="text-xl font-semibold text-[#E5E5E5] mb-2">{certificate.name}</h3>
-                                        <div className="flex justify-between text-gray-400 text-sm mb-4">
-                                            <span>Issued by: {certificate.issuer}</span>
-                                            <span>{certificate.date}</span>
-                                        </div>
-                                        <div className="flex justify-end">
-                                            <a
-                                                href={certificate.link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="px-4 py-2 bg-[#161B22] border border-[#00FFFF] text-[#00FFFF] rounded hover:bg-[#0D1117] transition-colors"
-                                            >
-                                                View Certificate
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-
-                            <div
-                                onClick={handleAddCertificate}
-                                className="bg-[#161B22] rounded-lg border border-dashed border-gray-600 flex items-center justify-center h-64 cursor-pointer hover:border-[#00FFFF] transition-colors"
-                            >
-                                <div className="text-center">
-                                    <FaPlus size={24} className="mx-auto mb-2 text-gray-400" />
-                                    <p className="text-gray-400">Add New Certificate</p>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 )}
-            </div>
 
-            {showDetailsForm && (
-                <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
-                    <div className="relative w-full max-w-4xl bottom-96">
+            {/* Certificates Grid */}
+            {activeTab === 'certificates' && (
+                <div>
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-bold text-[#00FFFF]">Certificates</h2>
                         <button
-                            onClick={() => setShowDetailsForm(false)}
-                            className="absolute top-4 right-4 text-gray-400 hover:text-white z-10"
+                            onClick={handleAddCertificate}
+                            className="flex items-center gap-2 px-4 py-2 bg-[#9C27B0] text-white rounded hover:bg-purple-700 transition-colors"
                         >
-                            <MdClose size={24} />
+                            <FaPlus /> Add Certificate
                         </button>
-                        <PortfolioDetailsForm onClose={() => setShowDetailsForm(false)} />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {certificates.map((certificate) => (
+                            <div key={certificate.id} className="bg-[#161B22] rounded-lg shadow-lg overflow-hidden border border-gray-800">
+                                <div className="h-48 overflow-hidden">
+                                    <img
+                                        src={certificate.image}
+                                        alt={certificate.name}
+                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                    />
+                                </div>
+                                <div className="p-4">
+                                    <h3 className="text-xl font-semibold text-[#E5E5E5] mb-2">{certificate.name}</h3>
+                                    <div className="flex justify-between text-gray-400 text-sm mb-4">
+                                        <span>Issued by: {certificate.issuer}</span>
+                                        <span>{certificate.date}</span>
+                                    </div>
+                                    <div className="flex justify-end">
+                                        <a
+                                            href={certificate.link}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="px-4 py-2 bg-[#161B22] border border-[#00FFFF] text-[#00FFFF] rounded hover:bg-[#0D1117] transition-colors"
+                                        >
+                                            View Certificate
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+
+                        <div
+                            onClick={handleAddCertificate}
+                            className="bg-[#161B22] rounded-lg border border-dashed border-gray-600 flex items-center justify-center h-64 cursor-pointer hover:border-[#00FFFF] transition-colors"
+                        >
+                            <div className="text-center">
+                                <FaPlus size={24} className="mx-auto mb-2 text-gray-400" />
+                                <p className="text-gray-400">Add New Certificate</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
         </div>
+
+            {
+        showDetailsForm && (
+            <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+                <div className="relative w-full max-w-4xl bottom-96">
+                    <button
+                        onClick={() => setShowDetailsForm(false)}
+                        className="absolute top-4 right-4 text-gray-400 hover:text-white z-10"
+                    >
+                        <MdClose size={24} />
+                    </button>
+                    <PortfolioDetailsForm onClose={() => setShowDetailsForm(false)} />
+                </div>
+            </div>
+        )
+    }
+        </div >
     );
 };
 

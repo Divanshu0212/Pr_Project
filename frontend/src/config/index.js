@@ -59,8 +59,34 @@ const SummaryApi = {
             method: "delete"
         },
         reorder: {
-            url: `${backendDomain}/api/skills/manage/reorder`,
+            url: `${backendDomain}/api/skills/reorder`,
             method: "put"
+        }
+    },
+    projects: {
+        get: {
+            url: `${backendDomain}/api/projects`,
+            method: 'GET'
+        },
+        counts: {
+            url: `${backendDomain}/api/projects/counts`,
+            method: 'GET'
+        },
+        add: {
+            url: `${backendDomain}/api/projects`,
+            method: 'POST'
+        },
+        single: {
+            url: (id) => `${backendDomain}/api/projects/${id}`,
+            method: 'GET'
+        },
+        update: {
+            url: (id) => `${backendDomain}/api/projects/${id}`,
+            method: 'PUT'
+        },
+        delete: {
+            url: (id) => `${backendDomain}/api/projects/${id}`,
+            method: 'DELETE'
         }
     }
 };
