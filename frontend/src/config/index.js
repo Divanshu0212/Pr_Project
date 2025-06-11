@@ -88,6 +88,28 @@ const SummaryApi = {
             url: (id) => `${backendDomain}/api/projects/${id}`,
             method: 'DELETE'
         }
+    },
+    certificates: {
+        get: {
+            url: `${backendDomain}/api/certificates`,
+            method: 'GET'
+        },
+        add: {
+            url: `${backendDomain}/api/certificates`,
+            method: 'POST'
+        },
+        update: {
+            url: `${backendDomain}/api/certificates`,
+            method: 'PUT'
+        },
+        delete: {
+            url: `${backendDomain}/api/certificates`,
+            method: 'DELETE'
+        },
+        count: {
+            url: `${backendDomain}/api/certificates/count`,
+            method: 'GET'
+        }
     }
 };
 

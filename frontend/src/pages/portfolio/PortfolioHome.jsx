@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { FaPlus, FaGithub, FaLinkedin, FaTwitter, FaEnvelope, FaCamera, FaInstagram, FaFacebook } from 'react-icons/fa';
+import { FaPlus, FaGithub, FaLinkedin, FaTwitter, FaCertificate, FaCamera, FaInstagram, FaFacebook } from 'react-icons/fa';
 import { MdEdit, MdLocationOn, MdWork, MdClose, MdCheck } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
@@ -10,6 +10,8 @@ import PortfolioDetailsForm from './PortfolioDetailsForm';
 import { useEffect } from 'react';
 import { useQuery } from 'react-query';
 import ProjectCard from '../../components/portfolio/ProjectCard';
+import CertificateCard from '../../components/portfolio/CertificateCard';
+import AddCertificateForm from '../../components/portfolio/AddCertificateForm';
 
 const PortfolioHome = ({ user: propUser }) => {
     const navigate = useNavigate();
@@ -39,6 +41,10 @@ const PortfolioHome = ({ user: propUser }) => {
         'DevOps': [],
         'Other': []
     });
+
+    const [certificates, setCertificates] = useState([]);
+    const [showCertificateForm, setShowCertificateForm] = useState(false);
+    const [editingCertificate, setEditingCertificate] = useState(null);
 
     const user = propUser || {
         ...currentUser,
@@ -227,34 +233,115 @@ const PortfolioHome = ({ user: propUser }) => {
     // Filter pinned projects
     const pinnedProjects = projectsData?.projects || [];
 
+    // Fetch certificates data
+    const { data: certificatesData, refetch: refetchCertificates } = useQuery('certificates', async () => {
+        const token = localStorage.getItem('token');
+        const response = await fetch(SummaryApi.certificates.get.url, {
+            method: SummaryApi.certificates.get.method,
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (!response.ok) throw new Error('Failed to fetch certificates');
+        return response.json();
+    });
+
+    // Fetch certificate count
+    const { data: certificateCount } = useQuery('certificateCount', async () => {
+        const token = localStorage.getItem('token');
+        const response = await fetch(SummaryApi.certificates.count.url, {
+            method: SummaryApi.certificates.count.method,
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (!response.ok) throw new Error('Failed to fetch certificate count');
+        return response.json();
+    });
+
+    useEffect(() => {
+        if (certificatesData) {
+            setCertificates(certificatesData.certificates);
+        }
+    }, [certificatesData]);
+
     const handleAddCertificate = () => {
-        navigate('/portfolio/add');
+        setEditingCertificate(null);
+        setShowCertificateForm(true);
     };
 
-    const certificates = [
-        { id: 1, name: '12th Certificate', image: '../src/img/12th-Certificate.jpg', link: 'https://example.com/certificate1', issuer: 'CBSE', date: '2019' },
-        { id: 2, name: 'JEE Certificate', image: '../src/img/JEE-Certificate.jpg', link: 'https://example.com/certificate2', issuer: 'JEE Board', date: '2019' },
-    ];
+    const handleEditCertificate = (certificate) => {
+        setEditingCertificate(certificate);
+        setShowCertificateForm(true);
+    };
+
+    const handleDeleteCertificate = async (certificateId) => {
+        if (!window.confirm('Are you sure you want to delete this certificate?')) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${SummaryApi.certificates.delete.url}/${certificateId}`, {
+                method: SummaryApi.certificates.delete.method,
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete certificate');
+            }
+
+            refetchCertificates();
+            alert('Certificate deleted successfully');
+        } catch (error) {
+            console.error('Error deleting certificate:', error);
+            alert('Failed to delete certificate');
+        }
+    };
+
+    const handleCertificateSubmit = async (formData, certificateId) => {
+        try {
+            const token = localStorage.getItem('token');
+            let response;
+
+            if (certificateId) {
+                // Update existing certificate
+                response = await fetch(`${SummaryApi.certificates.update.url}/${certificateId}`, {
+                    method: SummaryApi.certificates.update.method,
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+            } else {
+                // Add new certificate
+                response = await fetch(SummaryApi.certificates.add.url, {
+                    method: SummaryApi.certificates.add.method,
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+            }
+
+            if (!response.ok) {
+                throw new Error(certificateId ? 'Failed to update certificate' : 'Failed to add certificate');
+            }
+
+            refetchCertificates();
+        } catch (error) {
+            console.error('Error submitting certificate:', error);
+            throw error;
+        }
+    };
 
     const stats = {
         projectsCount: countsData?.counts?.total || 0,
         completedProjects: countsData?.counts?.completed || 0,
-        certificates: 2,
+        certificates: certificateCount?.count || 0,
         experience: portfolioDetails.yearsOfExperience + 'Yrs' || '3 Yrs'
-    };
-
-    // Helper function to get status color
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'completed': return 'bg-green-500';
-            case 'in-progress': return 'bg-blue-500';
-            case 'planned': return 'bg-yellow-500';
-            default: return 'bg-gray-500';
-        }
-    };
-
-    const viewProjectDetails = (projectId) => {
-        navigate(`/portfolio/${projectId}`);
     };
 
     return (
@@ -519,78 +606,81 @@ const PortfolioHome = ({ user: propUser }) => {
                     </div>
                 )}
 
-            {/* Certificates Grid */}
-            {activeTab === 'certificates' && (
-                <div>
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-2xl font-bold text-[#00FFFF]">Certificates</h2>
-                        <button
-                            onClick={handleAddCertificate}
-                            className="flex items-center gap-2 px-4 py-2 bg-[#9C27B0] text-white rounded hover:bg-purple-700 transition-colors"
-                        >
-                            <FaPlus /> Add Certificate
-                        </button>
-                    </div>
+                {/* Certificates Grid */}
+                {activeTab === 'certificates' && (
+                    <div>
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-2xl font-bold text-[#00FFFF]">Certificates</h2>
+                            <button
+                                onClick={handleAddCertificate}
+                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] text-black rounded-lg hover:opacity-90 transition-opacity"
+                            >
+                                <FaPlus /> Add Certificate
+                            </button>
+                        </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {certificates.map((certificate) => (
-                            <div key={certificate.id} className="bg-[#161B22] rounded-lg shadow-lg overflow-hidden border border-gray-800">
-                                <div className="h-48 overflow-hidden">
-                                    <img
-                                        src={certificate.image}
-                                        alt={certificate.name}
-                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                                    />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {certificates.length === 0 ? (
+                                <div className="md:col-span-2 bg-[#161B22] rounded-lg p-8 text-center border border-dashed border-gray-600">
+                                    <FaCertificate size={48} className="mx-auto mb-4 text-gray-400" />
+                                    <p className="text-gray-400 mb-4">No certificates added yet</p>
+                                    <button
+                                        onClick={handleAddCertificate}
+                                        className="px-4 py-2 bg-[#00FFFF] text-black rounded-lg hover:opacity-90"
+                                    >
+                                        Add Your First Certificate
+                                    </button>
                                 </div>
-                                <div className="p-4">
-                                    <h3 className="text-xl font-semibold text-[#E5E5E5] mb-2">{certificate.name}</h3>
-                                    <div className="flex justify-between text-gray-400 text-sm mb-4">
-                                        <span>Issued by: {certificate.issuer}</span>
-                                        <span>{certificate.date}</span>
+                            ) : (
+                                <>
+                                    {certificates.map((certificate) => (
+                                        <CertificateCard
+                                            key={certificate._id}
+                                            certificate={certificate}
+                                            onEdit={handleEditCertificate}
+                                            onDelete={handleDeleteCertificate}
+                                        />
+                                    ))}
+                                    <div
+                                        onClick={handleAddCertificate}
+                                        className="bg-[#161B22] rounded-lg border border-dashed border-gray-600 flex items-center justify-center h-64 cursor-pointer hover:border-[#00FFFF] transition-colors"
+                                    >
+                                        <div className="text-center">
+                                            <FaPlus size={24} className="mx-auto mb-2 text-gray-400" />
+                                            <p className="text-gray-400">Add New Certificate</p>
+                                        </div>
                                     </div>
-                                    <div className="flex justify-end">
-                                        <a
-                                            href={certificate.link}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="px-4 py-2 bg-[#161B22] border border-[#00FFFF] text-[#00FFFF] rounded hover:bg-[#0D1117] transition-colors"
-                                        >
-                                            View Certificate
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-
-                        <div
-                            onClick={handleAddCertificate}
-                            className="bg-[#161B22] rounded-lg border border-dashed border-gray-600 flex items-center justify-center h-64 cursor-pointer hover:border-[#00FFFF] transition-colors"
-                        >
-                            <div className="text-center">
-                                <FaPlus size={24} className="mx-auto mb-2 text-gray-400" />
-                                <p className="text-gray-400">Add New Certificate</p>
-                            </div>
+                                </>
+                            )}
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )}
+
+                {showCertificateForm && (
+                    <AddCertificateForm
+                        onClose={() => setShowCertificateForm(false)}
+                        onSubmit={handleCertificateSubmit}
+                        initialData={editingCertificate}
+                        isEditing={!!editingCertificate}
+                    />
+                )}
+            </div>
 
             {
-        showDetailsForm && (
-            <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
-                <div className="relative w-full max-w-4xl bottom-96">
-                    <button
-                        onClick={() => setShowDetailsForm(false)}
-                        className="absolute top-4 right-4 text-gray-400 hover:text-white z-10"
-                    >
-                        <MdClose size={24} />
-                    </button>
-                    <PortfolioDetailsForm onClose={() => setShowDetailsForm(false)} />
-                </div>
-            </div>
-        )
-    }
+                showDetailsForm && (
+                    <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+                        <div className="relative w-full max-w-4xl md:bottom-44 bottom-96">
+                            <button
+                                onClick={() => setShowDetailsForm(false)}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-white z-10"
+                            >
+                                <MdClose size={24} />
+                            </button>
+                            <PortfolioDetailsForm onClose={() => setShowDetailsForm(false)} />
+                        </div>
+                    </div>
+                )
+            }
         </div >
     );
 };

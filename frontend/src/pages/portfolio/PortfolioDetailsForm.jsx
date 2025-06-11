@@ -170,7 +170,7 @@ const PortfolioDetailsForm = ({ onClose }) => {
                             />
                         </div>
 
-                        <div className="flex items-center">
+                        {/* <div className="flex items-center">
                             <FaEnvelope className="text-gray-300 mr-2" size={20} />
                             <input
                                 type="url"
@@ -180,7 +180,7 @@ const PortfolioDetailsForm = ({ onClose }) => {
                                 placeholder="Personal Website"
                                 className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded focus:border-cyan-400 focus:outline-none"
                             />
-                        </div>
+                        </div> */}
                     </div>
                 </div>
 
