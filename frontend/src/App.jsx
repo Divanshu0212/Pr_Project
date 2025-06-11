@@ -30,10 +30,11 @@ import OAuthCallback from './pages/OAuthCallback';
 
 // Portfolio Pages
 import PortfolioHome from './pages/portfolio/PortfolioHome';
-import AddProject from './pages/portfolio/AddProject';
 import ProjectTracking from './pages/portfolio/ProjectTracking';
 import TeamCollab from './pages/portfolio/TeamCollab';
-import PortfolioItemDetail from './pages/portfolio/PortfolioItemDetail';
+import SkillManagement from './components/portfolio/SkillManagement';
+import ProjectForm from './components/portfolio/ProjectForm';
+import ProjectDetails from './pages/portfolio/ProjectDetails';
 
 // Resume Pages
 import ResumeBuilderHome from './pages/resume/ResumeBuilderHome';
@@ -59,9 +60,6 @@ import './styles/global.css';
 import './App.css';
 import './styles/animations.css'; // Ensure animations.css is imported
 import ResumeATSScanner from './pages/ats/new';
-import SkillManagement from './components/portfolio/SkillManagement';
-import ProjectForm from './components/portfolio/ProjectForm';
-import ProjectDetails from './pages/portfolio/ProjectDetails';
 
 // AnimatedRoutes component wraps all routes with transitions
 const AnimatedRoutes = () => {

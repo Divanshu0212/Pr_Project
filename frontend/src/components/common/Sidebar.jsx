@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Link, useLocation } from 'react-router-dom';
 import { FiHome, FiBriefcase, FiFileText, FiActivity, FiChevronRight, FiHelpCircle, FiMessageSquare, FiPlus, FiTrello, FiUsers, FiPieChart, FiBarChart2, FiSearch } from 'react-icons/fi';
 import './Sidebar.css';
+import { AuthContext } from '../../context/AuthContext';
 
 const Sidebar = ({ user, isOpen, onClose }) => {
   const location = useLocation();
   const sidebarRef = useRef(null);
-  
+  const { portfolioDetails } = useContext(AuthContext);
 
   const menuItems = [
     {
@@ -130,7 +131,7 @@ const Sidebar = ({ user, isOpen, onClose }) => {
                 <h3 className="sidebar-username">
                   {user?.username || 'Welcome'}
                 </h3>
-                <p className="sidebar-role">Developer</p>
+                <p className="sidebar-role">{portfolioDetails?.jobTitle || 'Developer'}</p>
               </div>
             </div>
           </div>
