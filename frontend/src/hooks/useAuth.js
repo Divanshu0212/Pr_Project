@@ -12,12 +12,13 @@ export const useAuth = () => {
   const enhancedContext = {
     ...context,
 
-    signup: async (email, password, username, profileImageFile) => {
+    signup: async (email, password, username, displayName, profileImageFile) => {
       try {
         const formData = new FormData();
         formData.append('username', username);
         formData.append('email', email);
         formData.append('password', password);
+        formData.append('displayName', displayName);
         if (profileImageFile) {
           formData.append('profileImage', profileImageFile);
         }
@@ -35,6 +36,7 @@ export const useAuth = () => {
           context.setCurrentUser?.({
             id: response.data.user._id,
             username: response.data.user.username,
+            displayName: response.data.user.displayName,
             email: response.data.user.email,
             profileImage: response.data.user.profileImage
           });

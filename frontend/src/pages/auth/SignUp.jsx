@@ -12,6 +12,7 @@ const SignUp = () => {
   const context = React.useContext(AuthContext);
   const [formData, setFormData] = useState({
     username: '',
+    displayName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -99,6 +100,10 @@ const SignUp = () => {
       newErrors.username = 'Username is required';
     }
 
+    if (!formData.displayName.trim()) {
+      newErrors.displayName = 'Display Name is required';
+    }
+
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
@@ -149,6 +154,7 @@ const SignUp = () => {
       try {
         const signupFormData = new FormData();
         signupFormData.append('username', formData.username);
+        signupFormData.append('displayName', formData.displayName);
         signupFormData.append('email', formData.email);
         signupFormData.append('password', formData.password);
         if (profileImage.file) {
@@ -312,6 +318,23 @@ const SignUp = () => {
                 />
               </div>
               {errors.username && <p className="text-red-400 text-sm mt-1">{errors.username}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="displayName" className="text-[#E5E5E5] block font-medium">Display Name</label>
+              <div className="input-container">
+                <input
+                  type="text"
+                  id="displayName"
+                  name="displayName"
+                  placeholder="Choose a display name"
+                  value={formData.displayName}
+                  onChange={handleChange}
+                  required
+                  className={`w-full px-4 py-3 bg-[#0D1117] text-white border-0 focus:outline-none ${errors.displayName ? 'ring-2 ring-red-500' : ''}`}
+                />
+              </div>
+              {errors.displayName && <p className="text-red-400 text-sm mt-1">{errors.displayName}</p>}
             </div>
 
             <div className="space-y-2">

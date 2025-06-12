@@ -12,6 +12,7 @@ const portfolioDetailsRoutes = require('./routes/portfolioDetails');
 const skillRoutes = require('./routes/skill');
 const projectRoutes = require('./routes/project');
 const certificateRoutes = require('./routes/certificate');
+const experienceRoutes = require('./routes/experience');
 
 const app = express();
 
@@ -62,6 +63,7 @@ try {
   app.use('/api/skills', skillRoutes);
   app.use('/api/projects', projectRoutes)
   app.use('/api/certificates', certificateRoutes);
+  app.use('/api/experiences', experienceRoutes);
 } catch (err) {
   console.error('Error registering routes:', err);
 }

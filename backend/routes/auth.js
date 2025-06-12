@@ -32,17 +32,18 @@ router.post('/signup', (req, res, next) => {
     }
 
     try {
-      const { username, email, password } = req.body;
+      const { username, email, password, displayName } = req.body;
 
       // Validate required fields
-      if (!username || !email || !password) {
+      if (!username || !email || !password || !displayName) {
         return res.status(400).json({
           success: false,
           message: 'All fields are required',
           missingFields: {
             username: !username,
             email: !email,
-            password: !password
+            password: !password,
+            displayName: !displayName
           }
         });
       }
@@ -69,7 +70,7 @@ router.post('/signup', (req, res, next) => {
       }
 
       // Create user
-      const user = new User({ username, email, password });
+      const user = new User({ username, email, password, displayName });
 
       // Handle profile image if provided
       let profileImage = { public_id: '', url: '' };
@@ -98,6 +99,7 @@ router.post('/signup', (req, res, next) => {
         user: {
           id: user._id,
           username: user.username,
+          displayName: user.displayName,
           email: user.email,
           profileImage: user.profileImage
         }
@@ -160,6 +162,7 @@ router.post('/login', (req, res, next) => {
           user: {
             id: user._id,
             username: user.username,
+            displayName: user.displayName,
             email: user.email,
             provider: user.provider,
             profileImage: user.profileImage
@@ -178,6 +181,7 @@ router.get('/check-session', (req, res) => {
       user: {
         id: req.user._id,
         username: req.user.username,
+        displayName: req.user.displayName,
         email: req.user.email,
         provider: req.user.provider,
         profileImage: req.user.profileImage
@@ -197,6 +201,7 @@ router.get('/verify-token', passport.authenticate('jwt', { session: false }), (r
     user: {
       id: req.user._id,
       username: req.user.username,
+      displayName: req.user.displayName,
       email: req.user.email,
       profileImage: req.user.profileImage
     }
@@ -260,6 +265,7 @@ router.get('/me', passport.authenticate('jwt', { session: false }), (req, res) =
     user: {
       username: req.user.username,
       email: req.user.email,
+      displayName: req.user.displayName,
       id: req.user._id,
       profileImage: req.user.profileImage
     }
