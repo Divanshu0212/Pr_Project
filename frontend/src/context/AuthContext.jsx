@@ -43,7 +43,8 @@ export const AuthProvider = ({ children }) => {
         if (response.ok) {
           const userData = await response.json();
           setCurrentUser({
-            displayName: userData.user.username || userData.user.name || 'User',
+            username: userData.user.username || 'User',
+            displayName: userData.user.displayName || userData.user.name || 'User',
             email: userData.user.email,
             profileImage: userData.user.profileImage || null
           });
@@ -89,7 +90,7 @@ export const AuthProvider = ({ children }) => {
         const userData = await response.json();
         setCurrentUser({
           ...userData.data,
-          displayName: userData.data.username || 'User',
+          displayName: userData.data.displayName || 'User',
           profileImage: userData.data.profileImage || null
         });
         setIsAuthenticated(true);
@@ -199,7 +200,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signup = async (email, password, username) => {
+  const signup = async (email, password, username, displayName) => {
     setError(null);
     try {
       const response = await fetch(SummaryApi.signUp.url, {
@@ -208,7 +209,7 @@ export const AuthProvider = ({ children }) => {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ username, email, password, displayName }),
       });
 
       const result = await response.json();
@@ -261,7 +262,8 @@ const handleOAuthCallback = async (token, user) => {
       
       setCurrentUser({
         id: user._id,
-        displayName: user.username || user.displayName || 'User',
+        username: user.username || 'User',
+        displayName: user.displayName || 'User',
         email: user.email,
       });
       
