@@ -110,6 +110,28 @@ const SummaryApi = {
             url: `${backendDomain}/api/certificates/count`,
             method: 'GET'
         }
+    },
+    experiences: {
+        get: {
+            url: `${backendDomain}/api/experiences`,
+            method: 'GET'
+        },
+        add: {
+            url: `${backendDomain}/api/experiences`,
+            method: 'POST'
+        },
+        update: {
+            url: `${backendDomain}/api/experiences`,
+            method: 'PUT'
+        },
+        delete: {
+            url: `${backendDomain}/api/experiences`,
+            method: 'DELETE'
+        },
+        total: {
+            url: `${backendDomain}/api/experiences/total`,
+            method: 'GET'
+        }
     }
 };
 

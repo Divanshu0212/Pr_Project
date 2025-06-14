@@ -308,10 +308,10 @@ const Navbar = ({ onToggleSidebar }) => {
                     />
                   ) : (
                     <div className="user-default-avatar">
-                      {user?.username?.charAt(0) || 'U'}
+                      {user?.displayName?.charAt(0) || 'U'}
                     </div>
                   )}
-                  <span className="username">{user?.username || 'User'}</span>
+                  <span className="username">{user?.displayName || 'User'}</span>
                   <FiChevronDown className={`dropdown-arrow ${userMenuOpen ? 'open' : ''}`} />
                 </button>
 
@@ -324,12 +324,12 @@ const Navbar = ({ onToggleSidebar }) => {
                             <img src={user.profileImage.url} alt="Profile" />
                           ) : (
                             <div className="dropdown-default-avatar">
-                              {user?.username?.charAt(0) || 'U'}
+                              {user?.displayName || 'U'}
                             </div>
                           )}
                         </div>
                         <div className="dropdown-user-details">
-                          <h4>{user?.username || 'User'}</h4>
+                          <h4>{user?.displayName || 'User'}</h4>
                           <p>{user?.email || 'user@example.com'}</p>
                         </div>
                       </div>
@@ -416,10 +416,10 @@ const Navbar = ({ onToggleSidebar }) => {
               />
             ) : (
               <div className="mobile-default-avatar">
-                {user?.username?.charAt(0) || 'U'}
+                {user?.displayName?.charAt(0) || 'U'}
               </div>
             )}
-            <span className="mobile-username">{user?.username || 'User'}</span>
+            <span className="mobile-username">{user?.displayName}</span>
           </div>
           
           <div className="mobile-search">

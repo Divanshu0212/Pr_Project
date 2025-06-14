@@ -21,6 +21,7 @@ const Sidebar = ({ user, isOpen, onClose }) => {
       path: '/portfolioHome',
       icon: <FiBriefcase className="sidebar-icon-svg" />,
       subItems: [
+        { title: 'Add Skills', path: '/portfolio/skills', icon: <FiPlus size={14} /> },
         { title: 'Add Project', path: '/portfolio/add', icon: <FiPlus size={14} /> },
         { title: 'Project Tracking', path: '/portfolio/tracking', icon: <FiTrello size={14} /> },
         { title: 'Team Collaboration', path: '/portfolio/team', icon: <FiUsers size={14} /> }
@@ -31,7 +32,7 @@ const Sidebar = ({ user, isOpen, onClose }) => {
       path: '/resume-builder-home',
       icon: <FiFileText className="sidebar-icon-svg" />,
       subItems: [
-        { title: 'Create Resume', path: '/resume/create', icon: <FiPlus size={14} /> },
+        { title: 'Create Resume', path: '/resume-builder', icon: <FiPlus size={14} /> },
         { title: 'Templates', path: '/resume/templates', icon: <FiFileText size={14} /> }
       ]
     },
@@ -124,12 +125,12 @@ const Sidebar = ({ user, isOpen, onClose }) => {
                 />
               ) : (
                 <div className="sidebar-default-avatar">
-                  {user?.username?.charAt(0) || 'U'}
+                  {user?.displayName?.charAt(0) || 'U'}
                 </div>
               )}
               <div className="sidebar-user-info">
                 <h3 className="sidebar-username">
-                  {user?.username || 'Welcome'}
+                  {user?.displayName || 'Welcome'}
                 </h3>
                 <p className="sidebar-role">{portfolioDetails?.jobTitle || 'Developer'}</p>
               </div>

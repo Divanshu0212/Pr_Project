@@ -1,28 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Button from '../../components/common/Button';
 import Card from '../../components/common/Card';
 import Form from '../../components/common/Form';
 import Modal from '../../components/common/Modal';
 import usePortfolio from '../../hooks/usePortfolio';
-import { useAuth } from '../../hooks/useAuth';
 import { resumeService } from '../../services/resumeService';
 import './../../styles/pages/BuildResume.css';
+import { AuthContext } from '../../context/AuthContext';
 
 const BuildResume = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
-  const { portfolioItems, loading: portfolioLoading, fetchPortfolioItems } = usePortfolio();
-  
+  const {
+    currentUser,
+    fetchUserDetails,
+    setCurrentUser
+  } = useContext(AuthContext);
+
+  const user = currentUser;
+
+  const {
+    portfolioData,
+    loading: portfolioLoading,
+    fetchAllPortfolioData
+  } = usePortfolio();
   const [currentStep, setCurrentStep] = useState(1);
   const [showPreview, setShowPreview] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [template, setTemplate] = useState(location?.state?.template || null);
+  const [formErrors, setFormErrors] = useState({});
   const [resumeData, setResumeData] = useState({
     basicInfo: {
-      name: user?.displayName || '',
-      email: user?.email || '',
+      name: '',
+      email: '',
       phone: '',
       location: '',
       title: '',
@@ -40,28 +51,127 @@ const BuildResume = () => {
     },
     customSections: [],
     layoutOptions: {
-      colorScheme: 'default', // default, professional, creative, minimal
-      fontFamily: 'Inter', // Inter, Roboto, Poppins, Open Sans
-      fontSize: 'medium', // small, medium, large
-      spacing: 'comfortable', // compact, comfortable, spacious
-      showPhoto: false,
+      colorScheme: location?.state?.template?.defaultColorScheme || 'default',
+      fontFamily: location?.state?.template?.defaultFont || 'Inter',
+      fontSize: location?.state?.template?.defaultFontSize || 'medium',
+      spacing: location?.state?.template?.defaultSpacing || 'comfortable',
+      showPhoto: location?.state?.template?.defaultShowPhoto || false,
     }
   });
-  
   const [generatedResume, setGeneratedResume] = useState(null);
   const [error, setError] = useState(null);
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [resumeName, setResumeName] = useState('');
+  const [initialized, setInitialized] = useState(false);
+
+  const availableTemplates = [
+    {
+      id: '1',
+      name: 'Professional',
+      description: 'Clean and modern design for all industries',
+      thumbnail: '/images/templates/professional.jpg',
+      defaultColorScheme: 'blue',
+      defaultFont: 'Inter',
+      defaultFontSize: 'medium',
+      defaultSpacing: 'comfortable',
+      defaultShowPhoto: true
+    },
+    {
+      id: '2',
+      name: 'Creative',
+      description: 'Bold design for creative professionals',
+      thumbnail: '/images/templates/creative.jpg',
+      defaultColorScheme: 'purple',
+      defaultFont: 'Poppins',
+      defaultFontSize: 'medium',
+      defaultSpacing: 'spacious',
+      defaultShowPhoto: true
+    },
+  ];
 
   useEffect(() => {
-    // If template was selected from gallery and passed via location state
-    if (location?.state?.template) {
-      setTemplate(location.state.template);
+    const initializeData = async () => {
+      try {
+        // Fetch all portfolio data first
+        await fetchAllPortfolioData();
+
+        // Initialize resumeData after portfolio data is loaded
+        setResumeData({
+          basicInfo: {
+            name: user?.displayName || portfolioData?.portfolioDetails?.user?.name || '',
+            email: user?.email || '',
+            phone: '',
+            location: portfolioData?.portfolioDetails?.location || '',
+            title: portfolioData?.portfolioDetails?.jobTitle || '',
+            summary: portfolioData?.portfolioDetails?.bio || '',
+            linkedin: portfolioData?.portfolioDetails?.socialLinks?.linkedin || '',
+            github: portfolioData?.portfolioDetails?.socialLinks?.github || '',
+            website: '',
+          },
+          selectedItems: {
+            projects: portfolioData?.projects?.map(project => project._id) || [],
+            skills: portfolioData?.skills?.map(skill => skill._id) || [],
+            education: [],
+            experience: portfolioData?.experiences?.map(exp => exp._id) || [],
+            certifications: portfolioData?.certificates?.map(cert => cert._id) || [],
+          },
+          customSections: [],
+          layoutOptions: {
+            colorScheme: location?.state?.template?.defaultColorScheme || 'default',
+            fontFamily: location?.state?.template?.defaultFont || 'Inter',
+            fontSize: location?.state?.template?.defaultFontSize || 'medium',
+            spacing: location?.state?.template?.defaultSpacing || 'comfortable',
+            showPhoto: location?.state?.template?.defaultShowPhoto || false,
+          }
+        });
+
+        if (location?.state?.template) {
+          setTemplate(location.state.template);
+          setResumeData(prev => ({
+            ...prev,
+            layoutOptions: {
+              colorScheme: location.state.template.defaultColorScheme || 'default',
+              fontFamily: location.state.template.defaultFont || 'Inter',
+              fontSize: location.state.template.defaultFontSize || 'medium',
+              spacing: location.state.template.defaultSpacing || 'comfortable',
+              showPhoto: location.state.template.defaultShowPhoto || false,
+            }
+          }));
+        }
+
+        setInitialized(true);
+      } catch (error) {
+        console.error('Error initializing data:', error);
+        setError('Failed to load portfolio data. Please try again.');
+      }
+    };
+
+    initializeData();
+  }, [location.state, user]);
+
+  // Validate current step before proceeding
+  const validateStep = () => {
+    const errors = {};
+
+    if (currentStep === 1) {
+      if (!resumeData.basicInfo.name.trim()) errors.name = 'Name is required';
+      if (!resumeData.basicInfo.title.trim()) errors.title = 'Professional title is required';
+      if (!resumeData.basicInfo.email.trim()) errors.email = 'Email is required';
+      if (!resumeData.basicInfo.phone.trim()) errors.phone = 'Phone number is required';
+      if (!resumeData.basicInfo.location.trim()) errors.location = 'Location is required';
+      if (!resumeData.basicInfo.summary.trim()) errors.summary = 'Professional summary is required';
+    } else if (currentStep === 2) {
+      const hasSelectedItems = Object.values(resumeData.selectedItems).some(
+        items => items.length > 0
+      );
+      if (!hasSelectedItems && resumeData.customSections.length === 0) {
+        errors.content = 'Please select at least one portfolio item or add a custom section';
+      }
     }
-    
-    // Fetch user's portfolio items
-    fetchPortfolioItems();
-  }, [location.state, fetchPortfolioItems]);
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   const handleInputChange = (section, field, value) => {
     setResumeData(prev => ({
@@ -71,6 +181,14 @@ const BuildResume = () => {
         [field]: value
       }
     }));
+
+    if (formErrors[field]) {
+      setFormErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
   };
 
   const handleLayoutOptionChange = (option, value) => {
@@ -87,13 +205,13 @@ const BuildResume = () => {
     setResumeData(prev => {
       const selectedItems = [...prev.selectedItems[type]];
       const index = selectedItems.indexOf(itemId);
-      
+
       if (index > -1) {
         selectedItems.splice(index, 1);
       } else {
         selectedItems.push(itemId);
       }
-      
+
       return {
         ...prev,
         selectedItems: {
@@ -102,6 +220,14 @@ const BuildResume = () => {
         }
       };
     });
+
+    if (formErrors.content) {
+      setFormErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.content;
+        return newErrors;
+      });
+    }
   };
 
   const addCustomSection = () => {
@@ -112,6 +238,14 @@ const BuildResume = () => {
         { title: '', content: '' }
       ]
     }));
+
+    if (formErrors.content) {
+      setFormErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.content;
+        return newErrors;
+      });
+    }
   };
 
   const updateCustomSection = (index, field, value) => {
@@ -121,7 +255,6 @@ const BuildResume = () => {
         ...updatedSections[index],
         [field]: value
       };
-      
       return {
         ...prev,
         customSections: updatedSections
@@ -133,7 +266,6 @@ const BuildResume = () => {
     setResumeData(prev => {
       const updatedSections = [...prev.customSections];
       updatedSections.splice(index, 1);
-      
       return {
         ...prev,
         customSections: updatedSections
@@ -142,6 +274,10 @@ const BuildResume = () => {
   };
 
   const nextStep = () => {
+    if (!validateStep()) {
+      return;
+    }
+
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1);
     } else {
@@ -155,24 +291,54 @@ const BuildResume = () => {
     }
   };
 
+  const handleStepNavigation = (step) => {
+    if (step < currentStep) {
+      setCurrentStep(step);
+    } else if (validateStep()) {
+      setCurrentStep(step);
+    } else {
+      // Show warning for trying to skip ahead without completing
+      setError('Please complete all required fields before proceeding');
+    }
+  };
+
   const handleSelectTemplate = (selectedTemplate) => {
     setTemplate(selectedTemplate);
-    navigate('/resume/create', { state: { template: selectedTemplate } });
+    setResumeData(prev => ({
+      ...prev,
+      layoutOptions: {
+        colorScheme: selectedTemplate.defaultColorScheme || 'default',
+        fontFamily: selectedTemplate.defaultFont || 'Inter',
+        fontSize: selectedTemplate.defaultFontSize || 'medium',
+        spacing: selectedTemplate.defaultSpacing || 'comfortable',
+        showPhoto: selectedTemplate.defaultShowPhoto || false,
+      }
+    }));
+
+    // Clear any template errors
+    setFormErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors.template;
+      return newErrors;
+    });
+
+    // Automatically proceed to step 4 (Review & Generate)
+    setCurrentStep(4);
   };
 
   const handleGenerateResume = async () => {
     setGenerating(true);
     setError(null);
-    
+
     try {
-      // Filter out only the selected portfolio items
       const selectedPortfolioItems = {};
-      
-      Object.keys(resumeData.selectedItems).forEach(type => {
-        selectedPortfolioItems[type] = portfolioItems
-          .filter(item => item.type === type && resumeData.selectedItems[type].includes(item.id))
+
+      // Map through all portfolio item types
+      ['projects', 'skills', 'education', 'experience', 'certifications'].forEach(type => {
+        selectedPortfolioItems[type] = (portfolioData[type] || [])
+          .filter(item => resumeData.selectedItems[type]?.includes(item._id))
           .map(item => ({
-            id: item.id,
+            id: item._id,
             title: item.title,
             description: item.description,
             date: item.date,
@@ -180,19 +346,18 @@ const BuildResume = () => {
             details: item.details
           }));
       });
-      
+
       const completeResumeData = {
         ...resumeData,
         template: template,
         selectedPortfolioItems,
         userId: user.uid
       };
-      
-      // Call the resume service to generate the resume
+
       const response = await resumeService.generateResume(completeResumeData);
       setGeneratedResume(response);
       setShowPreview(true);
-      
+
     } catch (err) {
       console.error('Error generating resume:', err);
       setError('Failed to generate resume. Please try again.');
@@ -206,7 +371,7 @@ const BuildResume = () => {
       setError('Please enter a name for your resume');
       return;
     }
-    
+
     try {
       await resumeService.saveResume({
         name: resumeName,
@@ -215,12 +380,12 @@ const BuildResume = () => {
         previewUrl: generatedResume?.previewUrl,
         userId: user.uid
       });
-      
+
       setSaveModalOpen(false);
-      navigate('/resume-builder-home', { 
+      navigate('/resume-builder-home', {
         state: { success: true, message: 'Resume saved successfully!' }
       });
-      
+
     } catch (err) {
       console.error('Error saving resume:', err);
       setError('Failed to save resume. Please try again.');
@@ -236,7 +401,6 @@ const BuildResume = () => {
     }
   };
 
-  // Render the appropriate step
   const renderStep = () => {
     switch (currentStep) {
       case 1: // Basic Information
@@ -244,135 +408,194 @@ const BuildResume = () => {
           <div className="resume-step">
             <h2 className="step-title">Basic Information</h2>
             <div className="form-section">
-              <Form>
+              <div className="form-group">
+                <label htmlFor="name">Full Name *</label>
+                <input
+                  type="text"
+                  id="name"
+                  className={`form-control ${formErrors.name ? 'border-red-500' : ''}`}
+                  value={resumeData.basicInfo.name}
+                  onChange={(e) => handleInputChange('basicInfo', 'name', e.target.value)}
+                  placeholder="Your full name"
+                  required
+                />
+                {formErrors.name && <div className="text-red-500 text-sm mt-1">{formErrors.name}</div>}
+              </div>
 
-                  <div className="form-group">
-                    <label htmlFor="name">Full Name</label>
-                    <input
-                      type="text"
-                      id="name"
-                      className="form-control"
-                      value={resumeData.basicInfo.name}
-                      onChange={(e) => handleInputChange('basicInfo', 'name', e.target.value)}
-                      placeholder="Your full name"
-                    />
-                  </div>
+              <div className="form-group">
+                <label htmlFor="title">Professional Title *</label>
+                <input
+                  type="text"
+                  id="title"
+                  className={`form-control ${formErrors.title ? 'error' : ''}`}
+                  value={resumeData.basicInfo.title}
+                  onChange={(e) => handleInputChange('basicInfo', 'title', e.target.value)}
+                  placeholder="e.g. Full Stack Developer"
+                  required
+                />
+                {formErrors.title && <div className="error-message">{formErrors.title}</div>}
+              </div>
 
-                  <div className="form-group">
-                    <label htmlFor="title">Professional Title</label>
-                    <input
-                      type="text"
-                      id="title"
-                      className="form-control"
-                      value={resumeData.basicInfo.title}
-                      onChange={(e) => handleInputChange('basicInfo', 'title', e.target.value)}
-                      placeholder="e.g. Full Stack Developer"
-                    />
-                  </div>
+              <div className="form-group">
+                <label htmlFor="email">Email *</label>
+                <input
+                  type="email"
+                  id="email"
+                  className={`form-control ${formErrors.email ? 'error' : ''}`}
+                  value={resumeData.basicInfo.email}
+                  onChange={(e) => handleInputChange('basicInfo', 'email', e.target.value)}
+                  placeholder="your.email@example.com"
+                  required
+                />
+                {formErrors.email && <div className="error-message">{formErrors.email}</div>}
+              </div>
 
-                  <div className="form-group">
-                    <label htmlFor="email">Email</label>
-                    <input
-                      type="email"
-                      id="email"
-                      className="form-control"
-                      value={resumeData.basicInfo.email}
-                      onChange={(e) => handleInputChange('basicInfo', 'email', e.target.value)}
-                      placeholder="your.email@example.com"
-                    />
-                  </div>
+              <div className="form-group">
+                <label htmlFor="phone">Phone *</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  className={`form-control ${formErrors.phone ? 'error' : ''}`}
+                  value={resumeData.basicInfo.phone}
+                  onChange={(e) => handleInputChange('basicInfo', 'phone', e.target.value)}
+                  placeholder="Your phone number"
+                  required
+                />
+                {formErrors.phone && <div className="error-message">{formErrors.phone}</div>}
+              </div>
 
-                  <div className="form-group">
-                    <label htmlFor="phone">Phone</label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      className="form-control"
-                      value={resumeData.basicInfo.phone}
-                      onChange={(e) => handleInputChange('basicInfo', 'phone', e.target.value)}
-                      placeholder="Your phone number"
-                    />
-                  </div>
+              <div className="form-group">
+                <label htmlFor="location">Location *</label>
+                <input
+                  type="text"
+                  id="location"
+                  className={`form-control ${formErrors.location ? 'error' : ''}`}
+                  value={resumeData.basicInfo.location}
+                  onChange={(e) => handleInputChange('basicInfo', 'location', e.target.value)}
+                  placeholder="City, State, Country"
+                  required
+                />
+                {formErrors.location && <div className="error-message">{formErrors.location}</div>}
+              </div>
 
-                  <div className="form-group">
-                    <label htmlFor="location">Location</label>
-                    <input
-                      type="text"
-                      id="location"
-                      className="form-control"
-                      value={resumeData.basicInfo.location}
-                      onChange={(e) => handleInputChange('basicInfo', 'location', e.target.value)}
-                      placeholder="City, State, Country"
-                    />
-                  </div>
+              <div className="form-group">
+                <label htmlFor="summary">Professional Summary *</label>
+                <textarea
+                  id="summary"
+                  className={`form-control ${formErrors.summary ? 'error' : ''}`}
+                  value={resumeData.basicInfo.summary}
+                  onChange={(e) => handleInputChange('basicInfo', 'summary', e.target.value)}
+                  placeholder="Write a brief professional summary..."
+                  rows="4"
+                  required
+                />
+                {formErrors.summary && <div className="error-message">{formErrors.summary}</div>}
+              </div>
 
-                  <div className="form-group">
-                    <label htmlFor="summary">Professional Summary</label>
-                    <textarea
-                      id="summary"
-                      className="form-control"
-                      value={resumeData.basicInfo.summary}
-                      onChange={(e) => handleInputChange('basicInfo', 'summary', e.target.value)}
-                      placeholder="Write a brief professional summary..."
-                      rows="4"
-                    />
-                  </div>
-              </Form>
+              {/* Optional fields */}
+              <div className="form-group">
+                <label htmlFor="linkedin">LinkedIn</label>
+                <input
+                  type="url"
+                  id="linkedin"
+                  className="form-control"
+                  value={resumeData.basicInfo.linkedin}
+                  onChange={(e) => handleInputChange('basicInfo', 'linkedin', e.target.value)}
+                  placeholder="https://linkedin.com/in/yourprofile"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="github">GitHub</label>
+                <input
+                  type="url"
+                  id="github"
+                  className="form-control"
+                  value={resumeData.basicInfo.github}
+                  onChange={(e) => handleInputChange('basicInfo', 'github', e.target.value)}
+                  placeholder="https://github.com/yourusername"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="website">Website</label>
+                <input
+                  type="url"
+                  id="website"
+                  className="form-control"
+                  value={resumeData.basicInfo.website}
+                  onChange={(e) => handleInputChange('basicInfo', 'website', e.target.value)}
+                  placeholder="https://yourwebsite.com"
+                />
+              </div>
+
             </div>
           </div>
         );
-        
+
       case 2: // Portfolio Items Selection
         return (
           <div className="resume-step">
             <h2 className="step-title">Select Portfolio Items</h2>
+            {formErrors.content && (
+              <div className="text-red-500 mb-4 p-2 bg-red-500 bg-opacity-10 rounded">
+                {formErrors.content}
+              </div>
+            )}
+
             {portfolioLoading ? (
               <div className="loading-indicator">Loading your portfolio items...</div>
             ) : (
               <>
-                {['projects', 'skills', 'education', 'experience', 'certifications'].map((itemType) => (
+                {['projects', 'skills', 'experiences', 'certificates'].map((itemType) => (
                   <div key={itemType} className="portfolio-section">
-                    <h3 className="section-title capitalize">{itemType}</h3>
+                    <h3 className="section-title capitalize">
+                      {itemType === 'experiences' ? 'Experience' :
+                        itemType === 'certificates' ? 'Certifications' : itemType}
+                    </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {portfolioItems
-                        .filter(item => item.type === itemType)
-                        .map(item => (
-                          <div 
-                            key={item.id} 
-                            className={`portfolio-item-card cursor-pointer ${
-                              resumeData.selectedItems[itemType].includes(item.id) ? 'selected' : ''
+                      {(portfolioData[itemType] || []).map(item => (
+                        <div
+                          key={item._id}
+                          className={`portfolio-item-card cursor-pointer ${resumeData.selectedItems[itemType === 'certificates' ? 'certifications' :
+                            itemType === 'experiences' ? 'experience' : itemType]?.includes(item._id) ? 'selected' : ''
                             }`}
-                            onClick={() => handlePortfolioItemToggle(itemType, item.id)}
-                          >
-                            <div className="card-inner p-4">
-                              <div className="flex justify-between items-start">
-                                <h4 className="item-title">{item.title}</h4>
-                                <div className="selection-indicator">
-                                  {resumeData.selectedItems[itemType].includes(item.id) ? (
-                                    <span className="text-[#00FFFF]">✓</span>
-                                  ) : null}
-                                </div>
+                          onClick={() => handlePortfolioItemToggle(
+                            itemType === 'certificates' ? 'certifications' :
+                              itemType === 'experiences' ? 'experience' : itemType,
+                            item._id
+                          )}
+                        >
+                          <div className="card-inner p-4">
+                            <div className="flex justify-between items-start">
+                              <h4 className="item-title">{item.title || item.name || item.position}</h4>
+                              <div className="selection-indicator">
+                                {resumeData.selectedItems[
+                                  itemType === 'certificates' ? 'certifications' :
+                                    itemType === 'experiences' ? 'experience' : itemType
+                                ]?.includes(item._id) ? (
+                                  <span className="text-[#00FFFF]">✓</span>
+                                ) : null}
                               </div>
-                              <p className="item-description">{item.description}</p>
-                              <div className="item-date text-sm text-gray-400">{item.date}</div>
+                            </div>
+                            <p className="item-description">
+                              {item.description || item.issuer || item.company}
+                            </p>
+                            <div className="item-date text-sm text-gray-400">
+                              {item.startDate || item.issueDate || ''}
+                              {item.endDate ? ` - ${item.endDate}` : item.isCurrent ? ' - Present' : ''}
                             </div>
                           </div>
-                        ))}
-                      {portfolioItems.filter(item => item.type === itemType).length === 0 && (
-                        <div className="empty-state col-span-full p-4 bg-[#161B22] rounded-lg">
-                          <p>No {itemType} found in your portfolio. <a href="/portfolio/add" className="text-[#00FFFF]">Add some {itemType} items</a> first?</p>
                         </div>
-                      )}
+                      ))}
                     </div>
                   </div>
                 ))}
               </>
             )}
-            
+
             <div className="custom-sections mt-8">
               <h3 className="section-title">Custom Sections</h3>
-              <p className="text-sm text-gray-400 mb-4">Add any additional sections you want to include in your resume.</p>
-              
               {resumeData.customSections.map((section, index) => (
                 <div key={index} className="custom-section mb-4 p-4 bg-[#161B22] rounded-lg">
                   <div className="flex justify-between mb-2">
@@ -383,7 +606,7 @@ const BuildResume = () => {
                       onChange={(e) => updateCustomSection(index, 'title', e.target.value)}
                       placeholder="Section Title"
                     />
-                    <button 
+                    <button
                       className="text-red-500 hover:text-red-700"
                       onClick={() => removeCustomSection(index)}
                     >
@@ -398,8 +621,8 @@ const BuildResume = () => {
                   />
                 </div>
               ))}
-              
-              <button 
+
+              <button
                 className="btn bg-[#161B22] hover:bg-[#1f262e] text-[#E5E5E5] px-4 py-2 rounded-lg"
                 onClick={addCustomSection}
               >
@@ -408,127 +631,59 @@ const BuildResume = () => {
             </div>
           </div>
         );
-        
+
       case 3: // Layout Customization
         return (
           <div className="resume-step">
-            <h2 className="step-title">Customize Layout</h2>
-            
-            <div className="layout-options grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="layout-option">
-                <h3 className="option-title">Color Scheme</h3>
-                <div className="option-choices">
-                  {['default', 'professional', 'creative', 'minimal'].map(scheme => (
-                    <div 
-                      key={scheme}
-                      className={`option-choice ${resumeData.layoutOptions.colorScheme === scheme ? 'selected' : ''}`}
-                      onClick={() => handleLayoutOptionChange('colorScheme', scheme)}
-                    >
-                      <div className={`color-preview ${scheme}-preview`}></div>
-                      <span className="capitalize">{scheme}</span>
-                    </div>
-                  ))}
-                </div>
+            <h2 className="step-title">Choose a Template</h2>
+            {formErrors.template && (
+              <div className="text-red-500 mb-4 p-2 bg-red-500 bg-opacity-10 rounded">
+                {formErrors.template}
               </div>
-              
-              <div className="layout-option">
-                <h3 className="option-title">Font Family</h3>
-                <div className="option-choices">
-                  {['Inter', 'Roboto', 'Poppins', 'Open Sans'].map(font => (
-                    <div 
-                      key={font}
-                      className={`option-choice ${resumeData.layoutOptions.fontFamily === font ? 'selected' : ''}`}
-                      onClick={() => handleLayoutOptionChange('fontFamily', font)}
-                    >
-                      <span style={{ fontFamily: font }}>{font}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="layout-option">
-                <h3 className="option-title">Font Size</h3>
-                <div className="option-choices">
-                  {['small', 'medium', 'large'].map(size => (
-                    <div 
-                      key={size}
-                      className={`option-choice ${resumeData.layoutOptions.fontSize === size ? 'selected' : ''}`}
-                      onClick={() => handleLayoutOptionChange('fontSize', size)}
-                    >
-                      <span className={`font-${size}`}>{size.charAt(0).toUpperCase() + size.slice(1)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="layout-option">
-                <h3 className="option-title">Spacing</h3>
-                <div className="option-choices">
-                  {['compact', 'comfortable', 'spacious'].map(spacing => (
-                    <div 
-                      key={spacing}
-                      className={`option-choice ${resumeData.layoutOptions.spacing === spacing ? 'selected' : ''}`}
-                      onClick={() => handleLayoutOptionChange('spacing', spacing)}
-                    >
-                      <div className={`spacing-preview ${spacing}-preview`}></div>
-                      <span className="capitalize">{spacing}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="layout-option col-span-1 md:col-span-2">
-                <h3 className="option-title">Photo</h3>
-                <div className="flex items-center space-x-2">
-                  <label className="switch">
-                    <input 
-                      type="checkbox" 
-                      checked={resumeData.layoutOptions.showPhoto}
-                      onChange={(e) => handleLayoutOptionChange('showPhoto', e.target.checked)}
-                    />
-                    <span className="slider round"></span>
-                  </label>
-                  <span>{resumeData.layoutOptions.showPhoto ? 'Show photo' : 'No photo'}</span>
-                </div>
-                {resumeData.layoutOptions.showPhoto && (
-                  <div className="photo-upload mt-4">
-                    <input type="file" accept="image/*" className="photo-input" />
-                    <p className="text-sm text-gray-400">Recommended: square image, 300x300px or larger</p>
+            )}
+
+            <div className="template-grid">
+              {availableTemplates.map((templateOption) => (
+                <div
+                  key={templateOption.id}
+                  className={`template-card ${template?.id === templateOption.id ? 'selected' : ''}`}
+                  onClick={() => handleSelectTemplate(templateOption)}
+                >
+                  <img
+                    src={templateOption.thumbnail}
+                    alt={templateOption.name}
+                    className="template-thumbnail"
+                  />
+                  <div className="template-info">
+                    <h4>{templateOption.name}</h4>
+                    <p>{templateOption.description}</p>
                   </div>
-                )}
-              </div>
+                </div>
+              ))}
             </div>
-            
-            <div className="template-preview mt-8">
-              <h3 className="section-title">Template Preview</h3>
-              {template ? (
-                <div className="template-card">
-                  <img src={template.thumbnail} alt={template.name} className="w-full h-auto" />
-                  <div className="template-info p-4">
-                    <h4>{template.name}</h4>
-                    <p>{template.description}</p>
-                  </div>
-                  <button 
-                    className="change-template-btn mt-4 text-[#00FFFF]"
-                    onClick={() => navigate('/resume/templates')}
-                  >
-                    Change Template
-                  </button>
-                </div>
-              ) : (
-                <div className="no-template-selected">
-                  <p>No template selected. <button className="text-[#00FFFF]" onClick={() => navigate('/resume/templates')}>Select a template</button> first.</p>
-                </div>
-              )}
+
+            <div className="template-actions mt-6">
+              <Button
+                className="back-btn"
+                onClick={prevStep}
+              >
+                Back to Content
+              </Button>
             </div>
           </div>
         );
-        
+
       case 4: // Review & Generate
         return (
           <div className="resume-step">
             <h2 className="step-title">Review & Generate</h2>
-            
+
+            {!template && (
+              <div className="alert alert-warning mb-4">
+                No template selected. Please go back to step 3 to select a template.
+              </div>
+            )}
+
             <div className="resume-review">
               <Card>
                 <h3 className="section-title">Basic Information</h3>
@@ -549,32 +704,42 @@ const BuildResume = () => {
                     <span className="review-label">Location:</span>
                     <span className="review-value">{resumeData.basicInfo.location}</span>
                   </div>
+                  <div className="review-item">
+                    <span className="review-label">Summary:</span>
+                    <span className="review-value">{resumeData.basicInfo.summary}</span>
+                  </div>
                 </div>
               </Card>
-              
+
               <Card className="mt-4">
                 <h3 className="section-title">Selected Portfolio Items</h3>
                 <div className="review-section">
-                  {['projects', 'skills', 'education', 'experience', 'certifications'].map((itemType) => {
-                    const selectedCount = resumeData.selectedItems[itemType].length;
+                  {['projects', 'skills', 'experience', 'certifications'].map((itemType) => {
+                    const selectedCount = resumeData.selectedItems[itemType]?.length || 0;
                     return (
                       <div key={itemType} className="review-item">
                         <span className="review-label capitalize">{itemType}:</span>
                         <span className="review-value">
                           {selectedCount} item{selectedCount !== 1 ? 's' : ''} selected
+                          {selectedCount > 0 && (
+                            <ul className="selected-items-list mt-1">
+                              {portfolioData[itemType === 'certifications' ? 'certificates' :
+                                itemType === 'experience' ? 'experiences' : itemType]
+                                ?.filter(item => resumeData.selectedItems[itemType]?.includes(item._id))
+                                ?.map(item => (
+                                  <li key={item._id} className="text-sm text-gray-400">
+                                    {item.title || item.name || item.position}
+                                  </li>
+                                ))}
+                            </ul>
+                          )}
                         </span>
                       </div>
                     );
                   })}
-                  <div className="review-item">
-                    <span className="review-label">Custom Sections:</span>
-                    <span className="review-value">
-                      {resumeData.customSections.length} section{resumeData.customSections.length !== 1 ? 's' : ''}
-                    </span>
-                  </div>
                 </div>
               </Card>
-              
+
               <Card className="mt-4">
                 <h3 className="section-title">Layout & Design</h3>
                 <div className="review-section">
@@ -601,7 +766,7 @@ const BuildResume = () => {
                 </div>
               </Card>
             </div>
-            
+
             {error && (
               <div className="error-message mt-4 p-3 bg-red-500 bg-opacity-20 border border-red-500 rounded-lg text-red-400">
                 {error}
@@ -609,7 +774,7 @@ const BuildResume = () => {
             )}
           </div>
         );
-      
+
       default:
         return null;
     }
@@ -618,39 +783,39 @@ const BuildResume = () => {
   // Render the resume preview modal
   const renderPreviewModal = () => {
     if (!showPreview || !generatedResume) return null;
-    
+
     return (
       <Modal isOpen={showPreview} onClose={() => setShowPreview(false)} className="resume-preview-modal">
         <div className="resume-preview">
           <h2 className="preview-title">Resume Preview</h2>
-          
+
           <div className="preview-iframe-container">
             {generatedResume.previewUrl && (
-              <iframe 
-                src={generatedResume.previewUrl} 
-                title="Resume Preview" 
+              <iframe
+                src={generatedResume.previewUrl}
+                title="Resume Preview"
                 className="preview-iframe"
               />
             )}
           </div>
-          
+
           <div className="preview-actions mt-4 flex flex-wrap justify-between">
             <div className="download-options">
               <h3>Download as:</h3>
               <div className="flex space-x-2 mt-2">
-                <Button 
+                <Button
                   className="download-btn pdf"
                   onClick={() => handleDownloadResume('pdf')}
                 >
                   PDF
                 </Button>
-                <Button 
+                <Button
                   className="download-btn docx"
                   onClick={() => handleDownloadResume('docx')}
                 >
                   DOCX
                 </Button>
-                <Button 
+                <Button
                   className="download-btn txt"
                   onClick={() => handleDownloadResume('txt')}
                 >
@@ -658,9 +823,9 @@ const BuildResume = () => {
                 </Button>
               </div>
             </div>
-            
+
             <div className="save-options">
-              <Button 
+              <Button
                 className="save-btn"
                 onClick={() => setSaveModalOpen(true)}
               >
@@ -679,7 +844,7 @@ const BuildResume = () => {
       <Modal isOpen={saveModalOpen} onClose={() => setSaveModalOpen(false)}>
         <div className="save-resume-modal">
           <h2>Save Your Resume</h2>
-          
+
           <div className="form-group mt-4">
             <label htmlFor="resumeName">Resume Name</label>
             <input
@@ -691,21 +856,21 @@ const BuildResume = () => {
               placeholder="e.g. Software Developer Resume 2025"
             />
           </div>
-          
+
           {error && (
             <div className="error-message mt-2 text-red-400">
               {error}
             </div>
           )}
-          
+
           <div className="modal-actions mt-4 flex justify-end space-x-2">
-            <Button 
+            <Button
               className="cancel-btn"
               onClick={() => setSaveModalOpen(false)}
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               className="confirm-btn"
               onClick={handleSaveResume}
             >
@@ -723,10 +888,10 @@ const BuildResume = () => {
         <h1 className="page-title">Create Your Resume</h1>
         <div className="steps-progress">
           {[1, 2, 3, 4].map((step) => (
-            <div 
-              key={step} 
+            <div
+              key={step}
               className={`step ${currentStep === step ? 'active' : ''} ${currentStep > step ? 'completed' : ''}`}
-              onClick={() => setCurrentStep(step)}
+              onClick={() => handleStepNavigation(step)}
             >
               <div className="step-number">{step}</div>
               <div className="step-label">
@@ -739,21 +904,27 @@ const BuildResume = () => {
           ))}
         </div>
       </div>
-      
+
+      {error && (
+        <div className="error-message mb-4 p-3 bg-red-500 bg-opacity-20 border border-red-500 rounded-lg text-red-400">
+          {error}
+        </div>
+      )}
+
       <div className="build-resume-content">
         {renderStep()}
       </div>
-      
+
       <div className="build-resume-actions mt-6 flex justify-between">
-        <Button 
+        <Button
           className="prev-btn"
           onClick={prevStep}
           disabled={currentStep === 1}
         >
           Previous Step
         </Button>
-        
-        <Button 
+
+        <Button
           className={`next-btn ${currentStep === 4 ? 'generate-btn' : ''}`}
           onClick={nextStep}
           disabled={generating}
@@ -761,7 +932,7 @@ const BuildResume = () => {
           {currentStep < 4 ? 'Next Step' : (generating ? 'Generating...' : 'Generate Resume')}
         </Button>
       </div>
-      
+
       {renderPreviewModal()}
       {renderSaveModal()}
     </div>
