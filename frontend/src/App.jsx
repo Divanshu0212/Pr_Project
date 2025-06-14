@@ -154,11 +154,6 @@ const AnimatedRoutes = () => {
               <TemplateGallery />
             </DashboardLayout>
           } />
-          <Route path="/resume/create" element={
-            <DashboardLayout user={currentUser}>
-              <BuildResume />
-            </DashboardLayout>
-          } />
 
           {/* ATS Routes */}
           <Route path="/ats/home" element={

@@ -12,6 +12,8 @@ import { useQuery } from 'react-query';
 import ProjectCard from '../../components/portfolio/ProjectCard';
 import CertificateCard from '../../components/portfolio/CertificateCard';
 import AddCertificateForm from '../../components/portfolio/AddCertificateForm';
+import ExperienceTab from '../../components/portfolio/ExperienceTab';
+import axios from 'axios';
 
 const PortfolioHome = ({ user: propUser }) => {
     const navigate = useNavigate();
@@ -337,11 +339,22 @@ const PortfolioHome = ({ user: propUser }) => {
         }
     };
 
+    // Add this to your useQuery hooks
+    const { data: totalExperience } = useQuery('totalExperience', async () => {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(SummaryApi.experiences.total.url, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        return response.data.totalYears;
+    });
+
     const stats = {
         projectsCount: countsData?.counts?.total || 0,
         completedProjects: countsData?.counts?.completed || 0,
         certificates: certificateCount?.count || 0,
-        experience: portfolioDetails.yearsOfExperience + 'Yrs' || '3 Yrs'
+        experience: totalExperience ? `${totalExperience} Yrs` : (portfolioDetails.yearsOfExperience + ' Yrs' || '3 Yrs')
     };
 
     return (
@@ -450,7 +463,7 @@ const PortfolioHome = ({ user: propUser }) => {
                     <div className="flex-grow">
                         <div className="flex justify-between items-start">
                             <div>
-                                <h1 className="text-4xl font-bold text-[#E5E5E5] mb-2">{user?.username || 'John Doe'}</h1>
+                                <h1 className="text-4xl font-bold text-[#E5E5E5] mb-2">{user?.displayName || 'John Doe'}</h1>
                                 <div className="flex items-center gap-4 text-gray-400 mb-4">
                                     <span className="flex items-center gap-1"><MdWork /> {portfolioDetails.jobTitle}</span>
                                     <span className="flex items-center gap-1"><MdLocationOn /> {portfolioDetails.location}</span>
@@ -556,6 +569,12 @@ const PortfolioHome = ({ user: propUser }) => {
                             onClick={() => setActiveTab('certificates')}
                         >
                             Certificates
+                        </button>
+                        <button
+                            className={`px-6 py-3 text-lg ${activeTab === 'experience' ? 'text-[#00FFFF] border-b-2 border-[#00FFFF]' : 'text-gray-400'}`}
+                            onClick={() => setActiveTab('experience')}
+                        >
+                            Experience
                         </button>
                     </div>
                 </div>
@@ -664,6 +683,7 @@ const PortfolioHome = ({ user: propUser }) => {
                         isEditing={!!editingCertificate}
                     />
                 )}
+                {activeTab === 'experience' && <ExperienceTab />}
             </div>
 
             {

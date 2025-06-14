@@ -1,101 +1,91 @@
 // src/hooks/usePortfolio.js
-import { useState, useCallback } from 'react';
-import portfolioService from '../services/portfolioService';
+import { useState, useCallback, useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+import SummaryApi from '../config';
+import axios from 'axios';
 
 const usePortfolio = () => {
-  const [portfolioItems, setPortfolioItems] = useState([]);
+  const { currentUser } = useContext(AuthContext);
+  const [portfolioData, setPortfolioData] = useState({
+    portfolioDetails: null,
+    skills: [],
+    projects: [],
+    certificates: [],
+    experiences: [],
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchPortfolioItems = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const data = await portfolioService.getAllItems();
-      setPortfolioItems(data);
-    } catch (err) {
-      setError(err.message || 'Failed to fetch portfolio items');
-    } finally {
-      setLoading(false);
+  // Helper function to get auth headers
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('No authentication token found');
     }
-  }, []);
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  };
 
-  const fetchPortfolioItem = async (id) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const data = await portfolioService.getItemById(id);
-      return data;
-    } catch (err) {
-      setError(err.message || 'Failed to fetch portfolio item');
-      return null;
-    } finally {
-      setLoading(false);
+  // Check if user is authenticated before making requests
+  const checkAuth = () => {
+    if (!currentUser) {
+      throw new Error('User not authenticated');
     }
   };
 
-  const addPortfolioItem = async (itemData) => {
+  // Fetch all portfolio data at once
+  const fetchAllPortfolioData = useCallback(async () => {
     setLoading(true);
     setError(null);
     
     try {
-      const data = await portfolioService.createItem(itemData);
-      setPortfolioItems(prevItems => [...prevItems, data]);
-      return data;
+      checkAuth();
+      const headers = getAuthHeaders();
+      
+      // Make all requests in parallel with auth headers
+      const requests = [
+        axios.get(SummaryApi.portfolioDetails.get.url, { headers }),
+        axios.get(SummaryApi.skills.get.url, { headers }),
+        axios.get(SummaryApi.projects.get.url, { headers }),
+        axios.get(SummaryApi.certificates.get.url, { headers }),
+        axios.get(SummaryApi.experiences.get.url, { headers }),
+      ];
+
+      const responses = await Promise.all(requests);
+      
+      setPortfolioData({
+        portfolioDetails: responses[0].data?.data || null,
+        skills: responses[1].data || [],
+        projects: responses[2].data?.projects || [],
+        certificates: responses[3].data?.certificates || [],
+        experiences: responses[4].data?.experiences || []
+      });
+
+      return {
+        portfolioDetails: responses[0].data?.data || null,
+        skills: responses[1].data || [],
+        projects: responses[2].data?.projects || [],
+        certificates: responses[3].data?.certificates || [],
+        experiences: responses[4].data?.experiences || [],
+      };
+
     } catch (err) {
-      setError(err.message || 'Failed to add portfolio item');
+      setError(err.message || 'Failed to fetch portfolio data');
+      console.error('Fetch all error:', err);
       throw err;
     } finally {
       setLoading(false);
     }
-  };
-
-  const updatePortfolioItem = async (id, itemData) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const data = await portfolioService.updateItem(id, itemData);
-      setPortfolioItems(prevItems => 
-        prevItems.map(item => item._id === id ? data : item)
-      );
-      return data;
-    } catch (err) {
-      setError(err.message || 'Failed to update portfolio item');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deletePortfolioItem = async (id) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      await portfolioService.deleteItem(id);
-      setPortfolioItems(prevItems => 
-        prevItems.filter(item => item._id !== id)
-      );
-    } catch (err) {
-      setError(err.message || 'Failed to delete portfolio item');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [currentUser]);
+  
 
   return {
-    portfolioItems,
+    portfolioData,
     loading,
     error,
-    fetchPortfolioItems,
-    fetchPortfolioItem,
-    addPortfolioItem,
-    updatePortfolioItem,
-    deletePortfolioItem
+    fetchAllPortfolioData
   };
 };
 
