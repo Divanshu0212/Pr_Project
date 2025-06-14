@@ -32,7 +32,7 @@ const Sidebar = ({ user, isOpen, onClose }) => {
       path: '/resume-builder-home',
       icon: <FiFileText className="sidebar-icon-svg" />,
       subItems: [
-        { title: 'Create Resume', path: '/resume/create', icon: <FiPlus size={14} /> },
+        { title: 'Create Resume', path: '/resume-builder', icon: <FiPlus size={14} /> },
         { title: 'Templates', path: '/resume/templates', icon: <FiFileText size={14} /> }
       ]
     },

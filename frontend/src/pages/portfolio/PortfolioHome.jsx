@@ -13,6 +13,7 @@ import ProjectCard from '../../components/portfolio/ProjectCard';
 import CertificateCard from '../../components/portfolio/CertificateCard';
 import AddCertificateForm from '../../components/portfolio/AddCertificateForm';
 import ExperienceTab from '../../components/portfolio/ExperienceTab';
+import axios from 'axios';
 
 const PortfolioHome = ({ user: propUser }) => {
     const navigate = useNavigate();

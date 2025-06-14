@@ -2,61 +2,61 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // Mock data for resume templates
-const templateData = [
-    {
-        id: 1,
-        name: 'Modern Clean',
-        description: 'A clean, modern design with subtle cyan accents. Perfect for tech professionals.',
-        previewImage: '/api/placeholder/300/400',
-        category: 'professional',
-        color: 'cyan'
-    },
-    {
-        id: 2,
-        name: 'Creative Purple',
-        description: 'Stand out with this creative design featuring purple accents. Ideal for design roles.',
-        previewImage: '/api/placeholder/300/400',
-        category: 'creative',
-        color: 'purple'
-    },
-    {
-        id: 3,
-        name: 'Minimalist',
-        description: 'A minimalist design that puts your content front and center. Works for any industry.',
-        previewImage: '/api/placeholder/300/400',
-        category: 'minimal',
-        color: 'white'
-    },
-    {
-        id: 4,
-        name: 'Technical Focus',
-        description: 'Designed for technical roles with sections for skills and projects prominently displayed.',
-        previewImage: '/api/placeholder/300/400',
-        category: 'technical',
-        color: 'cyan'
-    },
-    {
-        id: 5,
-        name: 'Executive Pro',
-        description: 'A professional template for executive and senior positions that emphasizes leadership.',
-        previewImage: '/api/placeholder/300/400',
-        category: 'professional',
-        color: 'white'
-    },
-    {
-        id: 6,
-        name: 'Creative Portfolio',
-        description: 'Visual-focused template with space for portfolio pieces and creative achievements.',
-        previewImage: '/api/placeholder/300/400',
-        category: 'creative',
-        color: 'purple'
-    }
-];
-
 const TemplateGallery = () => {
     const navigate = useNavigate();
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
+    
+    const templateData = [
+        {
+            id: 1,
+            name: 'Modern Clean',
+            description: 'A clean, modern design with subtle cyan accents. Perfect for tech professionals.',
+            previewImage: '/api/placeholder/300/400',
+            category: 'professional',
+            color: 'cyan'
+        },
+        {
+            id: 2,
+            name: 'Creative Purple',
+            description: 'Stand out with this creative design featuring purple accents. Ideal for design roles.',
+            previewImage: '/api/placeholder/300/400',
+            category: 'creative',
+            color: 'purple'
+        },
+        {
+            id: 3,
+            name: 'Minimalist',
+            description: 'A minimalist design that puts your content front and center. Works for any industry.',
+            previewImage: '/api/placeholder/300/400',
+            category: 'minimal',
+            color: 'white'
+        },
+        {
+            id: 4,
+            name: 'Technical Focus',
+            description: 'Designed for technical roles with sections for skills and projects prominently displayed.',
+            previewImage: '/api/placeholder/300/400',
+            category: 'technical',
+            color: 'cyan'
+        },
+        {
+            id: 5,
+            name: 'Executive Pro',
+            description: 'A professional template for executive and senior positions that emphasizes leadership.',
+            previewImage: '/api/placeholder/300/400',
+            category: 'professional',
+            color: 'white'
+        },
+        {
+            id: 6,
+            name: 'Creative Portfolio',
+            description: 'Visual-focused template with space for portfolio pieces and creative achievements.',
+            previewImage: '/api/placeholder/300/400',
+            category: 'creative',
+            color: 'purple'
+        }
+    ];
 
     // Filter templates based on category and search term
     const filteredTemplates = templateData.filter(template => {
@@ -66,11 +66,8 @@ const TemplateGallery = () => {
         return matchesCategory && matchesSearch;
     });
 
-    const handleTemplateSelect = (templateId) => {
-        // Store selected template in localStorage for the next step
-        localStorage.setItem('selectedTemplateId', templateId);
-        // Navigate to the resume builder with the selected template
-        navigate('/resume/create', { state: { templateId } });
+    const handleTemplateSelect = (template) => {
+        navigate('/resume/create', { state: { template } });
     };
 
     return (
@@ -85,48 +82,21 @@ const TemplateGallery = () => {
                 </div>
 
                 <div className="flex flex-col md:flex-row justify-between mb-8">
-                    {/* Filter Options */}
                     <div className="mb-4 md:mb-0">
                         <div className="flex flex-wrap gap-2">
-                            <button
-                                onClick={() => setSelectedCategory('all')}
-                                className={`px-4 py-2 rounded-md ${selectedCategory === 'all' ?
-                                    'bg-[#9C27B0] text-white' : 'bg-[#161B22] text-[#E5E5E5] hover:bg-[#1E293B]'}`}
-                            >
-                                All
-                            </button>
-                            <button
-                                onClick={() => setSelectedCategory('professional')}
-                                className={`px-4 py-2 rounded-md ${selectedCategory === 'professional' ?
-                                    'bg-[#9C27B0] text-white' : 'bg-[#161B22] text-[#E5E5E5] hover:bg-[#1E293B]'}`}
-                            >
-                                Professional
-                            </button>
-                            <button
-                                onClick={() => setSelectedCategory('creative')}
-                                className={`px-4 py-2 rounded-md ${selectedCategory === 'creative' ?
-                                    'bg-[#9C27B0] text-white' : 'bg-[#161B22] text-[#E5E5E5] hover:bg-[#1E293B]'}`}
-                            >
-                                Creative
-                            </button>
-                            <button
-                                onClick={() => setSelectedCategory('minimal')}
-                                className={`px-4 py-2 rounded-md ${selectedCategory === 'minimal' ?
-                                    'bg-[#9C27B0] text-white' : 'bg-[#161B22] text-[#E5E5E5] hover:bg-[#1E293B]'}`}
-                            >
-                                Minimal
-                            </button>
-                            <button
-                                onClick={() => setSelectedCategory('technical')}
-                                className={`px-4 py-2 rounded-md ${selectedCategory === 'technical' ?
-                                    'bg-[#9C27B0] text-white' : 'bg-[#161B22] text-[#E5E5E5] hover:bg-[#1E293B]'}`}
-                            >
-                                Technical
-                            </button>
+                            {['all', 'professional', 'creative', 'minimal', 'technical'].map(category => (
+                                <button
+                                    key={category}
+                                    onClick={() => setSelectedCategory(category)}
+                                    className={`px-4 py-2 rounded-md ${selectedCategory === category ?
+                                        'bg-[#9C27B0] text-white' : 'bg-[#161B22] text-[#E5E5E5] hover:bg-[#1E293B]'}`}
+                                >
+                                    {category.charAt(0).toUpperCase() + category.slice(1)}
+                                </button>
+                            ))}
                         </div>
                     </div>
 
-                    {/* Search Bar */}
                     <div className="w-full md:w-64">
                         <input
                             type="text"
@@ -138,7 +108,6 @@ const TemplateGallery = () => {
                     </div>
                 </div>
 
-                {/* Template Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {filteredTemplates.map(template => (
                         <div
@@ -153,7 +122,7 @@ const TemplateGallery = () => {
                                 />
                                 <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-40 transition-all flex items-center justify-center">
                                     <button
-                                        onClick={() => handleTemplateSelect(template.id)}
+                                        onClick={() => handleTemplateSelect(template)}
                                         className="bg-[#9C27B0] text-white py-2 px-4 rounded-md opacity-0 hover:opacity-100 transition-all transform translate-y-4 hover:translate-y-0 focus:outline-none focus:ring-2 focus:ring-[#9C27B0] focus:ring-offset-1"
                                     >
                                         Use This Template
@@ -168,7 +137,7 @@ const TemplateGallery = () => {
                                         {template.category.charAt(0).toUpperCase() + template.category.slice(1)}
                                     </span>
                                     <button
-                                        onClick={() => handleTemplateSelect(template.id)}
+                                        onClick={() => handleTemplateSelect(template)}
                                         className="text-[#00FFFF] hover:text-[#9C27B0] transition-colors focus:outline-none"
                                     >
                                         Select →
