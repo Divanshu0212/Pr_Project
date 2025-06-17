@@ -24,6 +24,7 @@
     "react-dropzone": "^14.3.5",
     "react-icons": "^5.4.0",
     "react-intersection-observer": "^9.16.0",
+    "react-native-web": "^0.17.0",
     "react-query": "^3.39.3",
     "react-router-dom": "^7.0.2",
     "react-slick": "^0.30.3",
