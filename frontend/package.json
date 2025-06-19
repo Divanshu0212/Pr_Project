@@ -17,6 +17,8 @@
     "@rollup/rollup-win32-x64-msvc": "^4.39.0",
     "@tanstack/react-query": "^5.80.6",
     "axios": "^1.8.4",
+    "framer-motion": "^12.18.1",
+    "gsap": "^3.13.0",
     "lucide-react": "^0.474.0",
     "react": "^18.3.1",
     "react-beautiful-dnd": "^13.1.1",

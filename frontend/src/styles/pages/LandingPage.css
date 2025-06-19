@@ -1,11 +1,16 @@
-/* LandingPage.css */
+/* LandingPage.css - Enhanced Version with Smooth Animations */
 :root {
   --bg-primary: #0D1117;
   --bg-secondary: #161B22;
   --text-primary: #E5E5E5;
-  --accent-cyan: #00FFFF;
+  --text-secondary: #6B7280;
+  --text-placeholder: #6E7B8B;
+  --accent-turquoise: #40E0D0;
   --accent-purple: #9C27B0;
+  --neutral-gray: #4B5563;
+  --error-red: #F44336;
   --transition-standard: all 0.3s ease;
+  --transition-smooth: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   --font-family-primary: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   --font-family-heading: 'Montserrat', sans-serif;
 }
@@ -13,6 +18,7 @@
 body {
   font-family: var(--font-family-primary);
   line-height: 1.6;
+  scroll-behavior: smooth;
 }
 
 .landing-page {
@@ -29,14 +35,14 @@ body {
   padding: 4rem 2rem;
   position: relative;
   min-height: 70vh;
-  background: radial-gradient(circle at 50% 50%, #161B22, #0D1117);
+  background: radial-gradient(circle at 50% 50%, var(--bg-secondary), var(--bg-primary));
 }
 
 @media (min-width: 1024px) {
   .hero-section {
-      flex-direction: row;
-      justify-content: space-between;
-      padding: 4rem 4rem;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 4rem 4rem;
   }
 }
 
@@ -48,7 +54,7 @@ body {
 
 @media (min-width: 1024px) {
   .hero-content {
-      text-align: left;
+    text-align: left;
   }
 }
 
@@ -58,21 +64,34 @@ body {
   font-weight: 800;
   margin-bottom: 1rem;
   line-height: 1.2;
-  animation: fadeInUp 0.8s ease-out;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: smoothSlideUp 1s ease-out 0.2s forwards;
+  background: linear-gradient(135deg, var(--accent-turquoise), var(--accent-purple));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  position: relative;
+}
+
+.hero-title .text-accent {
+  display: inline-block;
+  animation: textGlow 2s ease-in-out infinite alternate;
 }
 
 @media (min-width: 768px) {
   .hero-title {
-      font-size: 3.5rem;
+    font-size: 3.5rem;
   }
 }
 
 .hero-subtitle {
   font-size: 1.15rem;
   margin-bottom: 1.5rem;
-  color: rgba(229, 229, 229, 0.8);
-  animation: fadeInUp 1s ease-out 0.2s;
-  animation-fill-mode: both;
+  color: var(--text-secondary);
+  opacity: 0;
+  transform: translateY(30px);
+  animation: smoothSlideUp 1s ease-out 0.5s forwards;
 }
 
 .hero-cta {
@@ -80,13 +99,14 @@ body {
   flex-direction: column;
   gap: 1rem;
   margin-top: 1.5rem;
-  animation: fadeInUp 1.2s ease-out 0.4s;
-  animation-fill-mode: both;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: smoothSlideUp 1s ease-out 0.8s forwards;
 }
 
 @media (min-width: 640px) {
   .hero-cta {
-      flex-direction: row;
+    flex-direction: row;
   }
 }
 
@@ -97,39 +117,74 @@ body {
   border-radius: 0.5rem;
   font-weight: 600;
   cursor: pointer;
-  transition: var(--transition-standard);
+  transition: var(--transition-smooth);
   display: inline-block;
   text-align: center;
   text-decoration: none;
+  position: relative;
+  overflow: hidden;
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
-  color: #0D1117;
+  background: linear-gradient(135deg, var(--accent-turquoise), var(--accent-purple));
+  color: var(--bg-primary);
   border: none;
 }
 
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
 .btn-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(64, 224, 208, 0.4);
 }
 
 .btn-secondary {
   background: transparent;
   color: var(--text-primary);
-  border: 2px solid var(--accent-cyan);
+  border: 2px solid var(--accent-turquoise);
+  position: relative;
+  z-index: 1;
+}
+
+.btn-secondary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 100%;
+  background: rgba(64, 224, 208, 0.1);
+  transition: width 0.3s ease;
+  z-index: -1;
+}
+
+.btn-secondary:hover::before {
+  width: 100%;
 }
 
 .btn-secondary:hover {
-  background-color: rgba(0, 255, 255, 0.1);
-  transform: translateY(-3px);
+  transform: translateY(-2px);
+  border-color: var(--accent-purple);
 }
 
 @media (min-width: 768px) {
   .btn-primary,
   .btn-secondary {
-      padding: 0.75rem 2rem;
-      font-size: 1.1rem;
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
   }
 }
 
@@ -140,16 +195,14 @@ body {
   align-items: center;
   max-width: 45%;
   opacity: 0;
-  transform: translateX(30px);
-  animation: fadeInRight 1s ease-out 0.6s forwards;
+  transform: scale(0.8);
+  animation: smoothZoomIn 1.2s ease-out 1s forwards;
 }
 
 @media (max-width: 992px) {
   .hero-visual {
-      max-width: 80%;
-      margin-top: 2rem;
-      transform: none;
-      animation: fadeIn 1s ease-out 0.6s forwards;
+    max-width: 80%;
+    margin-top: 2rem;
   }
 }
 
@@ -160,14 +213,11 @@ body {
   max-width: 500px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
   overflow: hidden;
-  transform-style: preserve-3d;
-  transform: perspective(1000px) rotateY(-10deg);
-  transition: var(--transition-standard);
+  transition: var(--transition-smooth);
 }
 
 .code-window:hover {
-  transform: perspective(1000px) rotateY(-5deg) translateY(-5px);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 15px 40px rgba(64, 224, 208, 0.2);
 }
 
 .code-header {
@@ -182,16 +232,26 @@ body {
   height: 10px;
   border-radius: 50%;
   margin-right: 6px;
+  animation: pulse 2s infinite;
 }
 
-.red { background-color: #FF5F56; }
-.yellow { background-color: #FFBD2E; }
-.green { background-color: #27C93F; }
+.red { 
+  background-color: #FF5F56;
+  animation-delay: 0s;
+}
+.yellow { 
+  background-color: #FFBD2E;
+  animation-delay: 0.3s;
+}
+.green { 
+  background-color: #27C93F;
+  animation-delay: 0.6s;
+}
 
 .filename {
   margin-left: 12px;
   font-family: monospace;
-  color: #9DA5B4;
+  color: var(--text-placeholder);
   font-size: 0.9rem;
 }
 
@@ -220,7 +280,7 @@ code {
 }
 
 .comment {
-  color: #5C6370;
+  color: var(--neutral-gray);
   font-style: italic;
 }
 
@@ -234,8 +294,8 @@ code {
   text-align: center;
   margin-bottom: 40px;
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transform: translateY(40px);
+  transition: var(--transition-smooth);
 }
 
 .section-header.in-view {
@@ -247,11 +307,28 @@ code {
   font-size: 2rem;
   margin-bottom: 0.75rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  background: linear-gradient(135deg, var(--accent-turquoise), var(--accent-purple));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   display: inline-block;
+  position: relative;
+}
+
+.section-header h2::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-turquoise), var(--accent-purple));
+  transition: width 0.8s ease 0.3s;
+}
+
+.section-header.in-view h2::after {
+  width: 60px;
 }
 
 .section-header p {
@@ -259,6 +336,7 @@ code {
   opacity: 0.8;
   max-width: 700px;
   margin: 0 auto;
+  color: var(--text-secondary);
 }
 
 .features-grid {
@@ -270,13 +348,13 @@ code {
 
 @media (min-width: 640px) {
   .features-grid {
-      grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (min-width: 1024px) {
   .features-grid {
-      grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 
@@ -287,49 +365,55 @@ code {
   border: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+  transition: var(--transition-smooth);
   overflow: hidden;
   opacity: 0;
-  transform: translateY(20px);
-  animation: fadeInUp 1s ease-out forwards;
-  animation-delay: calc(0.1s * var(--animation-order));
+  transform: translateY(40px) scale(0.95);
+  animation: smoothPopUp 0.8s ease-out forwards;
+  animation-delay: calc(0.15s * var(--animation-order));
 }
 
 .feature-card:hover {
-  transform: translateY(-5px) scale(1.01);
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-  border-color: rgba(0, 255, 255, 0.2);
-  background-color: rgba(23, 31, 43, 0.7);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 15px 30px rgba(64, 224, 208, 0.15);
+  border-color: rgba(64, 224, 208, 0.3);
+  background-color: rgba(23, 31, 43, 0.8);
 }
 
 .feature-icon {
   font-size: 2rem;
   margin-bottom: 1rem;
-  width: 50px;
-  height: 50px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+
+  background: linear-gradient(135deg, var(--accent-turquoise), var(--accent-purple));
   color: white;
-  transition: transform 0.3s ease-in-out;
+  transition: var(--transition-smooth);
 }
 
 .feature-card:hover .feature-icon {
-  transform: rotate(10deg) scale(1.05);
+  box-shadow: 0 0 20px rgba(64, 224, 208, 0.5);
 }
 
 .feature-content h3 {
   font-size: 1.25rem;
   margin-bottom: 0.75rem;
   font-weight: 600;
+  color: var(--text-primary);
+  transition: var(--transition-standard);
+}
+
+.feature-card:hover .feature-content h3 {
+  color: var(--accent-turquoise);
 }
 
 .feature-content p {
   font-size: 0.95rem;
   line-height: 1.5;
-  color: rgba(229, 229, 229, 0.8);
+  color: var(--text-secondary);
   margin-bottom: 1rem;
 }
 
@@ -343,24 +427,26 @@ code {
 .feature-img img {
   width: 100%;
   height: auto;
-  object-fit: cover;
-  transition: transform 0.3s ease;
+  object-fit: scale-down;
+  transition: var(--transition-smooth);
+  max-height: 150px;
 }
 
 .feature-card:hover .feature-img img {
-  transform: scale(1.02);
+  transform: scale(1.05);
+  filter: brightness(1.1);
 }
 
 .feature-link {
   display: inline-block;
   margin-top: 0.75rem;
-  color: var(--accent-cyan);
+  color: var(--accent-turquoise);
   text-decoration: none;
   font-weight: 600;
   position: relative;
   padding-right: 15px;
   font-size: 0.9rem;
-  transition: color 0.3s ease-in-out, padding-right 0.3s ease-in-out;
+  transition: var(--transition-standard);
 }
 
 .feature-link:after {
@@ -369,7 +455,7 @@ code {
   right: 0;
   top: 50%;
   transform: translateY(-50%);
-  transition: right 0.3s ease-in-out;
+  transition: var(--transition-standard);
 }
 
 .feature-link:hover {
@@ -379,30 +465,6 @@ code {
 
 .feature-link:hover:after {
   right: -5px;
-}
-
-/* Style for the "What Makes Us Different?" feature card */
-.features-grid > div:last-child .feature-content {
-  padding: 1rem;
-  background-color: rgba(0, 255, 255, 0.05); /* Distinct background */
-  border-radius: 6px;
-}
-
-.features-grid > div:last-child .feature-content ul {
-  padding-left: 1.5rem;
-}
-
-.features-grid > div:last-child .feature-content li {
-  font-size: 0.95rem;
-  margin-bottom: 0.5rem;
-  line-height: 1.4;
-}
-
-.features-grid > div:last-child .feature-content p {
-  font-size: 0.85rem;
-  margin-top: 0.75rem;
-  line-height: 1.5;
-  color: rgba(216, 139, 230, 0.93);
 }
 
 /* How It Works Section */
@@ -429,8 +491,8 @@ code {
 
 @media (max-width: 992px) {
   .steps-container {
-      flex-direction: column;
-      gap: 2rem;
+    flex-direction: column;
+    gap: 2rem;
   }
 }
 
@@ -443,21 +505,21 @@ code {
   max-width: 250px;
   z-index: 2;
   opacity: 0;
-  transform: translateY(20px);
-  animation: fadeInUp 1s ease-out forwards;
-  animation-delay: calc(0.2s * var(--animation-order));
-  transition: transform 0.3s ease-in-out;
+  transform: translateY(50px);
+  animation: smoothSlideUp 1s ease-out forwards;
+  animation-delay: calc(0.3s * var(--animation-order));
+  transition: var(--transition-smooth);
 }
 
-.step:hover .step-number {
-  transform: scale(1.05);
+.step:hover {
+  transform: translateY(-5px);
 }
 
 .step-number {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  background: linear-gradient(135deg, var(--accent-turquoise), var(--accent-purple));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -465,16 +527,29 @@ code {
   font-weight: 700;
   margin-bottom: 1rem;
   color: white;
+  transition: var(--transition-smooth);
+  box-shadow: 0 4px 15px rgba(64, 224, 208, 0.3);
+}
+
+.step:hover .step-number {
+  box-shadow: 0 8px 25px rgba(64, 224, 208, 0.5);
+  transform: scale(1.1);
 }
 
 .step h3 {
   font-size: 1.25rem;
   margin-bottom: 0.75rem;
   font-weight: 600;
+  color: var(--text-primary);
+  transition: var(--transition-standard);
+}
+
+.step:hover h3 {
+  color: var(--accent-turquoise);
 }
 
 .step p {
-  color: rgba(229, 229, 229, 0.8);
+  color: var(--text-secondary);
   line-height: 1.5;
   font-size: 0.95rem;
 }
@@ -482,19 +557,23 @@ code {
 .step-connector {
   flex: 0.5;
   height: 2px;
-  background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+  background: linear-gradient(90deg, var(--accent-turquoise), var(--accent-purple));
   position: relative;
   z-index: 1;
   opacity: 0;
-  animation: fadeIn 1s ease-in-out forwards;
-  animation-delay: calc(0.3s * var(--animation-order));
+  transform: scaleX(0);
+  animation: expandWidth 1s ease-in-out forwards;
+  animation-delay: calc(0.5s * var(--animation-order));
 }
 
 @media (max-width: 992px) {
   .step-connector {
-      width: 2px;
-      height: 40px;
-      margin: 0;
+    width: 2px;
+    height: 40px;
+    margin: 0;
+    transform: scaleY(0);
+    animation: expandHeight 1s ease-in-out forwards;
+    animation-delay: calc(0.5s * var(--animation-order));
   }
 }
 
@@ -521,18 +600,18 @@ code {
   border-radius: 12px;
   padding: 1.5rem;
   border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out, background-color 0.3s ease-in-out;
+  transition: var(--transition-smooth);
   opacity: 0;
-  transform: translateY(20px);
-  animation: fadeInUp 1s ease-out forwards;
-  animation-delay: calc(0.15s * var(--animation-order));
+  transform: translateY(40px) rotateX(15deg);
+  animation: smoothFlipUp 1s ease-out forwards;
+  animation-delay: calc(0.2s * var(--animation-order));
 }
 
 .testimonial-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-  border-color: rgba(0, 255, 255, 0.2);
-  background-color: rgba(23, 31, 43, 0.7);
+  transform: translateY(-5px) rotateX(0deg);
+  box-shadow: 0 15px 30px rgba(64, 224, 208, 0.1);
+  border-color: rgba(64, 224, 208, 0.2);
+  background-color: rgba(23, 31, 43, 0.8);
 }
 
 .testimonial-content {
@@ -544,14 +623,14 @@ code {
   line-height: 1.6;
   font-style: italic;
   position: relative;
-  color: rgba(229, 229, 229, 0.9);
+  color: var(--text-primary);
 }
 
 .testimonial-content p:before,
 .testimonial-content p:after {
   content: '"';
   font-size: 1.5rem;
-  color: var(--accent-cyan);
+  color: var(--accent-turquoise);
   font-family: serif;
 }
 
@@ -568,23 +647,24 @@ code {
   height: 40px;
   border-radius: 50%;
   object-fit: cover;
-  transition: transform 0.3s ease-in-out;
+  transition: var(--transition-smooth);
 }
 
 .testimonial-author img:hover {
-  transform: scale(1.05);
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(64, 224, 208, 0.3);
 }
 
 .testimonial-author h4 {
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 0.1rem;
-  color: var(--accent-cyan);
+  color: var(--accent-turquoise);
 }
 
 .testimonial-author p {
   font-size: 0.8rem;
-  color: rgba(229, 229, 229, 0.7);
+  color: var(--text-secondary);
 }
 
 /* Stats Section */
@@ -594,7 +674,8 @@ code {
   position: relative;
   overflow: hidden;
   opacity: 0;
-  animation: fadeIn 1.5s ease-out forwards;
+  transform: translateY(30px);
+  animation: smoothSlideUp 1.5s ease-out forwards;
 }
 
 .stat-container {
@@ -608,71 +689,41 @@ code {
 
 .stat {
   text-align: center;
-  min-width: 150px; /* Adjust minimum width */
+  min-width: 150px;
+  opacity: 0;
+  transform: scale(0.8);
+  animation: smoothZoomIn 1s ease-out forwards;
+  animation-delay: calc(0.2s * var(--animation-order, 1));
 }
 
 .stat h2 {
   font-size: 2.25rem;
   font-weight: 700;
   margin-bottom: 0.25rem;
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  background: linear-gradient(135deg, var(--accent-turquoise), var(--accent-purple));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  /* You'll need JavaScript to animate the counting */
+  transition: var(--transition-standard);
+}
+
+.stat:hover h2 {
+  transform: scale(1.1);
 }
 
 .stat p {
   font-size: 0.95rem;
-  color: rgba(229, 229, 229, 0.8);
+  color: var(--text-secondary);
 }
 
 @media (min-width: 768px) {
   .stat h2 {
-      font-size: 2.75rem;
+    font-size: 2.75rem;
   }
 
   .stat p {
-      font-size: 1.1rem;
+    font-size: 1.1rem;
   }
-}
-
-/* Style for the "What Makes Us Different?" feature card */
-.features-grid > div:last-child .feature-card {
-  /* You might want to adjust the overall card styling here if needed */
-}
-
-.features-grid > div:last-child .feature-content {
-  padding: 1.5rem; /* Adjust padding as needed */
-  background-color: rgba(0, 255, 255, 0.05); /* Distinct background */
-  border-radius: 8px; /* Optional: Add a border radius */
-  border: 1px solid rgba(0, 255, 255, 0.1); /* Optional: Add a subtle border */
-}
-
-.features-grid > div:last-child .feature-content h3 {
-  font-size: 1.5rem; /* Make the title stand out */
-  font-weight: 700;
-  color: var(--accent-cyan); /* Use your accent color */
-  margin-bottom: 1rem;
-}
-
-.features-grid > div:last-child .feature-content ul {
-  padding-left: 1.5rem;
-  list-style-type: disc; /* Ensure bullet points are visible */
-}
-
-.features-grid > div:last-child .feature-content li {
-  font-size: 1rem;
-  margin-bottom: 0.75rem;
-  line-height: 1.6;
-}
-
-.features-grid > div:last-child .feature-content p {
-  font-size: 0.9rem;
-  margin-top: 1rem;
-  line-height: 1.5;
-  color: rgba(216, 139, 230, 0.93); /* Style the additional content */
-  font-style: italic; /* Optional: Italicize for emphasis */
 }
 
 /* Final CTA Section */
@@ -683,7 +734,8 @@ code {
   position: relative;
   overflow: hidden;
   opacity: 0;
-  animation: fadeIn 1.5s ease-out forwards;
+  transform: translateY(30px);
+  animation: smoothSlideUp 1.5s ease-out forwards;
 }
 
 .cta-section:before {
@@ -693,7 +745,7 @@ code {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, rgba(0, 255, 255, 0.05), rgba(156, 39, 176, 0.05));
+  background: linear-gradient(135deg, rgba(64, 224, 208, 0.05), rgba(156, 39, 176, 0.05));
   z-index: 0;
 }
 
@@ -702,18 +754,19 @@ code {
   margin-bottom: 1rem;
   position: relative;
   z-index: 1;
-  background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+  background: linear-gradient(135deg, var(--accent-turquoise), var(--accent-purple));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   display: inline-block;
+  animation: textFloat 3s ease-in-out infinite;
 }
 
 .cta-section p {
   font-size: 1rem;
   max-width: 800px;
   margin: 0 auto 1.5rem;
-  color: rgba(229, 229, 229, 0.8);
+  color: var(--text-secondary);
   position: relative;
   z-index: 1;
 }
@@ -730,64 +783,191 @@ code {
   font-size: 1.1rem;
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* Special Feature Card - "What Makes Us Different" */
+.special-feature-card {
+  background-color: rgba(23, 31, 43, 0.7);
+  border: 1px solid rgba(64, 224, 208, 0.15);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
 }
 
-@keyframes fadeInUp {
-  from {
-      opacity: 0;
-      transform: translateY(20px);
-  }
-  to {
-      opacity: 1;
-      transform: translateY(0);
-  }
+.special-feature-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(64, 224, 208, 0.15);
+  border-color: rgba(64, 224, 208, 0.3);
 }
 
-@keyframes fadeInRight {
-  from {
-      opacity: 0;
-      transform: translateX(30px);
-  }
-  to {
-      opacity: 1;
-      transform: translateX(0);
-  }
+.special-feature-content h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  background: linear-gradient(135deg, var(--accent-turquoise), var(--accent-purple));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  display: inline-block;
 }
 
-/* Additional Subtle Animations */
-.feature-card, .testimonial-card, .step {
+.what-makes-different {
+  background-color: rgba(64, 224, 208, 0.05);
+  border-radius: 8px;
+  padding: 1.25rem;
+  border: 1px solid rgba(64, 224, 208, 0.1);
+}
+
+.what-makes-different ul {
+  list-style-type: none;
+  padding-left: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.what-makes-different li {
   position: relative;
-  overflow: hidden;
-}
-
-.feature-card:before, .testimonial-card:before, .step:before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(0, 255, 255, 0.1), transparent 70%);
+  padding-left: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+  font-size: 1rem;
   opacity: 0;
-  z-index: -1;
-  transform: scale(0.5);
-  transition: transform 0.6s, opacity 0.6s;
+  transform: translateX(-20px);
+  animation: smoothSlideRight 0.6s ease-out forwards;
+  animation-delay: calc(0.1s * var(--item-order, 1));
 }
 
-.feature-card:hover:before, .testimonial-card:hover:before, .step:hover:before {
-  opacity: 1;
-  transform: scale(1);
+.what-makes-different li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--accent-turquoise);
+  font-size: 1.25rem;
+  line-height: 1;
+  animation: pulse 2s infinite;
+  animation-delay: calc(0.2s * var(--item-order, 1));
 }
-/* In your Card.css or relevant CSS file */
-.feature-card .feature-img img {
-  max-width: 100%; /* Ensure the image doesn't exceed the width of its container */
-  height: auto;    /* Maintain aspect ratio */
-  max-height: 150px; /* Adjust this value to your desired maximum height */
-  object-fit: contain; /* Ensures the entire image is visible within the max dimensions, may add some empty space */
+
+.what-makes-different .special-note {
+  font-size: 0.9rem;
+  color: rgba(216, 139, 230, 0.93);
+  font-style: italic;
+  margin-top: 0.75rem;
+  line-height: 1.5;
+  opacity: 0;
+  animation: smoothFadeIn 1s ease-out 1s forwards;
+}
+
+/* Animations */
+@keyframes smoothSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes smoothSlideRight {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes smoothPopUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes smoothZoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes smoothFlipUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) rotateX(20deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(0);
+  }
+}
+
+@keyframes smoothFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes expandWidth {
+  from {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  to {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+
+@keyframes expandHeight {
+  from {
+    opacity: 0;
+    transform: scaleY(0);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+@keyframes textGlow {
+  from {
+    text-shadow: 0 0 5px rgba(64, 224, 208, 0.3);
+  }
+  to {
+    text-shadow: 0 0 20px rgba(64, 224, 208, 0.6), 0 0 30px rgba(156, 39, 176, 0.4);
+  }
+}
+
+@keyframes textFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
 }
 
 /* Animation Ordering for Staggered Appearance */
@@ -806,127 +986,23 @@ code {
 .testimonials-grid .testimonial-card:nth-child(2) { --animation-order: 2; }
 .testimonials-grid .testimonial-card:nth-child(3) { --animation-order: 3; }
 
+.stat-container .stat:nth-child(1) { --animation-order: 1; }
+.stat-container .stat:nth-child(2) { --animation-order: 2; }
+.stat-container .stat:nth-child(3) { --animation-order: 3; }
+.stat-container .stat:nth-child(4) { --animation-order: 4; }
 
-/* Style for the "What Makes Us Different?" feature card */
-.features-grid > div:last-child .feature-card .feature-content {
-  padding: 1.5rem;
-  background-color: rgba(0, 255, 255, 0.05); /* Keep or slightly adjust */
-  border-radius: 8px;
-  border: 1px solid rgba(0, 255, 255, 0.1);
-}
+.what-makes-different li:nth-child(1) { --item-order: 1; }
+.what-makes-different li:nth-child(2) { --item-order: 2; }
+.what-makes-different li:nth-child(3) { --item-order: 3; }
+.what-makes-different li:nth-child(4) { --item-order: 4; }
+.what-makes-different li:nth-child(5) { --item-order: 5; }
 
-.features-grid > div:last-child .feature-card .feature-content h3 {
-  font-size: 1.75rem; /* Increased title size */
-  font-weight: 700;
-  color: var(--accent-cyan);
-  margin-bottom: 1.25rem; /* Added margin below title */
-}
-
-.features-grid > div:last-child .feature-card .feature-content ul {
-  padding-left: 1.5rem;
-  list-style-type: none; /* Remove default bullet points */
-}
-
-.features-grid > div:last-child .feature-card .feature-content li {
-  font-size: 1rem;
-  line-height: 1.6; /* Increased line height */
-  margin-bottom: 0.75rem; /* Increased vertical margin */
-  color: var(--text-primary); /* Ensure consistent text color */
-  padding-left: 1rem; /* Space for custom bullet */
-  position: relative; /* For positioning custom bullet */
-}
-
-/* Custom bullet point styling */
-.features-grid > div:last-child .feature-card .feature-content li:before {
-  content: '•'; /* Use a filled circle or your chosen icon */
-  position: absolute;
-  left: 0;
-  top: 0.3em; /* Adjust vertical alignment */
-  color: var(--accent-cyan); /* Use accent color for bullet */
-  font-size: 1em; /* Adjust bullet size */
-}
-
-.features-grid > div:last-child .feature-card .feature-content p {
-  font-size: 0.9rem;
-  margin-top: 1rem;
-  line-height: 1.5;
-  color: rgba(216, 139, 230, 0.93);
-  font-style: italic;
-}
-
-/* Add these styles to your LandingPage.css file */
-
-/* Special Feature Card - "What Makes Us Different" */
-.special-feature-card {
-  background-color: rgba(23, 31, 43, 0.7);
-  border: 1px solid rgba(0, 255, 255, 0.15);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
-}
-
-.special-feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-  border-color: rgba(0, 255, 255, 0.3);
-}
-
-.special-feature-content h3 {
-  color: #00FFFF;
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 1.25rem;
-  background: linear-gradient(135deg, #00FFFF, #9C27B0);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  display: inline-block;
-}
-
-.what-makes-different {
-  background-color: rgba(0, 255, 255, 0.05);
-  border-radius: 8px;
-  padding: 1.25rem;
-  border: 1px solid rgba(0, 255, 255, 0.1);
-}
-
-.what-makes-different ul {
-  list-style-type: none;
-  padding-left: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.what-makes-different li {
-  position: relative;
-  padding-left: 1.5rem;
-  margin-bottom: 0.75rem;
-  color: #E5E5E5;
-  line-height: 1.5;
-  font-size: 1rem;
-}
-
-.what-makes-different li::before {
-  content: '•';
-  position: absolute;
-  left: 0;
-  color: #00FFFF;
-  font-size: 1.25rem;
-  line-height: 1;
-}
-
-.what-makes-different .special-note {
-  font-size: 0.9rem;
-  color: rgba(216, 139, 230, 0.93);
-  font-style: italic;
-  margin-top: 0.75rem;
-  line-height: 1.5;
-}
-
-/* Improve feature grid layout for better responsiveness */
+/* Responsive adjustments for special feature card */
 @media (min-width: 1024px) {
   .features-grid {
     grid-template-columns: repeat(3, 1fr);
   }
   
-  /* Make the "What Makes Us Different" card span the full width on larger screens */
   .features-grid .special-feature-card {
     grid-column: 1 / -1;
     max-width: none;
@@ -939,10 +1015,180 @@ code {
   }
 }
 
-/* Ensure proper feature card animations */
-.feature-card {
+/* Micro-interactions for better UX */
+.feature-card,
+.testimonial-card,
+.step {
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::after,
+.testimonial-card::after,
+.step::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 50% 50%, rgba(64, 224, 208, 0.1), transparent 70%);
   opacity: 0;
-  transform: translateY(20px);
-  animation: fadeInUp 0.8s ease-out forwards;
-  animation-delay: calc(0.1s * var(--animation-order));
+  z-index: -1;
+  transition: opacity 0.6s ease;
+}
+
+.feature-card:hover::after,
+.testimonial-card:hover::after,
+.step:hover::after {
+  opacity: 1;
+}
+
+/* Loading animation for stats */
+@keyframes countUp {
+  from { 
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat h2 {
+  display: inline-block;
+}
+
+.stat h2 span {
+  display: inline-block;
+  animation: countUp 0.3s ease-out forwards;
+}
+
+/* Section entrance animations */
+section {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: smoothSlideUp 1s ease-out forwards;
+}
+
+.features-section { animation-delay: 0.1s; }
+.how-it-works { animation-delay: 0.2s; }
+.testimonials-section { animation-delay: 0.3s; }
+.stats-section { animation-delay: 0.4s; }
+.cta-section { animation-delay: 0.5s; }
+
+/* Responsive adjustments for animations */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.5rem;
+    animation-delay: 0.1s;
+  }
+  
+  .hero-subtitle {
+    animation-delay: 0.3s;
+  }
+  
+  .hero-cta {
+    animation-delay: 0.5s;
+  }
+  
+  .hero-visual {
+    animation-delay: 0.7s;
+  }
+  
+  section {
+    animation-delay: 0s !important;
+  }
+}
+
+/* Accessibility focus states */
+button:focus,
+a:focus,
+input:focus,
+textarea:focus {
+  outline: 2px solid var(--accent-purple);
+  outline-offset: 2px;
+}
+
+/* Scroll indicator animation */
+.scroll-indicator {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0) translateX(-50%);
+  }
+  40% {
+    transform: translateY(-20px) translateX(-50%);
+  }
+  60% {
+    transform: translateY(-10px) translateX(-50%);
+  }
+}
+
+/* Gradient underline animation */
+.gradient-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.gradient-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-turquoise), var(--accent-purple));
+  transition: width 0.6s ease;
+}
+
+.gradient-underline:hover::after {
+  width: 100%;
+}
+
+/* Responsive feature card animations */
+@media (max-width: 640px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .feature-card {
+    animation-delay: calc(0.05s * var(--animation-order));
+  }
+}
+
+/* Final polish for the code window */
+.code-window {
+  perspective: 1000px;
+}
+
+.code-content {
+  transform-style: preserve-3d;
+  transition: transform 0.6s ease;
+}
+
+.code-window:hover .code-content {
+  transform: translateZ(10px);
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Performance optimizations */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

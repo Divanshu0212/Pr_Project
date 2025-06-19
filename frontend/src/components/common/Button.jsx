@@ -1,5 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types'; // Import the prop-types library
+import React, { useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import './Button.css';
 
 const Button = ({
@@ -11,35 +11,78 @@ const Button = ({
   fullWidth = false,
   type = 'button',
   icon = null,
+  enableShine = true,
 }) => {
+  const buttonRef = useRef(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseMove = (e) => {
+    if (!buttonRef.current || disabled || !enableShine) return;
+    const rect = buttonRef.current.getBoundingClientRect();
+    setPosition({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
+  const handleMouseEnter = () => {
+    if (!disabled && enableShine) {
+      setIsHovered(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (enableShine) {
+      setIsHovered(false);
+    }
+  };
+
+  const shineStyle = enableShine && isHovered ? {
+    background: `radial-gradient(circle at ${position.x}px ${position.y}px, rgba(255, 255, 255, 0.1) 0%, transparent 60%)`,
+  } : {};
+
   return (
     <button
+      ref={buttonRef}
       type={type}
       className={`
         button
         button-${variant}
         button-${size}
         ${fullWidth ? 'button-full-width' : ''}
+        ${enableShine ? 'button-shine-enabled' : ''}
       `}
       onClick={onClick}
       disabled={disabled}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
-      {icon && <span className="button-icon">{icon}</span>}
-      {children}
+      {enableShine && (
+        <div
+          className="button-shine"
+          style={shineStyle}
+        />
+      )}
+      <div className="button-content">
+        {icon && <span className="button-icon">{icon}</span>}
+        {children}
+      </div>
     </button>
   );
 };
 
-// Define the expected prop types for the Button component
 Button.propTypes = {
-  children: PropTypes.node.isRequired, // Typically the button label
-  variant: PropTypes.oneOf(['primary', 'secondary', 'ghost']), // Expect one of these string values
-  size: PropTypes.oneOf(['small', 'medium', 'large']), // Expect one of these string values
-  onClick: PropTypes.func, // Expect a function
-  disabled: PropTypes.bool, // Expect a boolean
-  fullWidth: PropTypes.bool, // Expect a boolean
-  type: PropTypes.oneOf(['button', 'submit', 'reset']), // Expect one of these string values
-  icon: PropTypes.node, // Expect a React node (can be an element or text)
+  children: PropTypes.node.isRequired,
+  variant: PropTypes.oneOf(['primary', 'secondary', 'ghost']),
+  size: PropTypes.oneOf(['small', 'medium', 'large']),
+  onClick: PropTypes.func,
+  disabled: PropTypes.bool,
+  fullWidth: PropTypes.bool,
+  type: PropTypes.oneOf(['button', 'submit', 'reset']),
+  icon: PropTypes.node,
+  enableShine: PropTypes.bool,
 };
 
 export default Button;

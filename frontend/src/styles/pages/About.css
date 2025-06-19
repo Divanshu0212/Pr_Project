@@ -1,0 +1,125 @@
+.about-page {
+  color: var(--text-primary);
+}
+
+.about-hero {
+  text-align: center;
+  padding: 5rem 2rem;
+  background: radial-gradient(circle, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  background: -webkit-linear-gradient(45deg, var(--accent-color), #9C27B0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.about-page section {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+}
+
+.about-page section:not(:first-child) {
+  border-top: 1px solid var(--border-color);
+}
+
+.about-page h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.mission-content {
+  text-align: center;
+}
+
+.mission-icon, .team-icon, .values-icon {
+  color: var(--accent-color);
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.mission-content p, .team-intro {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  max-width: 800px;
+  margin: 0 auto 2rem auto;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.team-card {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.team-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2), 0 0 0 2px var(--accent-color);
+}
+
+.team-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin: 0 auto 1rem auto;
+  background-image: linear-gradient(to right, var(--accent-color), #9C27B0);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.team-card h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.team-card p {
+  color: var(--text-secondary);
+}
+
+.values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.value-item {
+    text-align: center;
+}
+
+.value-item h3 {
+    font-size: 1.3rem;
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+}

@@ -1,0 +1,191 @@
+/* Assuming these variables are defined in your global.css */
+:root {
+  --bg-primary: #0D1117;
+  --bg-secondary: #161B22;
+  --text-primary: #E5E5E5;
+  --text-secondary: #6B7280;
+  --accent-color: #40E0D0;
+  --error-color: #F44336;
+  --border-color: #30363d;
+}
+
+.light-theme {
+  --bg-primary: #F9FAFB;
+  --bg-secondary: #FFFFFF;
+  --text-primary: #1F2937;
+  --text-secondary: #6B7280;
+  --border-color: #e5e7eb;
+}
+
+
+.settings-page {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1rem 2rem;
+  color: var(--text-primary);
+}
+
+.settings-header {
+  text-align: left;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1.5rem;
+}
+
+.settings-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.settings-header p {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+.settings-section {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  transition: box-shadow 0.3s ease;
+}
+
+.settings-section:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.section-icon {
+  margin-right: 0.75rem;
+  color: var(--accent-color);
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+}
+
+.setting-item:not(:last-child) {
+  border-bottom: 1px solid var(--border-color);
+}
+
+.item-label h3 {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.item-label p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+/* Theme Buttons */
+.theme-options {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.theme-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-btn.active,
+.theme-btn:hover {
+  color: var(--bg-primary);
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+/* Action Buttons */
+.action-btn {
+  padding: 0.5rem 1.2rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.action-btn:hover {
+  background-color: #30363d;
+}
+
+.danger-btn {
+  color: var(--error-color);
+  border-color: var(--error-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.danger-btn:hover {
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--text-secondary);
+  transition: 0.4s;
+  border-radius: 28px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--accent-color);
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
