@@ -1,5 +1,14 @@
+/* Import Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+/* Tailwind Directives - IMPORTANT: These should come before your custom styles */
+/* If @apply is an unknown rule, these directives might not be processed.
+   Ensure your PostCSS setup is correctly configured for Tailwind. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base Resets */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -7,95 +16,75 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-family: var(--font-family); /* Using the variable from variables.css */
   line-height: 1.5;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  background-color: var(--bg-primary); /* Using the variable from variables.css */
+  color: var(--text-primary); /* Using the variable from variables.css */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Typography */
 h1, h2, h3, h4, h5, h6 {
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-bold); /* Using the variable from variables.css */
   line-height: 1.3;
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--spacing-md); /* Using the variable from variables.css */
 }
 
-h1 {
-  font-size: var(--font-size-4xl);
-}
+h1 { font-size: var(--font-size-4xl); } /* Using the variable from variables.css */
+h2 { font-size: var(--font-size-3xl); }
+h3 { font-size: var(--font-size-2xl); }
+h4 { font-size: var(--font-size-xl); }
+h5 { font-size: var(--font-size-lg); }
+h6 { font-size: var(--font-size-md); }
 
-h2 {
-  font-size: var(--font-size-3xl);
-}
-
-h3 {
-  font-size: var(--font-size-2xl);
-}
-
-h4 {
-  font-size: var(--font-size-xl);
-}
-
-h5 {
-  font-size: var(--font-size-lg);
-}
-
-h6 {
-  font-size: var(--font-size-md);
-}
-
-p {
-  margin-bottom: var(--spacing-md);
-}
+p { margin-bottom: var(--spacing-md); }
 
 a {
-  color: var(--accent-cyan);
+  color: var(--accent-cyan); /* Using the variable from variables.css */
   text-decoration: none;
-  transition: color var(--transition-fast);
+  transition: color var(--transition-fast); /* Using the variable from variables.css */
 }
 
 a:hover {
-  color: var(--accent-purple);
+  color: var(--accent-purple); /* Using the variable from variables.css */
 }
 
-button {
-  font-family: inherit;
-}
+button { font-family: inherit; }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
   background-color: rgba(229, 229, 229, 0.1);
   padding: 0.2em 0.4em;
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--border-radius-sm); /* Using the variable from variables.css */
   font-size: 0.9em;
 }
 
 ul, ol {
-  margin-bottom: var(--spacing-md);
-  padding-left: var(--spacing-xl);
+  margin-bottom: var(--spacing-md); /* Using the variable from variables.css */
+  padding-left: var(--spacing-xl); /* Using the variable from variables.css */
 }
 
+/* Layouts */
 .container {
-  max-width: 1280px;
+  max-width: var(--breakpoint-xl); /* Using the variable from variables.css */
   margin: 0 auto;
-  padding: 0 var(--spacing-xl);
+  padding: 0 var(--spacing-xl); /* Using the variable from variables.css */
 }
 
 .page-title {
-  color: var(--accent-cyan);
-  margin-bottom: var(--spacing-lg);
+  color: var(--accent-cyan); /* Using the variable from variables.css */
+  margin-bottom: var(--spacing-lg); /* Using the variable from variables.css */
 }
 
 .section {
-  margin-bottom: var(--spacing-xxl);
+  margin-bottom: var(--spacing-xxl); /* Using the variable from variables.css */
 }
 
 .section-title {
-  font-size: var(--font-size-2xl);
-  color: var(--accent-cyan);
-  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-2xl); /* Using the variable from variables.css */
+  color: var(--accent-cyan); /* Using the variable from variables.css */
+  margin-bottom: var(--spacing-lg); /* Using the variable from variables.css */
   position: relative;
   display: inline-block;
 }
@@ -107,112 +96,78 @@ ul, ol {
   bottom: -5px;
   height: 3px;
   width: 50px;
-  background-color: var(--accent-purple);
+  background-color: var(--accent-purple); /* Using the variable from variables.css */
 }
 
-.grid {
-  display: grid;
-  gap: var(--spacing-lg);
-}
+/* Grids and Flex */
+.grid { display: grid; gap: var(--spacing-lg); } /* Using the variable from variables.css */
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
 
-.grid-2 {
-  grid-template-columns: repeat(2, 1fr);
-}
+.flex { display: flex; }
+.flex-center { justify-content: center; align-items: center; }
+.flex-between { justify-content: space-between; align-items: center; }
 
-.grid-3 {
-  grid-template-columns: repeat(3, 1fr);
-}
+.text-center { text-align: center; }
+.text-right { text-align: right; }
 
-.grid-4 {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.flex {
-  display: flex;
-}
-
-.flex-center {
-  justify-content: center;
-  align-items: center;
-}
-
-.flex-between {
-  justify-content: space-between;
-  align-items: center;
-}
-
-.text-center {
-  text-align: center;
-}
-
-.text-right {
-  text-align: right;
-}
-
+/* Margins */
 .mt-sm { margin-top: var(--spacing-sm); }
 .mt-md { margin-top: var(--spacing-md); }
 .mt-lg { margin-top: var(--spacing-lg); }
 .mt-xl { margin-top: var(--spacing-xl); }
-
 .mb-sm { margin-bottom: var(--spacing-sm); }
 .mb-md { margin-bottom: var(--spacing-md); }
 .mb-lg { margin-bottom: var(--spacing-lg); }
 .mb-xl { margin-bottom: var(--spacing-xl); }
 
-@media (max-width: 1024px) {
-  .grid-4 {
-    grid-template-columns: repeat(3, 1fr);
-  }
+/* Responsive */
+@media (max-width: var(--breakpoint-lg)) { /* Using the variable from variables.css */
+  .grid-4 { grid-template-columns: repeat(3, 1fr); }
 }
 
-@media (max-width: 768px) {
-  .grid-3, .grid-4 {
-    grid-template-columns: repeat(2, 1fr);
-  }
+@media (max-width: var(--breakpoint-md)) { /* Using the variable from variables.css */
+  .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 480px) {
-  .grid-2, .grid-3, .grid-4 {
-    grid-template-columns: 1fr;
-  }
-  
-  h1 {
-    font-size: var(--font-size-3xl);
-  }
-  
-  h2 {
-    font-size: var(--font-size-2xl);
-  }
-  
-  h3 {
-    font-size: var(--font-size-xl);
-  }
+@media (max-width: var(--breakpoint-sm)) { /* Using the variable from variables.css */
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  h1 { font-size: var(--font-size-3xl); }
+  h2 { font-size: var(--font-size-2xl); }
+  h3 { font-size: var(--font-size-xl); }
 }
+
+/* Scrollbar */
 .no-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .no-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
 }
 
-/* global.css or a theme-specific CSS file */
+/* Theme Support (using variables from variables.css) */
 body[data-theme='light'] {
-  background-color: #f9f9f9;
-  color: #333;
+  background-color: var(--light-bg);
+  color: var(--light-text);
+  --text-secondary: #6B7280; /* Explicitly set for light mode consistency */
+  --text-placeholder: #9CA3AF; /* Lighter placeholder for light mode */
 }
 
-body[data-theme='dark'] {
-  background-color: #121212;
-  color: #eee;
-}
-
-/* Example for other elements */
 .some-component {
-  border: 1px solid #ccc; /* Light theme border */
+  border: 1px solid var(--accent-neutral); /* Uses neutral color from variables.css */
 }
 
 body[data-theme='dark'] .some-component {
-  border: 1px solid #555; /* Dark theme border */
+  border: 1px solid var(--accent-neutral); /* Ensures dark theme also uses neutral gray */
+}
+
+/* React Bits Background Utility */
+.rb-background {
+  /* Changed from @apply to direct CSS, using variables for gradient colors */
+  background-image: linear-gradient(to right, var(--accent-cyan), var(--accent-purple));
+  position: relative;
+  z-index: 0;
 }

@@ -1,8 +1,31 @@
 .card {
-  background-color: var(--bg-secondary);
+  position: relative;
+  background: linear-gradient(135deg, #161B22 0%, #0D1117 100%);
+  border: 1px solid rgba(64, 224, 208, 0.1);
   border-radius: var(--border-radius-md);
   overflow: hidden;
-  transition: transform var(--transition-normal);
+  transition: all var(--transition-normal);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(64, 224, 208, 0.03) 0%, rgba(156, 39, 176, 0.03) 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.card-spotlight {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 500ms ease-in-out;
+  z-index: 2;
 }
 
 /* Card variants */
@@ -16,7 +39,9 @@
 
 .card-flat {
   padding: var(--spacing-md);
-  border: 1px solid rgba(229, 229, 229, 0.1);
+  border: 1px solid rgba(64, 224, 208, 0.2);
+  background: rgba(22, 27, 34, 0.6);
+  backdrop-filter: blur(10px);
 }
 
 .card-interactive {
@@ -25,20 +50,21 @@
 
 .card-interactive:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 25px rgba(64, 224, 208, 0.15);
+  border-color: rgba(64, 224, 208, 0.3);
 }
 
 /* Card elevations */
 .card-elevation-low {
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .card-elevation-medium {
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(64, 224, 208, 0.05);
 }
 
 .card-elevation-high {
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(64, 224, 208, 0.1);
 }
 
 .card-clickable {
@@ -47,6 +73,98 @@
 }
 
 .card-clickable:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 24px rgba(64, 224, 208, 0.1), 0 0 0 1px rgba(64, 224, 208, 0.2);
+  border-color: rgba(64, 224, 208, 0.4);
+}
+
+.card-clickable:hover .card-spotlight {
+  opacity: 0.4 !important;
+}
+
+/* Post card specific styles */
+.card-post {
+  position: relative;
+}
+
+.card-post .link {
+  position: relative;
+  z-index: 3;
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  padding: var(--spacing-lg);
+}
+
+.card-post .title {
+  display: block;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-md);
+  position: relative;
+  z-index: 3;
+}
+
+.card-post .img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: var(--border-radius-sm);
+  margin: var(--spacing-md) 0;
+  position: relative;
+  z-index: 3;
+}
+
+.card-post .desc {
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-md);
+  line-height: 1.6;
+  position: relative;
+  z-index: 3;
+}
+
+.card-post .cardButton {
+  background: linear-gradient(135deg, #40E0D0 0%, #9C27B0 100%);
+  color: #0D1117;
+  border: none;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  z-index: 3;
+  overflow: hidden;
+}
+
+.card-post .cardButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.card-post .cardButton:hover::before {
+  left: 100%;
+}
+
+.card-post .cardButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(64, 224, 208, 0.3);
+}
+
+/* Responsive adjustments */
+@media (prefers-reduced-motion: reduce) {
+  .card-spotlight {
+    transition: none;
+  }
+  
+  .card {
+    transition: none;
+  }
 }
