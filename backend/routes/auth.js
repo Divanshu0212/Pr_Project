@@ -219,8 +219,21 @@ router.get('/google/callback', passport.authenticate('google', {
   failureRedirect: `${process.env.FRONTEND_URL}/login?error=google-auth-failed`,
   session: false
 }), (req, res) => {
-  const token = generateToken(req.user);
-  res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${token}&provider=google`);
+  try {
+    if (!req.user) {
+      console.error('No user found in Google callback');
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=authentication-failed`);
+    }
+
+    const token = generateToken(req.user);
+    console.log('Google OAuth success for user:', req.user.email);
+
+    // Redirect with token and user info
+    res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${token}&provider=google&userId=${req.user._id}`);
+  } catch (error) {
+    console.error('Google callback error:', error);
+    res.redirect(`${process.env.FRONTEND_URL}/login?error=callback-processing-failed`);
+  }
 });
 
 // GitHub OAuth routes
@@ -233,8 +246,21 @@ router.get('/github/callback', passport.authenticate('github', {
   failureRedirect: `${process.env.FRONTEND_URL}/login?error=github-auth-failed`,
   session: false
 }), (req, res) => {
-  const token = generateToken(req.user);
-  res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${token}&provider=github`);
+  try {
+    if (!req.user) {
+      console.error('No user found in GitHub callback');
+      return res.redirect(`${process.env.FRONTEND_URL}/login?error=authentication-failed`);
+    }
+
+    const token = generateToken(req.user);
+    console.log('GitHub OAuth success for user:', req.user.email);
+
+    // Redirect with token and user info
+    res.redirect(`${process.env.FRONTEND_URL}/oauth-callback?token=${token}&provider=github&userId=${req.user._id}`);
+  } catch (error) {
+    console.error('GitHub callback error:', error);
+    res.redirect(`${process.env.FRONTEND_URL}/login?error=callback-processing-failed`);
+  }
 });
 
 // Logout
