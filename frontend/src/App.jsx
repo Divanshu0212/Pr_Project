@@ -39,7 +39,6 @@ const ProjectDetails = lazy(() => import('./pages/portfolio/ProjectDetails'));
 const ResumeBuilderHome = lazy(() => import('./pages/resume/ResumeBuilderHome'));
 const BuildResume = lazy(() => import('./pages/resume/BuildResume'));
 const TemplateGallery = lazy(() => import('./pages/resume/TemplateGallery'));
-const ATSTracker = lazy(() => import('./pages/ats/ATSTracker'));
 const AtsHome = lazy(() => import('./pages/ats/AtsHome'));
 const AnalysisView = lazy(() => import('./pages/ats/AnalysisView'));
 const AnalysisResults = lazy(() => import('./pages/ats/AnalysisResults'));
