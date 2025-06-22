@@ -18,8 +18,23 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: function() {
+      return !this.googleId && !this.githubId;
+    },
     minlength: 8,
+  },
+  provider: {
+    type: String,
+    enum: ['local', 'google', 'github'],
+    default: 'local'
+  },
+  googleId: {
+    type: String,
+    sparse: true // Allows multiple null values
+  },
+  githubId: {
+    type: String,  
+    sparse: true // Allows multiple null values
   },
   profileImage: {
     public_id: {
