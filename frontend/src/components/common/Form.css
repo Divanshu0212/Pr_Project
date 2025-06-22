@@ -1,57 +1,165 @@
+/* Form.css - Enhanced with new theme */
+
 .input-wrapper {
   display: flex;
   flex-direction: column;
-  margin-bottom: var(--spacing-md);
+  margin-bottom: 1.5rem;
   width: 100%;
 }
 
 .input-label {
-  color: var(--text-primary);
-  font-size: var(--font-size-sm);
-  margin-bottom: var(--spacing-xs);
-  font-weight: var(--font-weight-medium);
+  color: rgb(var(--color-text-primary));
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.025em;
+  transition: color 0.2s ease;
 }
 
 .input-required {
-  color: var(--accent-purple);
-  margin-left: var(--spacing-xs);
+  color: rgb(var(--color-accent-error));
+  margin-left: 0.25rem;
+  font-weight: 700;
+}
+
+.input-container {
+  position: relative;
 }
 
 .input {
-  background-color: var(--bg-primary);
-  border: 1px solid rgba(229, 229, 229, 0.2);
-  border-radius: var(--border-radius-md);
-  color: var(--text-primary);
-  font-size: var(--font-size-md);
-  padding: var(--spacing-sm) var(--spacing-md);
-  transition: border-color var(--transition-fast);
+  width: 100%;
+  background: rgb(var(--color-background-secondary));
+  border: 1px solid rgb(var(--color-accent-neutral) / 0.3);
+  border-radius: 0.75rem;
+  color: rgb(var(--color-text-primary));
+  font-size: 1rem;
+  padding: 0.875rem 1rem;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+  position: relative;
+  z-index: 2;
+}
+
+.input::placeholder {
+  color: rgb(var(--color-text-placeholder));
+  opacity: 0.7;
+}
+
+.input-focus-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, 
+    rgb(var(--color-accent-primary) / 0.2), 
+    rgb(var(--color-accent-secondary) / 0.2)
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
 }
 
 .input:focus {
   outline: none;
-  border-color: var(--accent-cyan);
-  box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.2);
+  border-color: rgb(var(--color-accent-primary));
+  transform: translateY(-1px);
+  box-shadow: 
+    0 0 0 3px rgb(var(--color-accent-primary) / 0.1),
+    0 8px 25px rgb(var(--color-accent-primary) / 0.15);
 }
 
-.input:hover:not(:disabled) {
-  border-color: rgba(229, 229, 229, 0.4);
+.input:focus + .input-focus-ring {
+  opacity: 1;
+}
+
+.input:hover:not(:disabled):not(:focus) {
+  border-color: rgb(var(--color-accent-primary) / 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgb(var(--color-text-primary) / 0.1);
 }
 
 .input:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
+  background: rgb(var(--color-background-primary));
+  transform: none !important;
 }
 
 .input-error {
-  border-color: #f44336;
+  border-color: rgb(var(--color-accent-error));
+  background: rgb(var(--color-accent-error) / 0.05);
+  animation: shake 0.5s ease-in-out;
 }
 
 .input-error:focus {
-  box-shadow: 0 0 0 2px rgba(244, 67, 54, 0.2);
+  border-color: rgb(var(--color-accent-error));
+  box-shadow: 
+    0 0 0 3px rgb(var(--color-accent-error) / 0.1),
+    0 8px 25px rgb(var(--color-accent-error) / 0.15);
+}
+
+.input-error + .input-focus-ring {
+  background: linear-gradient(135deg, 
+    rgb(var(--color-accent-error) / 0.1), 
+    rgb(var(--color-accent-error) / 0.1)
+  );
 }
 
 .input-error-message {
-  color: #f44336;
-  font-size: var(--font-size-xs);
-  margin-top: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgb(var(--color-accent-error));
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+  animation: fade-in-up 0.3s ease;
+}
+
+.input-error-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+/* Animations */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced focus styles for better accessibility */
+.input:focus-visible {
+  outline: 2px solid rgb(var(--color-accent-primary));
+  outline-offset: 2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .input {
+    padding: 0.75rem 0.875rem;
+    font-size: 0.95rem;
+  }
+  
+  .input-wrapper {
+    margin-bottom: 1.25rem;
+  }
+}
+
+/* Dark mode specific adjustments */
+@media (prefers-color-scheme: dark) {
+  .input {
+    box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.1);
+  }
 }

@@ -1,10 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Button from '../common/Button';
+import Card from '../common/Card';
 
 const ComparisonTool = ({ resumes }) => {
   const [selectedResumes, setSelectedResumes] = useState([]);
   const [comparisonResults, setComparisonResults] = useState(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   const handleResumeSelect = (resumeId) => {
     if (selectedResumes.includes(resumeId)) {
@@ -36,88 +42,115 @@ const ComparisonTool = ({ resumes }) => {
   };
 
   return (
-    <div className="comparison-tool bg-[#161B22] p-5 rounded-lg">
-      <h3 className="text-[#00FFFF] text-xl mb-4">Resume Comparison Tool</h3>
+    <div className={`transition-all duration-800 ${isVisible ? 'animate-fade-in-up opacity-100' : 'opacity-0'}`}>
+      <Card className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-mesh opacity-30"></div>
+        <div className="relative z-10">
+          <h3 className="text-2xl font-bold bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent mb-6">
+            Resume Comparison Tool
+          </h3>
 
-      <div className="mb-5">
-        <p className="text-[#E5E5E5] mb-2">Select two resumes to compare:</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {resumes.map(resume => (
-            <div
-              key={resume.id}
-              className={`p-3 rounded cursor-pointer transition-all
-                ${selectedResumes.includes(resume.id)
-                  ? 'bg-[#9C27B0] bg-opacity-20 border border-[#9C27B0]'
-                  : 'bg-[#0D1117] border border-[#30363D] hover:border-[#00FFFF]'}`}
-              onClick={() => handleResumeSelect(resume.id)}
-            >
-              <p className="text-[#E5E5E5] font-medium">{resume.name}</p>
-              <p className="text-sm text-gray-400">Score: {resume.score}%</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex justify-center mb-5">
-        <Button
-          text="Compare Resumes"
-          onClick={compareResumes}
-          disabled={selectedResumes.length !== 2}
-        />
-      </div>
-
-      {comparisonResults && (
-        <div className="comparison-results mt-5 border-t border-[#30363D] pt-5">
-          <h4 className="text-[#00FFFF] text-lg mb-3">Comparison Results</h4>
-
-          <div className="mb-4">
-            <h5 className="text-[#9C27B0] mb-2">Score Comparison</h5>
-            <div className="grid grid-cols-2 gap-4 mb-3">
-              <div className="bg-[#0D1117] p-3 rounded">
-                <p className="text-sm text-gray-400">Resume 1</p>
-                <p className="text-xl text-[#E5E5E5]">{comparisonResults.scoreComparison.resume1}%</p>
-              </div>
-              <div className="bg-[#0D1117] p-3 rounded">
-                <p className="text-sm text-gray-400">Resume 2</p>
-                <p className="text-xl text-[#E5E5E5]">{comparisonResults.scoreComparison.resume2}%</p>
-              </div>
-            </div>
-            <p className="text-[#E5E5E5]">
-              Difference: <span className="text-[#00FFFF]">{comparisonResults.scoreComparison.difference}%</span>
-            </p>
-          </div>
-
-          <div>
-            <h5 className="text-[#9C27B0] mb-2">Keyword Comparison</h5>
+          <div className="mb-6">
+            <p className="text-text-secondary mb-4 text-lg">Select two resumes to compare:</p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-[#0D1117] p-3 rounded">
-                <p className="text-sm text-gray-400">Unique to Resume 1</p>
-                {comparisonResults.keywordComparison.uniqueToResume1.length === 0 ? (
-                  <p className="text-[#E5E5E5] italic">None</p>
-                ) : (
-                  <ul className="list-disc pl-5">
-                    {comparisonResults.keywordComparison.uniqueToResume1.map(keyword => (
-                      <li key={keyword} className="text-[#E5E5E5]">{keyword}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-              <div className="bg-[#0D1117] p-3 rounded">
-                <p className="text-sm text-gray-400">Unique to Resume 2</p>
-                {comparisonResults.keywordComparison.uniqueToResume2.length === 0 ? (
-                  <p className="text-[#E5E5E5] italic">None</p>
-                ) : (
-                  <ul className="list-disc pl-5">
-                    {comparisonResults.keywordComparison.uniqueToResume2.map(keyword => (
-                      <li key={keyword} className="text-[#E5E5E5]">{keyword}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+              {resumes.map((resume, index) => (
+                <div
+                  key={resume.id}
+                  className={`p-4 rounded-2xl cursor-pointer transition-all duration-400 transform hover:scale-105 hover:shadow-glow
+                    ${selectedResumes.includes(resume.id)
+                      ? 'bg-gradient-to-br from-accent-primary/20 to-accent-secondary/20 border-2 border-accent-primary shadow-glow'
+                      : 'bg-background-secondary border-2 border-transparent hover:border-accent-neutral/50'}`}
+                  onClick={() => handleResumeSelect(resume.id)}
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <p className="text-text-primary font-semibold text-lg">{resume.name}</p>
+                  <p className="text-text-secondary">
+                    Score: <span className="font-bold text-accent-primary">{resume.score}%</span>
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
+
+          <div className="flex justify-center mb-6">
+            <Button
+              text="Compare Resumes"
+              onClick={compareResumes}
+              disabled={selectedResumes.length !== 2}
+              className="px-8 py-3 text-lg font-semibold bg-gradient-to-r from-accent-primary to-accent-secondary hover:shadow-glow-purple transform hover:scale-105 transition-all duration-300"
+            />
+          </div>
+
+          {comparisonResults && (
+            <div className="animate-slide-up border-t-2 border-accent-neutral/30 pt-6">
+              <h4 className="text-xl font-bold text-accent-primary mb-4">Comparison Results</h4>
+
+              <div className="mb-6">
+                <h5 className="text-lg font-semibold bg-gradient-to-r from-accent-secondary to-accent-primary bg-clip-text text-transparent mb-4">
+                  Score Comparison
+                </h5>
+                <div className="grid grid-cols-2 gap-6 mb-4">
+                  <Card className="text-center transform hover:scale-105 transition-all duration-300">
+                    <p className="text-text-secondary text-sm mb-2">Resume 1</p>
+                    <p className="text-3xl font-bold text-accent-primary">
+                      {comparisonResults.scoreComparison.resume1}%
+                    </p>
+                  </Card>
+                  <Card className="text-center transform hover:scale-105 transition-all duration-300">
+                    <p className="text-text-secondary text-sm mb-2">Resume 2</p>
+                    <p className="text-3xl font-bold text-accent-secondary">
+                      {comparisonResults.scoreComparison.resume2}%
+                    </p>
+                  </Card>
+                </div>
+                <p className="text-text-primary text-center text-lg">
+                  Difference: <span className="font-bold bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
+                    {comparisonResults.scoreComparison.difference}%
+                  </span>
+                </p>
+              </div>
+
+              <div>
+                <h5 className="text-lg font-semibold bg-gradient-to-r from-accent-secondary to-accent-primary bg-clip-text text-transparent mb-4">
+                  Keyword Comparison
+                </h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card className="transform hover:scale-105 transition-all duration-300">
+                    <p className="text-text-secondary font-medium mb-3">Unique to Resume 1</p>
+                    {comparisonResults.keywordComparison.uniqueToResume1.length === 0 ? (
+                      <p className="text-text-placeholder italic">None</p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {comparisonResults.keywordComparison.uniqueToResume1.map(keyword => (
+                          <li key={keyword} className="text-text-primary flex items-center">
+                            <span className="w-2 h-2 bg-accent-primary rounded-full mr-3"></span>
+                            {keyword}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </Card>
+                  <Card className="transform hover:scale-105 transition-all duration-300">
+                    <p className="text-text-secondary font-medium mb-3">Unique to Resume 2</p>
+                    {comparisonResults.keywordComparison.uniqueToResume2.length === 0 ? (
+                      <p className="text-text-placeholder italic">None</p>
+                    ) : (
+                      <ul className="space-y-2">
+                        {comparisonResults.keywordComparison.uniqueToResume2.map(keyword => (
+                          <li key={keyword} className="text-text-primary flex items-center">
+                            <span className="w-2 h-2 bg-accent-secondary rounded-full mr-3"></span>
+                            {keyword}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </Card>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </Card>
     </div>
   );
 };

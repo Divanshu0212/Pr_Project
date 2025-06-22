@@ -285,9 +285,17 @@ code {
 }
 
 /* Features Section */
+/* In LandingPage.css */
+
 .features-section {
-  padding: 4rem 2rem;
-  background-color: var(--bg-secondary);
+  /* Add/Adjust these properties if they are not already present or are different */
+  max-width: 1200px; /* Or a suitable maximum width for your content, e.g., 1000px, 1400px */
+  margin: 0 auto; /* This centers the entire features section */
+  padding: 80px 20px; /* Example padding to prevent content from touching edges */
+  display: flex; /* Assuming you want to center its direct children like section-header and features-grid */
+  flex-direction: column;
+  align-items: center; /* Centers items horizontally in a column flex container */
+  gap: 50px; /* Space between header and grid */
 }
 
 .section-header {
@@ -339,16 +347,23 @@ code {
   color: var(--text-secondary);
 }
 
+/* In LandingPage.css */
+
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(1, 1fr);
-  gap: 1.5rem;
-  margin-top: 1.5rem;
+  /* Adjust grid-template-columns for responsiveness */
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* This creates responsive columns */
+  gap: 30px; /* Space between cards */
+  width: 100%; /* Ensures the grid takes the full width of its parent (.features-section) */
+  /* Remove any explicit width like 80vw or 100vw here if present */
+  /* You typically *don't* want margin: auto on grid/flex children unless they are explicitly told not to fill their cell */
 }
 
-@media (min-width: 640px) {
+/* Add a media query for smaller screens to adjust column behavior */
+@media (max-width: 768px) {
   .features-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr; /* Stack cards on smaller screens */
+    padding: 0 15px; /* Add some horizontal padding for smaller screens */
   }
 }
 
@@ -807,11 +822,17 @@ code {
   display: inline-block;
 }
 
+/* In LandingPage.css */
+
 .what-makes-different {
   background-color: rgba(64, 224, 208, 0.05);
   border-radius: 8px;
   padding: 1.25rem;
   border: 1px solid rgba(64, 224, 208, 0.1);
+  /* Crucial for this specific card within the grid */
+  width: 100%; /* Take up the full width of its grid cell */
+  max-width: 600px; /* Or whatever maximum width makes sense for the content, e.g., 500px, 700px */
+  /* If you want this card to span across multiple columns in a grid, you might need grid-column: 1 / -1; */
 }
 
 .what-makes-different ul {
@@ -819,6 +840,7 @@ code {
   padding-left: 0.5rem;
   margin-bottom: 1rem;
 }
+
 
 .what-makes-different li {
   position: relative;
@@ -1066,11 +1088,11 @@ code {
 }
 
 /* Section entrance animations */
-section {
+/* section {
   opacity: 0;
   transform: translateY(30px);
   animation: smoothSlideUp 1s ease-out forwards;
-}
+} */
 
 .features-section { animation-delay: 0.1s; }
 .how-it-works { animation-delay: 0.2s; }
@@ -1191,4 +1213,82 @@ html {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Hero Section */
+/* ... keep existing .hero-section styles ... */
+
+.hero-content {
+  max-width: 600px;
+  text-align: center;
+  z-index: 1;
+  /* Remove initial opacity and transform, animation from here */
+  /* These will be controlled by .animate-in below */
+}
+
+/* Initial state for hero-title elements (hidden by default) */
+.hero-title,
+.hero-subtitle,
+.hero-cta {
+    opacity: 0;
+    transform: translateY(30px);
+    /* Add a transition here so they smoothly appear when .animate-in is applied */
+    transition: opacity 1s ease-out, transform 1s ease-out; /* Match animation duration */
+}
+
+/* Animation for hero-title when hero-content is in view */
+.hero-content.animate-in .hero-title {
+    opacity: 1;
+    transform: translateY(0);
+    animation: smoothSlideUp 1s ease-out forwards; /* Keep existing animation */
+    animation-delay: 0.2s; /* Keep existing delay */
+}
+
+/* Animation for hero-subtitle when hero-content is in view */
+.hero-content.animate-in .hero-subtitle {
+    opacity: 1;
+    transform: translateY(0);
+    animation: smoothSlideUp 1s ease-out forwards;
+    animation-delay: 0.5s;
+}
+
+/* Animation for hero-cta when hero-content is in view */
+.hero-content.animate-in .hero-cta {
+    opacity: 1;
+    transform: translateY(0);
+    animation: smoothSlideUp 1s ease-out forwards;
+    animation-delay: 0.8s;
+}
+
+/* Initial state and animation for hero-visual */
+.hero-visual {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 45%;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 1.2s ease-out, transform 1.2s ease-out; /* Match animation duration */
+}
+
+.hero-visual.animate-in {
+    opacity: 1;
+    transform: scale(1);
+    animation: smoothZoomIn 1.2s ease-out forwards; /* Keep existing animation */
+    animation-delay: 1s; /* Keep existing delay */
+}
+
+/* Keep `textGlow` animation on .hero-title .text-accent */
+.hero-title .text-accent {
+    display: inline-block;
+    animation: textGlow 2s ease-in-out infinite alternate;
+}
+
+/* In LandingPage.css */
+/* Assuming .what-makes-different is applied to the root of the FeatureCard component when it's special */
+.feature-card.is-special .what-makes-different { /* Or simply .what-makes-different if it's unique */
+  grid-column: 1 / -1; /* This makes it span from the first column line to the last */
+  margin: 0 auto; /* Center it within the full grid width */
+  max-width: 900px; /* You might want a larger max-width for this spanning card */
 }

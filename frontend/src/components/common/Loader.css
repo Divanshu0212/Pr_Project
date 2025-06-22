@@ -1,0 +1,208 @@
+/* src/components/common/Loader.css */
+
+.loader-overlay {
+  @apply fixed inset-0 w-full h-full flex justify-center items-center z-[9999];
+  background: linear-gradient(135deg, 
+    rgba(49, 130, 206, 0.95) 0%, 
+    rgba(128, 90, 213, 0.95) 50%, 
+    rgba(236, 72, 153, 0.95) 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.loader-container {
+  @apply relative flex flex-col items-center justify-center;
+}
+
+/* Floating particles animation */
+.loader-particles {
+  @apply absolute inset-0 pointer-events-none;
+}
+
+.particle {
+  @apply absolute w-2 h-2 rounded-full opacity-30;
+  background: linear-gradient(45deg, #ffffff, rgba(255,255,255,0.5));
+  animation: float-particle 4s ease-in-out infinite;
+}
+
+.particle-1 {
+  @apply top-1/4 left-1/4;
+  animation-delay: 0s;
+  animation-duration: 3s;
+}
+
+.particle-2 {
+  @apply top-1/3 right-1/4;
+  animation-delay: 0.5s;
+  animation-duration: 4s;
+}
+
+.particle-3 {
+  @apply bottom-1/4 left-1/3;
+  animation-delay: 1s;
+  animation-duration: 3.5s;
+}
+
+.particle-4 {
+  @apply bottom-1/3 right-1/3;
+  animation-delay: 1.5s;
+  animation-duration: 4.5s;
+}
+
+.particle-5 {
+  @apply top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2;
+  animation-delay: 2s;
+  animation-duration: 5s;
+}
+
+/* Main loader content */
+.loader-content {
+  @apply flex flex-col items-center gap-8 z-10 relative;
+}
+
+/* Logo with animated rings */
+.loader-logo {
+  @apply relative w-24 h-24 flex items-center justify-center;
+}
+
+.logo-ring {
+  @apply absolute rounded-full border-2;
+  animation: rotate-ring 3s linear infinite;
+}
+
+.logo-ring-1 {
+  @apply w-full h-full;
+  border-color: rgba(255, 255, 255, 0.8) transparent rgba(255, 255, 255, 0.8) transparent;
+  animation-duration: 2s;
+}
+
+.logo-ring-2 {
+  @apply w-16 h-16;
+  border-color: transparent rgba(255, 255, 255, 0.6) transparent rgba(255, 255, 255, 0.6);
+  animation-duration: 1.5s;
+  animation-direction: reverse;
+}
+
+.logo-ring-3 {
+  @apply w-8 h-8;
+  border-color: rgba(255, 255, 255, 0.4) transparent rgba(255, 255, 255, 0.4) transparent;
+  animation-duration: 1s;
+}
+
+.logo-center {
+  @apply relative w-12 h-12 rounded-full flex items-center justify-center;
+  background: linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.9) 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.logo-text {
+  @apply text-2xl font-bold;
+  background: linear-gradient(135deg, #3182CE 0%, #805AD5 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: pulse-logo 2s ease-in-out infinite;
+}
+
+/* Text container */
+.loader-text-container {
+  @apply flex flex-col items-center gap-4;
+}
+
+.loader-title {
+  @apply text-4xl font-bold text-white;
+  background: linear-gradient(135deg, #ffffff 0%, rgba(255,255,255,0.8) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: shimmer-text 3s ease-in-out infinite;
+}
+
+.loader-progress {
+  @apply w-48 h-1 rounded-full overflow-hidden;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.progress-bar {
+  @apply h-full rounded-full;
+  background: linear-gradient(90deg, #ffffff, rgba(255,255,255,0.8), #ffffff);
+  animation: progress-fill 2s ease-in-out infinite;
+}
+
+.loader-subtitle {
+  @apply text-white/80 text-lg font-medium;
+  animation: fade-pulse 2s ease-in-out infinite;
+}
+
+/* Keyframe animations */
+@keyframes float-particle {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.3;
+  }
+  25% {
+    transform: translateY(-20px) rotate(90deg);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-10px) rotate(180deg);
+    opacity: 0.4;
+  }
+  75% {
+    transform: translateY(-30px) rotate(270deg);
+    opacity: 0.7;
+  }
+}
+
+@keyframes rotate-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-logo {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+@keyframes shimmer-text {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes progress-fill {
+  0% {
+    width: 0%;
+    transform: translateX(0%);
+  }
+  50% {
+    width: 100%;
+    transform: translateX(0%);
+  }
+  100% {
+    width: 100%;
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fade-pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}

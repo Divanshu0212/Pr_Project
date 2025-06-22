@@ -1,11 +1,38 @@
 import React from 'react';
+import './Loader.css';
 
 const Loader = () => {
   return (
-    <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-black bg-opacity-50 z-50">
-      <div className="relative w-12 h-12">
-        <div className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></div>
-        <div className="relative inline-flex rounded-full h-12 w-12 bg-cyan-500"></div>
+    <div className="loader-overlay">
+      <div className="loader-container">
+        {/* Animated background particles */}
+        <div className="loader-particles">
+          <div className="particle particle-1"></div>
+          <div className="particle particle-2"></div>
+          <div className="particle particle-3"></div>
+          <div className="particle particle-4"></div>
+          <div className="particle particle-5"></div>
+        </div>
+        
+        {/* Main loader content */}
+        <div className="loader-content">
+          <div className="loader-logo">
+            <div className="logo-ring logo-ring-1"></div>
+            <div className="logo-ring logo-ring-2"></div>
+            <div className="logo-ring logo-ring-3"></div>
+            <div className="logo-center">
+              <span className="logo-text">T</span>
+            </div>
+          </div>
+          
+          <div className="loader-text-container">
+            <h2 className="loader-title">TrackFolio</h2>
+            <div className="loader-progress">
+              <div className="progress-bar"></div>
+            </div>
+            <p className="loader-subtitle">Loading your workspace...</p>
+          </div>
+        </div>
       </div>
     </div>
   );

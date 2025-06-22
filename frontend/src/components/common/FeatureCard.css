@@ -1,176 +1,217 @@
-/* frontend/src/components/common/FeatureCard.css */
+/* FeatureCard.css - Enhanced with new theme */
 
 .feature-card {
-  background-color: var(--bg-secondary);
-  border-radius: var(--border-radius-md);
-  padding: var(--spacing-md);
-  box-shadow: var(--shadow-sm);
-  display: flex; /* Use flexbox for layout */
-  flex-direction: column; /* Stack items vertically by default */
-  gap: var(--spacing-sm);
-  transition: transform var(--transition-normal);
-  min-height: 150px; /* Ensure a minimum height to accommodate content */
+  position: relative;
+  padding: 2rem;
+  border-radius: 1rem;
+  height: 100%;
+  text-align: center;
+  background: rgb(var(--color-background-secondary));
+  border: 1px solid rgb(var(--color-accent-neutral) / 0.2);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  opacity: 0;
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, 
+    rgb(var(--color-accent-primary) / 0.3) 0%, 
+    transparent 50%, 
+    rgb(var(--color-accent-secondary) / 0.3) 100%
+  );
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .feature-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 
+    0 20px 40px rgb(var(--color-text-primary) / 0.1),
+    0 0 30px rgb(var(--color-accent-primary) / 0.15);
 }
 
-.feature-icon {
-  font-size: 2.5rem; /* Increased icon size */
-  color: var(--text-accent);
-  margin-bottom: var(--spacing-xs);
-  display: flex; /* Center the icon */
-  justify-content: center;
+.feature-card:hover::before {
+  opacity: 1;
+}
+
+.feature-card-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    circle at 50% 0%, 
+    rgb(var(--color-accent-primary) / 0.1), 
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.feature-card:hover .feature-card-glow {
+  opacity: 1;
+}
+
+.feature-icon-wrapper {
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  width: 100%; /* Ensure it takes full width to be centered */
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: 1.5rem;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, 
+    rgb(var(--color-accent-primary)), 
+    rgb(var(--color-accent-secondary))
+  );
+  color: white;
+  font-size: 1.5rem;
+  box-shadow: 0 8px 25px rgb(var(--color-accent-primary) / 0.4);
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover .feature-icon-wrapper {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 12px 35px rgb(var(--color-accent-primary) / 0.6);
 }
 
 .feature-content {
-  display: flex;
-  flex-direction: column;
+  position: relative;
+  z-index: 2;
 }
 
-.feature-content h3 {
-  color: var(--text-primary);
-  margin-bottom: var(--spacing-xxs);
-  font-size: 1.1rem; /* Slightly larger title */
-  text-align: center; /* Center the title */
+.feature-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: rgb(var(--color-text-primary));
+  margin-bottom: 0.75rem;
+  background: linear-gradient(135deg, 
+    rgb(var(--color-text-primary)), 
+    rgb(var(--color-accent-primary))
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transition: all 0.3s ease;
 }
 
-.feature-content p {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  line-height: 1.4;
-  text-align: center; /* Center the description */
-  margin-bottom: var(--spacing-sm); /* Add some space below the description */
+.feature-card:hover .feature-title {
+  transform: translateY(-2px);
 }
 
-.feature-link {
-  display: inline-block;
-  color: var(--link-color);
-  text-decoration: none;
-  margin-top: auto; /* Push the link to the bottom */
-  text-align: center; /* Center the link */
+.feature-description {
+  color: rgb(var(--color-text-secondary));
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
   font-size: 0.95rem;
-  transition: color var(--transition-fast);
-}
-
-.feature-link:hover {
-  color: var(--link-hover-color);
-  text-decoration: underline;
-}
-
-.feature-img {
-  margin-top: var(--spacing-sm);
-  border-radius: var(--border-radius-sm);
-  overflow: hidden;
-}
-
-.feature-img img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.special-feature-card {
-  background-color: #1e293b; /* A darker shade for special cards */
-  border: 1px solid #334155;
-}
-
-.special-feature-content h3 {
-  color: #f8fafc;
-}
-
-.special-feature-content p {
-  color: #cbd5e1;
-}a/* frontend/src/components/common/FeatureCard.css */
-
-.feature-card {
-  background-color: var(--bg-secondary);
-  border-radius: var(--border-radius-md);
-  padding: var(--spacing-lg);
-  box-shadow: var(--shadow-sm);
-  display: flex; /* Use flexbox for a horizontal layout of icon and content */
-  gap: var(--spacing-md); /* Space between icon and content */
-  transition: transform var(--transition-normal);
-  align-items: center; /* Vertically align icon and content */
-  min-height: 100px; /* Adjust minimum height as needed */
-}
-
-.feature-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.feature-icon {
-  font-size: 1.5rem; /* Make the icon smaller */
-  color: var(--text-accent);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-width: 30px; /* Adjust icon container width */
-  height: 30px; /* Adjust icon container height */
-  /* Optional: Add a background or shape for the icon */
-  /* background-color: rgba(0, 255, 255, 0.15);
-  border-radius: 50%; */
-}
-
-.feature-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  flex-grow: 1; /* Allow content to take remaining space */
-}
-
-.feature-content h3 {
-  color: var(--text-primary);
-  font-size: 1rem; /* Adjust title size */
-  margin-bottom: 0;
-}
-
-.feature-content p {
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  line-height: 1.4;
 }
 
 .feature-link {
-  display: inline-block;
-  color: var(--link-color);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: rgb(var(--color-accent-primary));
   text-decoration: none;
-  margin-top: var(--spacing-sm);
+  transition: all 0.3s ease;
   font-size: 0.9rem;
-  transition: color var(--transition-fast);
 }
 
 .feature-link:hover {
-  color: var(--link-hover-color);
-  text-decoration: underline;
+  color: rgb(var(--color-accent-secondary));
+  transform: translateX(4px);
 }
 
-.feature-img {
-  margin-top: var(--spacing-sm);
-  border-radius: var(--border-radius-sm);
-  overflow: hidden;
+.feature-link-arrow {
+  transition: transform 0.3s ease;
 }
 
-.feature-img img {
-  display: block;
-  width: 100%;
-  height: auto;
+.feature-link:hover .feature-link-arrow {
+  transform: translateX(4px);
 }
 
-.special-feature-card {
-  background-color: #1e293b;
-  border: 1px solid #334155;
+/* Special variant with gradient background */
+.feature-card-special {
+  background: linear-gradient(145deg, 
+    rgb(var(--color-accent-primary) / 0.9), 
+    rgb(var(--color-accent-secondary) / 0.9)
+  );
+  color: white;
+  border-color: transparent;
 }
 
-.special-feature-content h3 {
-  color: #f8fafc;
+.feature-card-special .feature-title {
+  color: white;
+  background: linear-gradient(135deg, white, rgba(255, 255, 255, 0.8));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.special-feature-content p {
-  color: #cbd5e1;
+.feature-card-special .feature-description {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.feature-card-special .feature-link {
+  color: white;
+}
+
+.feature-card-special .feature-link:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.feature-card-special .feature-icon-wrapper {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.feature-card-special .feature-card-glow {
+  background: radial-gradient(
+    circle at 50% 0%, 
+    rgba(255, 255, 255, 0.1), 
+    transparent 60%
+  );
+}
+
+/* Intersection Observer animation trigger */
+.feature-card.animate-in {
+  animation: fade-in-up 0.8s ease-out forwards;
+}
+
+/* Keyframe animations */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .feature-card {
+    padding: 1.5rem;
+  }
+  
+  .feature-icon-wrapper {
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.25rem;
+  }
+  
+  .feature-title {
+    font-size: 1.125rem;
+  }
 }

@@ -6,33 +6,49 @@ import Footer from '../Footer';
 import './DashboardLayout.css';
 
 const DashboardLayout = ({ children, user }) => {
-    // Initialize sidebar state based on screen size
-    const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 1024);
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-    const [isTransitioning, setIsTransitioning] = useState(false);
 
-    // Memoize the resize handler to prevent unnecessary recreations
     const handleResize = useCallback(() => {
         const mobile = window.innerWidth <= 768;
-        setIsMobile(mobile);
-    }, [isSidebarOpen]);
+        if (isMobile !== mobile) {
+            setIsMobile(mobile);
+            if (mobile) {
+                setIsSidebarOpen(false);
+            }
+        }
+        if(window.innerWidth > 1024 && !isSidebarOpen) {
+            setIsSidebarOpen(true);
+        }
+    }, [isMobile, isSidebarOpen]);
 
     useEffect(() => {
-        // Initialize on component mount
         handleResize();
-
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, [handleResize]);
 
+    // Scroll animation observer
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-in');
+                    }
+                });
+            },
+            { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+        );
+
+        const elements = document.querySelectorAll('.scroll-animate');
+        elements.forEach((el) => observer.observe(el));
+
+        return () => observer.disconnect();
+    }, [children]);
+
     const toggleSidebar = () => {
-        setIsTransitioning(true);
         setIsSidebarOpen(prev => !prev);
-        
-        // Reset transitioning state after animation completes
-        setTimeout(() => {
-            setIsTransitioning(false);
-        }, 300); // Match transition time from CSS
     };
 
     return (
@@ -43,21 +59,13 @@ const DashboardLayout = ({ children, user }) => {
                 onClose={isMobile ? toggleSidebar : undefined}
             />
 
-            <div
-                className={`dashboard-content 
-                    ${isSidebarOpen && !isMobile ? 'content-shifted' : ''} 
-                    ${isTransitioning ? 'is-transitioning' : ''}`}
-            >
+            <div className={`dashboard-content ${isSidebarOpen && !isMobile ? 'content-shifted' : ''}`}>
                 <Navbar user={user} onToggleSidebar={toggleSidebar} />
-
-                <main className="dashboard-main">
+                <main className="dashboard-main scroll-animate">
                     <div className="dashboard-container">
-                        <div className="content-wrapper">
-                            {children}
-                        </div>
+                        {children}
                     </div>
                 </main>
-
                 <Footer />
             </div>
         </div>

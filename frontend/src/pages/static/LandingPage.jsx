@@ -14,6 +14,13 @@ import atsImg from '../../assets/img/AtsTracker.png';
 
 const LandingPage = ({ user }) => {
   const navigate = useNavigate();
+
+  // Add useInView for the Hero Section
+  const { ref: heroSectionRef, inView: heroSectionInView } = useInView({
+    triggerOnce: true, // Animation plays only once when it enters the viewport
+    threshold: 0.1,    // Starts when 10% of the element is visible
+  });
+
   const { ref: featuresHeaderRef, inView: featuresHeaderInView } = useInView({
     triggerOnce: true,
     threshold: 0.2,
@@ -27,6 +34,10 @@ const LandingPage = ({ user }) => {
     threshold: 0.2,
   });
   const { ref: statsSectionRef, inView: statsSectionInView } = useInView({
+    triggerOnce: true,
+    threshold: 0.2,
+  });
+  const { ref: ctaSectionRef, inView: ctaSectionInView } = useInView({
     triggerOnce: true,
     threshold: 0.2,
   });
@@ -115,8 +126,9 @@ const LandingPage = ({ user }) => {
   return (
     <div className="landing-page">
       {/* Hero Section */}
-      <section className="hero-section">
-        <div className="hero-content">
+      <section ref={heroSectionRef} className="hero-section">
+        {/* Apply 'animate-in' class when heroSectionInView is true */}
+        <div className={`hero-content ${heroSectionInView ? 'animate-in' : ''}`}>
           <h1 className="hero-title">Elevate Your <span className="text-accent">Developer Profile</span></h1>
           <p className="hero-subtitle">
             All-in-one platform to showcase your projects, generate ATS-optimized resumes, and track your application success
@@ -133,7 +145,8 @@ const LandingPage = ({ user }) => {
             </button>
           </div>
         </div>
-        <div className="hero-visual">
+        {/* Apply 'animate-in' class to hero-visual as well */}
+        <div className={`hero-visual ${heroSectionInView ? 'animate-in' : ''}`}>
           <div className="code-window">
             <div className="code-header">
               <span className="dot red"></span>
@@ -235,7 +248,7 @@ const LandingPage = ({ user }) => {
       </section>
 
       {/* Final CTA Section */}
-      <section className="cta-section">
+      <section ref={ctaSectionRef} className={`cta-section ${ctaSectionInView ? 'animate-in' : ''}`}>
         <h2>Ready to Boost Your Developer Career?</h2>
         <p>Join thousands of professionals who've improved their job prospects with our platform</p>
         <button onClick={handleGetStarted} className="btn-primary btn-lg">

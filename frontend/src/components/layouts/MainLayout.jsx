@@ -1,19 +1,40 @@
-// MainLayout.jsx - Enhanced
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Navbar from '../Navbar';
 import Footer from '../Footer';
-import './MainLayout.css'; // Create this file for the styles
+import './MainLayout.css';
 
 const MainLayout = ({ children, user }) => {
+  // Scroll animation observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry, index) => {
+          if (entry.isIntersecting) {
+            setTimeout(() => {
+              entry.target.classList.add('animate-in');
+            }, index * 100); // Stagger the animations
+          }
+        });
+      },
+      { 
+        threshold: 0.1, 
+        rootMargin: '0px 0px -50px 0px' 
+      }
+    );
+
+    const elements = document.querySelectorAll('.scroll-animate');
+    elements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [children]);
+
   return (
-    <div className="main-layout min-h-screen flex flex-col bg-[#0D1117] text-[#E5E5E5]">
+    <div className="main-layout">
       <Navbar user={user} />
-      <main className="main-content flex-grow px-4 sm:px-6 py-4">
-        <div className="main-container max-w-6xl mx-auto w-full">
-          <div className="content-animation">
-            {children}
-          </div>
+      <main className="main-content">
+        <div className="main-container scroll-animate">
+          {children}
         </div>
       </main>
       <Footer />

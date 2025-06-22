@@ -1,389 +1,1443 @@
-/* Enhanced Sidebar.css - Updated with Instructions */
+/* Enhanced Sidebar.css - Updated for Theme Switching */
 
 /* Define color variables for consistency */
 :root {
-  --sidebar-bg: #161B22;
-  --sidebar-border: #9C27B0;
-  --sidebar-text: #E5E5E5;
-  --sidebar-text-light: #a0a0a0;
-  --sidebar-highlight: #00FFFF;
-  --sidebar-highlight-rgba: rgba(0, 255, 255, 0.1);
-  --sidebar-bg-hover: rgba(13, 17, 23, 0.7);
-  --sidebar-avatar-border: #00FFFF;
-  --sidebar-footer-border: rgba(156, 39, 176, 0.5);
-  --sidebar-copyright: #606060;
-  --transition-normal: 0.2s ease;
-  --transition-fast: 0.15s ease-in-out;
+    /* --- LIGHT THEME VARIABLES (Default) --- */
+    --sidebar-bg: 255, 255, 255; /* Light background for sidebar */
+    --sidebar-border: 226, 232, 240; /* Light subtle border */
+    --sidebar-text: 15, 23, 42; /* Dark text for contrast */
+    --sidebar-text-light: 100, 116, 139; /* Subtler light text */
+    --sidebar-highlight: 49, 130, 206; /* Vibrant blue highlight */
+    --sidebar-highlight-rgba: 49, 130, 206, 0.15; /* Highlight with alpha for backgrounds */
+    --sidebar-bg-hover: 49, 130, 206, 0.08; /* Lighter hover background */
+    --sidebar-avatar-border: 49, 130, 206; /* Avatar border matching highlight */
+    --sidebar-footer-border: 100, 116, 139, 0.6; /* Footer border */
+    --sidebar-copyright: 113, 128, 150; /* Muted copyright text */
+    --sidebar-glow-color: 49, 130, 206, 0.5; /* For subtle glows */
+
+    --shadow-strong: 0, 0, 0, 0.25; /* Softer shadow for light mode */
+    --shadow-light: 0, 0, 0, 0.08;
+
+    /* Transition Variables */
+    --transition-normal: 0.3s ease-in-out;
+    --transition-fast: 0.2s ease-out;
+
+    /* Global theme variables - ensure these are also correctly defined in your main global CSS */
+    --color-background-primary-rgb: 255, 255, 255;
+    --color-background-secondary-rgb: 248, 250, 252;
+    --color-text-primary-rgb: 15, 23, 42;
+    --color-text-secondary-rgb: 100, 116, 139;
+    --color-accent-primary-rgb: 49, 130, 206;
+    --color-accent-secondary-rgb: 128, 90, 213;
+    --color-accent-neutral-rgb: 226, 232, 240;
+}
+
+/* --- DARK THEME VARIABLES (Overrides when html has class="dark") --- */
+.dark {
+    --sidebar-bg: 15, 23, 42; /* Deeper, more sophisticated dark background */
+    --sidebar-border: 74, 85, 104; /* Subtle border color */
+    --sidebar-text: 226, 232, 240; /* Lighter text for contrast */
+    --sidebar-text-light: 160, 174, 192; /* Subtler light text */
+    --sidebar-highlight: 99, 179, 237; /* Vibrant blue highlight */
+    --sidebar-highlight-rgba: 99, 179, 237, 0.15; /* Highlight with alpha for backgrounds */
+    --sidebar-bg-hover: 99, 179, 237, 0.08; /* Lighter hover background */
+    --sidebar-avatar-border: 99, 179, 237; /* Avatar border matching highlight */
+    --sidebar-footer-border: 74, 85, 104, 0.6; /* Footer border */
+    --sidebar-copyright: 113, 128, 150; /* Muted copyright text */
+    --sidebar-glow-color: 99, 179, 237, 0.5; /* For subtle glows */
+
+    --shadow-strong: 0, 0, 0, 0.4; /* Stronger shadow for dark mode */
+    --shadow-light: 0, 0, 0, 0.15;
+
+    /* Global theme variables - ensure these are also correctly defined in your main global CSS */
+    --color-background-primary-rgb: 15, 23, 42;
+    --color-background-secondary-rgb: 30, 41, 59;
+    --color-text-primary-rgb: 248, 250, 252;
+    --color-text-secondary-rgb: 148, 163, 184;
+    --color-accent-primary-rgb: 59, 130, 246;
+    --color-accent-secondary-rgb: 147, 51, 234;
+    --color-accent-neutral-rgb: 51, 65, 85;
 }
 
 .sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  z-index: 30;
-  width: 16rem;
-  background-color: var(--sidebar-bg);
-  border-bottom: 0.5px solid #3e88d1;
-  border-right: 0.5px solid #3e88d1;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 30;
+    width: 16rem;
+    /* Use sidebar-bg variable for dynamic background color */
+    background-color: rgba(var(--sidebar-bg), 0.85); /* Use RGB parts from variable */
+    border-bottom: 0.5px solid rgba(var(--sidebar-border), 0.6); /* Use RGB parts from variable */
+    border-right: 0.5px solid rgba(var(--sidebar-border), 0.6); /* Use RGB parts from variable */
+    box-shadow: 4px 0 20px rgba(var(--shadow-strong)); /* Use RGB parts from variable */
+    transition: transform var(--transition-normal), width var(--transition-normal), background-color var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal); /* Add color transitions */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Glassmorphism effect */
+    backdrop-filter: blur(10px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
 }
 
 .sidebar-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    /* Use sidebar-bg for gradient base, maintaining transparency */
+    background: linear-gradient(to bottom, rgba(var(--sidebar-bg), 0.9) 0%, rgba(var(--sidebar-bg), 0.7) 100%);
+    transition: background var(--transition-normal); /* Add transition for background */
 }
 
 .sidebar-overlay {
-  position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 29;
-  animation: fadeIn 0.3s ease;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.6); /* This can remain static or be tied to a specific overlay variable if needed */
+    z-index: 29;
+    animation: fadeIn 0.4s ease forwards;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 /* User Profile Section */
 .sidebar-header {
-  padding: 1.25rem 1rem;
-  background: linear-gradient(
-    to right,
-    rgba(0, 255, 255, 0.05),
-    rgba(156, 39, 176, 0.05)
-  );
-  border-bottom: 0.5px solid #3e88d1;
+    padding: 1.5rem 1.25rem;
+    /* Use dynamic colors for the gradient based on sidebar-highlight and sidebar-border */
+    background: linear-gradient(
+        to right,
+        rgba(var(--sidebar-highlight), 0.08), /* Use RGB parts from highlight variable */
+        rgba(var(--sidebar-border), 0.05) /* Use RGB parts from border variable */
+    );
+    border-bottom: 1px solid rgba(var(--sidebar-border), 0.8); /* Use RGB parts from variable */
+    /* Update SVG fill color to be dynamic for the textured background */
+    background-image: url('data:image/svg+xml;utf8,<svg width="100%" height="100%" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="dots" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="4" cy="4" r="1" fill="rgb(var(--sidebar-text-secondary))"/></pattern></defs><rect width="100%" height="100%" fill="url(%23dots)"/></svg>');
+    background-size: 10px 10px;
+    background-blend-mode: overlay;
+    transition: background var(--transition-normal), border-color var(--transition-normal); /* Add transitions */
 }
 
 .sidebar-user {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
 .sidebar-avatar {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--sidebar-avatar-border);
-  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgb(var(--sidebar-avatar-border)); /* Use RGB parts from variable */
+    transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+    box-shadow: 0 0 8px rgba(var(--sidebar-glow-color)); /* Use RGB parts from glow variable */
 }
 
 .sidebar-avatar:hover {
-  border-color: var(--sidebar-highlight);
-  box-shadow: 0 0 5px var(--sidebar-highlight);
+    border-color: rgb(var(--sidebar-highlight)); /* Use RGB parts from variable */
+    box-shadow: 0 0 15px rgba(var(--sidebar-glow-color)); /* Use RGB parts from variable */
+    transform: scale(1.05);
 }
 
 .sidebar-default-avatar {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 50%;
-  background-color: var(--sidebar-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: white;
-  border: 2px solid var(--sidebar-avatar-border);
-  transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background-color: rgb(var(--sidebar-border)); /* Use RGB parts from variable */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: rgb(var(--sidebar-bg)); /* Use sidebar-bg for contrast against border */
+    border: 3px solid rgb(var(--sidebar-avatar-border)); /* Use RGB parts from variable */
+    transition: border-color var(--transition-normal), box-shadow var(--transition-normal), background-color var(--transition-normal), color var(--transition-normal); /* Add color transitions */
+    box-shadow: 0 0 8px rgba(var(--sidebar-glow-color)); /* Use RGB parts from glow variable */
 }
 
 .sidebar-default-avatar:hover {
-  border-color: var(--sidebar-highlight);
-  box-shadow: 0 0 5px var(--sidebar-highlight);
+    border-color: rgb(var(--sidebar-highlight)); /* Use RGB parts from variable */
+    box-shadow: 0 0 15px rgba(var(--sidebar-glow-color)); /* Use RGB parts from variable */
+    transform: scale(1.05);
 }
 
 .sidebar-user-info {
-  display: flex;
-  flex-direction: column;
-  /* Align text to the start */
-  align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 .sidebar-username {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--sidebar-highlight);
-  margin: 0;
-  /* Add spacing below username */
-  margin-bottom: 0.25rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: rgb(var(--sidebar-highlight)); /* Use RGB parts from variable */
+    margin: 0;
+    margin-bottom: 0.3rem;
+    letter-spacing: 0.02em;
+    text-shadow: 0 0 5px rgba(var(--sidebar-glow-color)); /* Use RGB parts from glow variable */
+    transition: color var(--transition-normal), text-shadow var(--transition-normal); /* Add transitions */
 }
 
 .sidebar-role {
-  font-size: 0.8rem;
-  color: var(--sidebar-text-light);
-  margin: 0;
+    font-size: 0.85rem;
+    color: rgb(var(--sidebar-text-light)); /* Use RGB parts from variable */
+    margin: 0;
+    opacity: 0.8;
+    transition: color var(--transition-normal); /* Add transition */
 }
 
 /* Navigation Menu */
 .sidebar-content {
-  flex-grow: 1;
-  padding: 1rem 0;
-  overflow-y: auto;
- 
-  border-bottom: 0.5px solid #3e88d1;
+    flex-grow: 1;
+    padding: 1rem 0;
+    overflow-y: auto;
+    border-bottom: 0.5px solid rgba(var(--sidebar-border), 0.6); /* Use RGB parts from variable */
+    position: relative;
+    transition: border-color var(--transition-normal); /* Add transition */
+}
+
+/* Subtle gradient at the top and bottom of scrollable content */
+.sidebar-content::before,
+.sidebar-content::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 20px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.sidebar-content::before {
+    top: 0;
+    /* Use sidebar-bg for gradient base */
+    background: linear-gradient(to bottom, rgba(var(--sidebar-bg), 1), rgba(var(--sidebar-bg), 0));
+    transition: background var(--transition-normal); /* Add transition */
+}
+
+.sidebar-content::after {
+    bottom: 0;
+    /* Use sidebar-bg for gradient base */
+    background: linear-gradient(to top, rgba(var(--sidebar-bg), 1), rgba(var(--sidebar-bg), 0));
+    transition: background var(--transition-normal); /* Add transition */
 }
 
 .sidebar-menu {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .sidebar-link-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-right: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-right: 0.75rem;
+    margin: 0.2rem 0;
 }
 
 .sidebar-link {
-  display: flex;
-  align-items: center;
-  padding: 0.75rem 1rem;
-  color: var(--sidebar-text);
-  text-decoration: none;
-  transition: all var(--transition-normal);
-  border-radius: 0.25rem;
-  flex-grow: 1;
-  outline: none; /* Remove default focus outline */
+    display: flex;
+    align-items: center;
+    padding: 0.85rem 1.25rem;
+    color: rgb(var(--sidebar-text)); /* Use RGB parts from variable */
+    text-decoration: none;
+    transition: all var(--transition-normal);
+    border-radius: 0.5rem;
+    flex-grow: 1;
+    outline: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(var(--sidebar-bg-hover)); /* Use RGB parts from variable */
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--transition-fast), background var(--transition-normal); /* Add background transition */
+    z-index: -1;
+}
+
+.sidebar-link:hover::before {
+    transform: scaleX(1);
 }
 
 .sidebar-link:hover {
-  background-color: var(--sidebar-bg-hover);
-  color: var(--sidebar-highlight);
-  /* Add subtle glow on hover */
-  box-shadow: 0 0 3px var(--sidebar-highlight);
+    color: rgb(var(--sidebar-highlight)); /* Use RGB parts from variable */
+    box-shadow: 0 0 10px rgba(var(--sidebar-glow-color)); /* Use RGB parts from variable */
+    transform: translateX(5px);
 }
 
 .sidebar-link:focus {
-  background-color: var(--sidebar-highlight-rgba);
-  color: var(--sidebar-highlight);
-  outline: 2px solid var(--sidebar-highlight); /* Add a custom focus outline */
-  outline-offset: -2px; /* Adjust offset for better appearance */
+    background-color: rgba(var(--sidebar-highlight-rgba)); /* Use RGB parts from variable */
+    color: rgb(var(--sidebar-highlight)); /* Use RGB parts from variable */
+    outline: 2px solid rgb(var(--sidebar-highlight)); /* Use RGB parts from variable */
+    outline-offset: -2px;
+    box-shadow: 0 0 10px rgba(var(--sidebar-glow-color)); /* Use RGB parts from variable */
 }
 
 .sidebar-link.active {
-  background-color: var(--sidebar-highlight-rgba);
-  color: var(--sidebar-highlight);
-  font-weight: 500;
+    background-color: rgba(var(--sidebar-highlight-rgba)); /* Use RGB parts from variable */
+    color: rgb(var(--sidebar-highlight)); /* Use RGB parts from variable */
+    font-weight: 600;
+    border-left: 4px solid rgb(var(--sidebar-highlight)); /* Use RGB parts from variable */
+    padding-left: calc(1.25rem - 4px);
+    transform: translateX(0);
 }
 
 .sidebar-icon {
-  margin-right: 0.75rem;
-  font-size: 1.1rem;
-  width: 1.5rem;
-  text-align: center;
-  color: var(--sidebar-text-light); /* Lighter color for icons */
-  transition: color var(--transition-normal);
+    margin-right: 1rem;
+    font-size: 1.2rem;
+    width: 1.75rem;
+    text-align: center;
+    color: rgb(var(--sidebar-text-light)); /* Use RGB parts from variable */
+    transition: color var(--transition-normal), transform var(--transition-normal);
 }
 
 .sidebar-link:hover .sidebar-icon,
 .sidebar-link:focus .sidebar-icon,
 .sidebar-link.active .sidebar-icon {
-  color: var(--sidebar-highlight);
+    color: rgb(var(--sidebar-highlight)); /* Use RGB parts from variable */
+    transform: scale(1.1);
 }
 
 .sidebar-toggle {
-  background: none;
-  border: none;
-  padding: 0.5rem;
-  color: var(--sidebar-text-light);
-  cursor: pointer;
-  transition: all var(--transition-normal);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  outline: none; /* Remove default focus outline */
+    background: none;
+    border: none;
+    padding: 0.6rem;
+    color: rgb(var(--sidebar-text-light)); /* Use RGB parts from variable */
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    border-radius: 50%;
 }
 
 .sidebar-toggle:hover,
 .sidebar-toggle:focus {
-  color: var(--sidebar-highlight);
-  /* Add a subtle glow */
-  box-shadow: 0 0 3px var(--sidebar-highlight);
+    color: rgb(var(--sidebar-highlight)); /* Use RGB parts from variable */
+    box-shadow: 0 0 8px rgba(var(--sidebar-glow-color)); /* Use RGB parts from variable */
+    background-color: rgba(var(--sidebar-bg-hover)); /* Use RGB parts from variable */
+    transform: scale(1.1);
 }
 
+/* The cool 'dash like thing' with '>' */
 .toggle-icon {
-  display: inline-block;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: rotate(-45deg);
-  transition: transform 0.2s ease;
+    display: inline-block;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    margin-left: 0.2rem;
 }
 
 .sidebar-toggle.expanded .toggle-icon {
-  transform: rotate(45deg);
+    transform: rotate(45deg);
+    filter: drop-shadow(0 0 5px rgba(var(--sidebar-highlight), 0.7)); /* Use RGB parts from variable with alpha */
 }
 
 /* Submenu */
 .sidebar-submenu {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-  padding-left: 2.5rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-out;
+    padding-left: 2.75rem;
+    border-left: 2px dashed rgba(var(--sidebar-border), 0.5); /* Use RGB parts from variable */
+    margin-left: 1.5rem;
+    transition: border-color var(--transition-normal); /* Add transition */
 }
 
 .sidebar-submenu.expanded {
-  max-height: 500px; /* Increased max-height */
+    max-height: 500px;
 }
 
 .sidebar-subitem {
-  margin-top: 0.25rem;
+    margin-top: 0.35rem;
 }
 
 .sidebar-sublink {
-  display: flex;
-  align-items: center; /* Vertically align icon and text */
-  padding: 0.5rem 0.75rem;
-  color: var(--sidebar-text-light);
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: all var(--transition-normal);
-  border-radius: 0.25rem;
-  outline: none; /* Remove default focus outline */
+    display: flex;
+    align-items: center;
+    padding: 0.6rem 0.85rem;
+    color: rgb(var(--sidebar-text-light)); /* Use RGB parts from variable */
+    text-decoration: none;
+    transition: all var(--transition-fast);
+    border-radius: 0.35rem;
+    outline: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-sublink::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(var(--sidebar-bg-hover)); /* Use RGB parts from variable */
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--transition-fast), background var(--transition-normal); /* Add background transition */
+    z-index: -1;
+}
+
+.sidebar-sublink:hover::before {
+    transform: scaleX(1);
 }
 
 .sidebar-sublink:hover,
 .sidebar-sublink:focus {
-  background-color: var(--sidebar-bg-hover);
-  color: var(--sidebar-text);
-  /* Add subtle glow */
-  box-shadow: 0 0 3px var(--sidebar-highlight);
+    background-color: rgba(var(--sidebar-bg-hover)); /* Use RGB parts from variable */
+    color: rgb(var(--sidebar-text)); /* Use RGB parts from variable */
+    box-shadow: 0 0 5px rgba(var(--sidebar-glow-color)); /* Use RGB parts from variable */
+    transform: translateX(3px);
 }
 
 .sidebar-sublink.active {
-  color: var(--sidebar-highlight);
-  font-weight: 500;
+    color: rgb(var(--sidebar-highlight)); /* Use RGB parts from variable */
+    font-weight: 500;
+    background-color: rgba(var(--sidebar-highlight-rgba)); /* Use RGB parts from variable */
 }
 
 .subitem-icon {
-  margin-right: 0.5rem;
-  font-size: 0.8rem;
-  width: 1.2rem; /* Adjusted width */
-  text-align: center;
-  color: var(--sidebar-text-light);
-  transition: color var(--transition-normal);
+    margin-right: 0.6rem;
+    font-size: 0.9rem;
+    width: 1.4rem;
+    text-align: center;
+    color: rgb(var(--sidebar-text-light)); /* Use RGB parts from variable */
+    transition: color var(--transition-normal);
 }
 
 .sidebar-sublink:hover .subitem-icon,
 .sidebar-sublink:focus .subitem-icon,
 .sidebar-sublink.active .subitem-icon {
-  color: var(--sidebar-highlight);
+    color: rgb(var(--sidebar-highlight)); /* Use RGB parts from variable */
 }
 
 /* Footer */
 .sidebar-footer {
-  padding: 1rem;
-  border-top: 1px solid var(--sidebar-footer-border);
-  font-size: 0.85rem;
+    padding: 1.25rem 1rem;
+    border-top: 1px solid rgba(var(--sidebar-footer-border)); /* Use RGB parts from variable */
+    font-size: 0.85rem;
+    box-shadow: 0 -5px 15px -5px rgba(var(--sidebar-glow-color)); /* Use RGB parts from variable */
+    position: relative;
+    z-index: 1;
+    transition: border-color var(--transition-normal), box-shadow var(--transition-normal); /* Add transitions */
 }
 
 .sidebar-footer-links {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.75rem;
-  /* Align items vertically */
-  align-items: center;
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 0.75rem;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .footer-link {
-  color: var(--sidebar-text-light);
-  text-decoration: none;
-  transition: color var(--transition-normal);
-  display: flex; /* Make footer links flex containers */
-  align-items: center; /* Center items vertically */
-  gap: 0.3rem; /* Spacing between icon and text */
+    color: rgb(var(--sidebar-text-light)); /* Use RGB parts from variable */
+    text-decoration: none;
+    transition: color var(--transition-normal), transform var(--transition-normal);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
 }
 
 .footer-link:hover {
-  color: var(--sidebar-highlight);
+    color: rgb(var(--sidebar-highlight)); /* Use RGB parts from variable */
+    transform: translateY(-2px);
+    text-shadow: 0 0 3px rgba(var(--sidebar-glow-color)); /* Use RGB parts from variable */
 }
 
 .sidebar-copyright {
-  text-align: center;
-  color: var(--sidebar-copyright);
-  font-size: 0.75rem;
+    text-align: center;
+    color: rgb(var(--sidebar-copyright)); /* Use RGB parts from variable */
+    font-size: 0.7rem;
+    opacity: 0.7;
+    transition: color var(--transition-normal); /* Add transition */
 }
 
 /* Responsive behavior */
 @media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-    width: 80%;
-    max-width: 20rem;
-  }
+    .sidebar {
+        transform: translateX(-100%);
+        width: 85%;
+        max-width: 22rem;
+        box-shadow: 8px 0 30px rgba(var(--shadow-strong)); /* Use RGB parts from variable */
+    }
 
-  .sidebar.open {
-    transform: translateX(0);
-  }
+    .sidebar.open {
+        transform: translateX(0);
+    }
 }
 
 /* Custom scrollbar for sidebar components */
 .sidebar-container::-webkit-scrollbar,
 .sidebar-content::-webkit-scrollbar {
-  width: 5px;
+    width: 8px; /* Wider scrollbar for easier grabbing */
 }
 
 .sidebar-container::-webkit-scrollbar-track,
 .sidebar-content::-webkit-scrollbar-track {
-  background: transparent;
+    background: transparent;
 }
 
 .sidebar-container::-webkit-scrollbar-thumb,
 .sidebar-content::-webkit-scrollbar-thumb {
-  background: rgba(156, 39, 176, 0.5);
-  border-radius: 3px;
+    background: rgba(99, 179, 237, 0.4); /* Highlight color for scrollbar */
+    border-radius: 4px; /* More rounded */
+    border: 1px solid rgba(99, 179, 237, 0.2); /* Subtle border for thumb */
 }
 
 .sidebar-container::-webkit-scrollbar-thumb:hover,
 .sidebar-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 255, 255, 0.5);
+    background: rgba(99, 179, 237, 0.7); /* Brighter on hover */
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3); /* Inner shadow on hover */
 }
 
 /* Animation for mobile sidebar */
 @keyframes slideIn {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0);
-  }
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
 }
 
 @keyframes slideOut {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-100%);
-  }
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-100%);
+    }
 }
 
 .sidebar.open {
-  animation: slideIn 0.3s ease forwards;
+    animation: slideIn 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; /* More sophisticated easing */
 }
 
 .sidebar:not(.open) {
-  animation: slideOut 0.3s ease forwards;
+    animation: slideOut 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
 }
+
+
+/* Enhanced Navbar with premium styling and animations */
+
+/* CSS Variables for theme colors */
+:root {
+    /* Light Theme */
+    --color-background-primary: 255, 255, 255;
+    --color-background-secondary: 248, 250, 252;
+    --color-text-primary: 15, 23, 42;
+    --color-text-secondary: 100, 116, 139;
+    --color-text-placeholder: 148, 163, 184;
+    --color-accent-primary: 49, 130, 206;
+    --color-accent-secondary: 128, 90, 213;
+    --color-accent-neutral: 226, 232, 240;
+    --color-accent-error: 239, 68, 68;
+    --navbar-shadow: rgba(0, 0, 0, 0.08); /* New variable for softer shadow */
+}
+
+.dark {
+    /* Dark Theme */
+    --color-background-primary: 15, 23, 42;
+    --color-background-secondary: 30, 41, 59;
+    --color-text-primary: 248, 250, 252;
+    --color-text-secondary: 148, 163, 184;
+    --color-text-placeholder: 100, 116, 139;
+    --color-accent-primary: 59, 130, 246;
+    --color-accent-secondary: 147, 51, 234;
+    --color-accent-neutral: 51, 65, 85;
+    --color-accent-error: 248, 113, 113;
+    --navbar-shadow: rgba(0, 0, 0, 0.25); /* Darker shadow for dark mode */
+}
+
+/* Base Navbar */
+.navbar {
+    background: linear-gradient(145deg, 
+        rgb(var(--color-background-primary) / 0.88) 0%, /* Slightly more opaque */
+        rgb(var(--color-background-primary) / 0.98) 100%);
+    backdrop-filter: blur(25px) saturate(150%); /* More intense blur and saturation */
+    -webkit-backdrop-filter: blur(25px) saturate(150%);
+    color: rgb(var(--color-text-primary));
+    height: 75px; /* Slightly taller */
+    position: sticky;
+    top: 0;
+    width: 100%;
+    z-index: 50;
+    transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); /* Slower, more fluid transition */
+    border-bottom: 1px solid rgb(var(--color-accent-neutral) / 0.4); /* Stronger border */
+    box-shadow: 0 4px 15px var(--navbar-shadow); /* Softer initial shadow */
+}
+
+.navbar.scrolled {
+    background: rgb(var(--color-background-primary) / 0.98); /* Fully opaque when scrolled */
+    box-shadow: 0 10px 40px var(--navbar-shadow); /* Deeper shadow on scroll */
+    border-bottom-color: rgb(var(--color-accent-primary) / 0.3);
+}
+
+.navbar-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    padding: 0 2.5rem; /* More padding */
+    max-width: 1800px; /* Wider max-width */
+    margin: 0 auto;
+}
+
+/* Brand & Title */
+.navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem; /* More spacing */
+}
+
+.navbar-brand {
+    text-decoration: none;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Springy transform */
+}
+
+.brand-text {
+    font-size: 2rem; /* Larger brand text */
+    font-weight: 900; /* Extra bold */
+    background: linear-gradient(135deg, 
+        rgb(var(--color-accent-primary)) 0%, 
+        rgb(var(--color-accent-secondary)) 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    letter-spacing: -0.04em; /* Tighter letter spacing */
+    position: relative;
+    text-shadow: 0 2px 8px rgba(var(--color-accent-primary), 0.3); /* Text shadow for depth */
+}
+
+.brand-text::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; /* Thicker underline */
+    left: 0;
+    width: 0;
+    height: 3px; /* Thicker line */
+    background: linear-gradient(90deg, 
+        rgb(var(--color-accent-primary)), 
+        rgb(var(--color-accent-secondary)));
+    transition: width 0.4s ease-out;
+}
+
+.navbar-brand:hover .brand-text::after {
+    width: 100%;
+}
+
+.navbar-brand:hover {
+    transform: scale(1.02); /* Slight scale on hover */
+}
+
+.page-title-container {
+    display: flex;
+    align-items: center;
+    border-left: 3px solid rgb(var(--color-accent-primary) / 0.4); /* Thicker separator */
+    padding-left: 2.25rem; /* More padding */
+    margin-left: 1.5rem; /* More margin */
+    animation: slideInLeft 0.6s ease-out forwards; /* Animated entrance */
+    opacity: 0;
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.page-title {
+    font-size: 1.35rem; /* Larger title */
+    font-weight: 700;
+    color: rgb(var(--color-text-primary));
+    margin: 0;
+    letter-spacing: -0.015em;
+    text-shadow: 0 1px 3px rgba(var(--color-text-primary), 0.1);
+}
+
+/* Right Section */
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem; /* More spacing */
+}
+
+.navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem; /* More spacing */
+}
+
+/* Enhanced Icon Buttons */
+.notification-btn, .settings-btn, .sidebar-toggle-btn, .theme-toggle-btn {
+    position: relative;
+    background: rgb(var(--color-background-secondary) / 0.6); /* Slightly more transparent */
+    border: 1px solid rgb(var(--color-accent-neutral) / 0.6); /* Stronger border */
+    color: rgb(var(--color-text-secondary));
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem; /* Larger icons */
+    width: 48px; /* Larger buttons */
+    height: 48px;
+    border-radius: 14px; /* More rounded */
+    transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); /* Smoother bounce */
+    backdrop-filter: blur(10px); /* More blur */
+    box-shadow: 0 2px 8px rgb(var(--color-text-primary) / 0.08); /* Initial subtle shadow */
+}
+
+.notification-btn:hover, .settings-btn:hover, .sidebar-toggle-btn:hover, .theme-toggle-btn:hover {
+    background: rgb(var(--color-accent-primary) / 0.15); /* More intense hover background */
+    border-color: rgb(var(--color-accent-primary) / 0.4);
+    color: rgb(var(--color-accent-primary));
+    transform: translateY(-3px) scale(1.05); /* More pronounced lift and scale */
+    box-shadow: 0 12px 30px rgb(var(--color-accent-primary) / 0.3); /* Stronger glow */
+}
+
+.notification-btn.active {
+    background: rgb(var(--color-accent-primary) / 0.2);
+    border-color: rgb(var(--color-accent-primary) / 0.5);
+    color: rgb(var(--color-accent-primary));
+    transform: scale(1.02); /* Slight scale when active */
+}
+
+/* Theme Toggle */
+.theme-toggle-btn {
+    overflow: hidden;
+}
+
+.theme-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Springy icon transition */
+}
+
+.dark .theme-toggle-btn .theme-icon-wrapper {
+    transform: rotate(360deg); /* Full spin on dark mode toggle */
+}
+
+.theme-icon {
+    width: 24px; /* Larger icon */
+    height: 24px;
+}
+
+.dark .theme-toggle-btn:hover .theme-icon {
+    color: #facc15; /* Brighter yellow */
+    filter: drop-shadow(0 0 10px #facc15); /* Stronger glow */
+}
+
+.light .theme-toggle-btn:hover .theme-icon {
+    color: rgb(var(--color-accent-secondary));
+    filter: drop-shadow(0 0 10px rgb(var(--color-accent-secondary)));
+}
+
+/* Notifications */
+.notification-wrapper {
+    position: relative;
+}
+
+.notification-indicator {
+    position: absolute;
+    top: 5px; /* Slightly adjusted position */
+    right: 5px;
+    width: 14px; /* Slightly larger indicator */
+    height: 14px;
+    background: linear-gradient(135deg, #ef4444, #b91c1c); /* Deeper red */
+    border: 3px solid rgb(var(--color-background-primary)); /* Thicker border */
+    border-radius: 50%;
+    animation: pulse 1.5s infinite cubic-bezier(0.4, 0, 0.6, 1); /* Faster, smoother pulse */
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); /* Outer pulse effect */
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+/* FIXED: Solid Dropdowns - No Transparency */
+.notifications-dropdown, .user-dropdown {
+    position: absolute;
+    top: calc(100% + 15px); /* More spacing from navbar */
+    right: 0;
+    width: 380px; /* Wider dropdowns */
+    background: rgb(var(--color-background-primary));
+    border: 1px solid rgb(var(--color-accent-neutral) / 0.5); /* Stronger border */
+    border-radius: 20px; /* More rounded */
+    box-shadow: 0 25px 50px rgb(var(--color-text-primary) / 0.2); /* Deeper shadow */
+    overflow: hidden;
+    z-index: 1000;
+    transform-origin: top right;
+    animation: scaleIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; /* Scale in animation */
+    opacity: 0;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.9) translateY(-10px);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+.notifications-header, .dropdown-header {
+    padding: 1.5rem; /* More padding */
+    border-bottom: 1px solid rgb(var(--color-accent-neutral) / 0.4);
+    background: rgb(var(--color-background-secondary));
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.notifications-header h3, .dropdown-header h4 {
+    margin: 0;
+    font-size: 1.25rem; /* Larger header text */
+    font-weight: 700;
+    color: rgb(var(--color-text-primary));
+    letter-spacing: -0.01em;
+}
+
+.dropdown-header p {
+    margin: 0.6rem 0 0 0;
+    font-size: 0.9rem; /* Slightly larger description */
+    color: rgb(var(--color-text-secondary));
+}
+
+.mark-all-read {
+    background: none;
+    border: none;
+    color: rgb(var(--color-accent-primary));
+    font-size: 0.9rem; /* Slightly larger */
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem; /* Add padding for clickable area */
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.mark-all-read:hover {
+    color: rgb(var(--color-accent-secondary));
+    background-color: rgb(var(--color-accent-primary) / 0.1);
+}
+
+/* Notification Items */
+.notifications-list {
+    max-height: 380px; /* Taller list */
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--color-accent-primary) / 0.4) transparent; /* Match accent color */
+}
+
+.notifications-list::-webkit-scrollbar {
+    width: 6px; /* Wider scrollbar */
+}
+
+.notifications-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.notifications-list::-webkit-scrollbar-thumb {
+    background: rgb(var(--color-accent-primary) / 0.4);
+    border-radius: 3px; /* More rounded */
+}
+
+.notifications-list::-webkit-scrollbar-thumb:hover {
+    background: rgb(var(--color-accent-primary) / 0.7);
+}
+
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.25rem; /* More spacing */
+    padding: 1.1rem 1.5rem; /* More padding */
+    border-bottom: 1px solid rgb(var(--color-accent-neutral) / 0.25);
+    transition: all 0.25s ease;
+    cursor: pointer;
+    background: rgb(var(--color-background-primary));
+}
+
+.notification-item:hover {
+    background: rgb(var(--color-accent-primary) / 0.08); /* More intense hover */
+    transform: translateX(5px); /* Subtle slide effect */
+}
+
+.notification-item.unread {
+    background: rgb(var(--color-accent-primary) / 0.05);
+    border-left: 5px solid rgb(var(--color-accent-primary)); /* Thicker left border */
+    padding-left: calc(1.5rem - 5px); /* Adjust padding */
+}
+
+.notification-icon {
+    width: 22px; /* Larger icon */
+    height: 22px;
+    color: rgb(var(--color-accent-primary));
+    flex-shrink: 0;
+    margin-top: 3px;
+    filter: drop-shadow(0 0 5px rgb(var(--color-accent-primary), 0.3)); /* Subtle icon glow */
+}
+
+.notification-content p {
+    margin: 0;
+    font-size: 0.95rem; /* Slightly larger text */
+    color: rgb(var(--color-text-primary));
+    line-height: 1.5; /* Better readability */
+}
+
+.notification-time {
+    font-size: 0.85rem; /* Slightly larger time */
+    color: rgb(var(--color-text-secondary));
+    margin-top: 0.4rem;
+    display: block;
+    opacity: 0.9;
+}
+
+.no-notifications {
+    text-align: center;
+    padding: 2.5rem; /* More padding */
+    color: rgb(var(--color-text-secondary));
+    background: rgb(var(--color-background-primary));
+}
+
+.no-notifications-icon {
+    font-size: 2.5rem; /* Larger icon */
+    margin-bottom: 0.75rem;
+    opacity: 0.5;
+}
+
+.notifications-footer, .dropdown-footer {
+    padding: 1.25rem 1.5rem; /* More padding */
+    border-top: 1px solid rgb(var(--color-accent-neutral) / 0.4);
+    background: rgb(var(--color-background-secondary));
+    text-align: center; /* Center footer links */
+}
+
+.notifications-footer a {
+    color: rgb(var(--color-accent-primary));
+    text-decoration: none;
+    font-size: 0.95rem; /* Larger link */
+    font-weight: 700;
+    transition: color 0.2s ease, transform 0.2s ease;
+    display: inline-block; /* For transform */
+}
+
+.notifications-footer a:hover {
+    color: rgb(var(--color-accent-secondary));
+    transform: translateY(-2px);
+}
+
+/* User Profile */
+.user-profile {
+    position: relative;
+}
+
+.user-info-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem; /* More spacing */
+    background: rgb(var(--color-background-secondary) / 0.6);
+    border: 1px solid rgb(var(--color-accent-neutral) / 0.6);
+    border-radius: 14px;
+    padding: 0.6rem 1.25rem; /* More padding */
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgb(var(--color-text-primary) / 0.08);
+}
+
+.user-info-btn:hover {
+    background: rgb(var(--color-accent-primary) / 0.15);
+    border-color: rgb(var(--color-accent-primary) / 0.4);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 10px 28px rgb(var(--color-accent-primary) / 0.2);
+}
+
+.user-avatar, .user-default-avatar {
+    width: 36px; /* Larger avatar */
+    height: 36px;
+    border-radius: 10px; /* Slightly more rounded square */
+    object-fit: cover;
+    border: 2px solid rgb(var(--color-accent-primary) / 0.3);
+    transition: all 0.3s ease;
+}
+
+.user-default-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, 
+        rgb(var(--color-accent-primary)), 
+        rgb(var(--color-accent-secondary)));
+    color: white;
+    font-weight: 700;
+    font-size: 1rem; /* Larger text */
+}
+
+.username {
+    font-size: 0.95rem; /* Slightly larger */
+    font-weight: 600;
+    color: rgb(var(--color-text-primary));
+    max-width: 140px; /* Wider username display */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dropdown-arrow {
+    color: rgb(var(--color-text-secondary));
+    transition: transform 0.2s ease;
+}
+
+/* User Dropdown */
+.user-dropdown {
+    width: 300px; /* Wider user dropdown */
+}
+
+.dropdown-content {
+    padding: 0.75rem 0; /* More padding */
+    background: rgb(var(--color-background-primary));
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem; /* More spacing */
+    padding: 0.9rem 1.5rem; /* More padding */
+    color: rgb(var(--color-text-primary));
+    text-decoration: none;
+    transition: all 0.25s ease;
+    border: none;
+    background: rgb(var(--color-background-primary));
+    width: 100%;
+    cursor: pointer;
+    font-size: 0.95rem; /* Slightly larger text */
+}
+
+.dropdown-item:hover {
+    background: rgb(var(--color-accent-primary) / 0.12); /* More intense hover */
+    color: rgb(var(--color-accent-primary));
+    transform: translateX(3px); /* Subtle slide */
+}
+
+.dropdown-icon {
+    width: 20px; /* Larger icons */
+    height: 20px;
+    color: rgb(var(--color-text-secondary));
+    transition: color 0.2s ease;
+}
+
+.dropdown-item:hover .dropdown-icon {
+    color: rgb(var(--color-accent-primary));
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.9rem 1.5rem;
+    background: rgb(var(--color-background-primary));
+    border: none;
+    color: rgb(var(--color-accent-error));
+    cursor: pointer;
+    transition: all 0.25s ease;
+    width: 100%;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.logout-btn:hover {
+    background: rgb(var(--color-accent-error) / 0.15); /* More intense hover */
+    transform: translateX(3px);
+}
+
+/* Auth Buttons */
+.auth-buttons {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem; /* More spacing */
+}
+
+.login-btn, .signup-btn {
+    padding: 0.75rem 1.75rem; /* More padding */
+    border-radius: 12px; /* More rounded */
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem; /* Slightly larger text */
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid transparent;
+}
+
+.login-btn {
+    color: rgb(var(--color-text-primary));
+    background: rgb(var(--color-background-secondary) / 0.85); /* Slightly more opaque */
+    border-color: rgb(var(--color-accent-neutral) / 0.6);
+}
+
+.login-btn:hover {
+    background: rgb(var(--color-accent-primary) / 0.15);
+    border-color: rgb(var(--color-accent-primary) / 0.4);
+    color: rgb(var(--color-accent-primary));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgb(var(--color-accent-primary) / 0.2);
+}
+
+.signup-btn {
+    background: linear-gradient(135deg, 
+        rgb(var(--color-accent-primary)), 
+        rgb(var(--color-accent-secondary)));
+    color: white;
+    box-shadow: 0 6px 20px rgb(var(--color-accent-primary) / 0.4); /* Stronger shadow */
+    position: relative;
+    overflow: hidden; /* For ripple effect */
+}
+
+.signup-btn:hover {
+    transform: translateY(-3px); /* More pronounced lift */
+    box-shadow: 0 10px 30px rgb(var(--color-accent-primary) / 0.5); /* Even stronger shadow */
+}
+
+.signup-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    opacity: 0;
+    transform: scale(1) translate(-50%, -50%);
+    transition: transform 0.5s, opacity 0.5s;
+}
+
+.signup-btn:active::after {
+    transform: scale(20) translate(-50%, -50%);
+    opacity: 1;
+    transition: 0s;
+}
+
+
+/* Mobile Menu - Also Fixed */
+.mobile-menu-btn {
+    display: none;
+    background: rgb(var(--color-background-secondary) / 0.6);
+    border: 1px solid rgb(var(--color-accent-neutral) / 0.6);
+    color: rgb(var(--color-text-secondary));
+    cursor: pointer;
+    width: 48px; /* Larger button */
+    height: 48px;
+    border-radius: 14px;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.35s ease;
+    backdrop-filter: blur(10px);
+}
+
+.mobile-menu-btn:hover {
+    background: rgb(var(--color-accent-primary) / 0.15);
+    border-color: rgb(var(--color-accent-primary) / 0.4);
+    color: rgb(var(--color-accent-primary));
+    transform: translateY(-2px);
+}
+
+.menu-icon {
+    width: 24px; /* Larger icon */
+    height: 24px;
+}
+
+.mobile-menu {
+    position: fixed;
+    top: 75px; /* Adjust for taller navbar */
+    right: 0;
+    width: 350px; /* Wider mobile menu */
+    height: calc(100vh - 75px);
+    background: rgb(var(--color-background-primary));
+    border-left: 1px solid rgb(var(--color-accent-neutral) / 0.4);
+    padding: 2.5rem 0; /* More padding */
+    z-index: 100;
+    overflow-y: auto;
+    box-shadow: -8px 0 30px var(--navbar-shadow); /* Shadow for mobile menu */
+    transform-origin: top right;
+    animation: scaleIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; /* Reuse scaleIn */
+    opacity: 0;
+}
+
+.mobile-user {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem; /* More spacing */
+    padding: 0 2.5rem 2.5rem 2.5rem;
+    border-bottom: 1px solid rgb(var(--color-accent-neutral) / 0.4);
+    margin-bottom: 2.5rem;
+}
+
+.mobile-avatar, .mobile-default-avatar {
+    width: 70px; /* Larger avatar */
+    height: 70px;
+    border-radius: 20px; /* More rounded square */
+    object-fit: cover;
+    border: 3px solid rgb(var(--color-accent-primary) / 0.4);
+}
+
+.mobile-default-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, 
+        rgb(var(--color-accent-primary)), 
+        rgb(var(--color-accent-secondary)));
+    color: white;
+    font-weight: 700;
+    font-size: 1.75rem; /* Larger text */
+}
+
+.mobile-username {
+    font-size: 1.25rem; /* Larger username */
+    font-weight: 600;
+    color: rgb(var(--color-text-primary));
+}
+
+.mobile-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem; /* More spacing */
+    padding: 0 1.25rem;
+}
+
+.mobile-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem; /* More spacing */
+    padding: 1.1rem 1.75rem; /* More padding */
+    color: rgb(var(--color-text-primary));
+    text-decoration: none;
+    border-radius: 14px; /* More rounded */
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.mobile-nav-link:hover {
+    background: rgb(var(--color-accent-primary) / 0.12);
+    color: rgb(var(--color-accent-primary));
+    transform: translateX(10px); /* More pronounced slide */
+}
+
+.mobile-nav-link.active {
+    background: rgb(var(--color-accent-primary) / 0.18);
+    color: rgb(var(--color-accent-primary));
+    border-left: 5px solid rgb(var(--color-accent-primary)); /* Thicker border */
+    padding-left: calc(1.75rem - 5px); /* Adjust padding */
+}
+
+.mobile-nav-icon {
+    width: 22px; /* Larger icon */
+    height: 22px;
+    color: rgb(var(--color-text-secondary));
+    transition: color 0.3s ease;
+}
+
+.mobile-nav-link:hover .mobile-nav-icon,
+.mobile-nav-link.active .mobile-nav-icon {
+    color: rgb(var(--color-accent-primary));
+}
+
+.mobile-logout {
+    margin: 2.5rem 1.25rem 0 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.1rem 1.75rem;
+    background: rgb(var(--color-accent-error) / 0.15);
+    border: 1px solid rgb(var(--color-accent-error) / 0.4);
+    color: rgb(var(--color-accent-error));
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.mobile-logout:hover {
+    background: rgb(var(--color-accent-error) / 0.25);
+    transform: translateY(-3px);
+}
+
+.mobile-overlay {
+    position: fixed;
+    top: 75px; /* Adjust for taller navbar */
+    left: 0;
+    width: 100%;
+    height: calc(100vh - 75px);
+    background: rgba(0, 0, 0, 0.65); /* Darker overlay */
+    z-index: 99;
+    backdrop-filter: blur(6px); /* More blur */
+    animation: fadeIn 0.3s ease forwards;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .navbar-container {
+        padding: 0 1.25rem;
+    }
+
+    .page-title-container {
+        display: none;
+    }
+
+    .mobile-menu-btn {
+        display: flex;
+    }
+
+    .sidebar-toggle-btn.desktop-only {
+        display: none;
+    }
+
+    .sidebar-toggle-btn.mobile-only {
+        display: flex;
+    }
+
+    .navbar-actions {
+        gap: 0.75rem;
+    }
+
+    .username {
+        display: none;
+    }
+
+    .auth-buttons {
+        gap: 0.75rem;
+    }
+
+    .login-btn, .signup-btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar-container {
+        padding: 0 1rem;
+    }
+
+    .brand-text {
+        font-size: 1.75rem;
+    }
+
+    .mobile-menu {
+        width: 100%;
+    }
+
+    .notifications-dropdown, .user-dropdown {
+        width: calc(100vw - 2rem);
+        right: 1rem;
+    }
+}
+
+/* Enhanced Focus States */
+.notification-btn:focus,
+.settings-btn:focus,
+.sidebar-toggle-btn:focus,
+.theme-toggle-btn:focus,
+.mobile-menu-btn:focus,
+.user-info-btn:focus {
+    outline: 3px solid rgb(var(--color-accent-primary)); /* Thicker outline */
+    outline-offset: 3px; /* More offset */
+    box-shadow: 0 0 0 6px rgb(var(--color-accent-primary) / 0.2); /* Outer glow on focus */
+}
+
+/* Loading States */
+.navbar.loading {
+    opacity: 0.7; /* More visible opacity change */
+    pointer-events: none;
+    transition: opacity 0.4s ease; /* Smooth transition for loading */
+}
+
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    .navbar {
+        border-bottom: 3px solid rgb(var(--color-text-primary)); /* Thicker high contrast border */
+    }
+    
+    .notification-btn, .settings-btn, .sidebar-toggle-btn, .theme-toggle-btn {
+        border: 3px solid rgb(var(--color-text-primary));
+        box-shadow: none; /* Remove shadows in high contrast */
+    }
+
+    .sidebar {
+        border-right: 2px solid rgb(var(--color-text-primary));
+        box-shadow: none;
+        backdrop-filter: none; /* Remove blur */
+    }
+
+    .sidebar-link.active {
+        border-left-color: rgb(var(--color-text-primary));
+    }
+}
+
+
+/* Custom scrollbar for sidebar components */
+.sidebar-container::-webkit-scrollbar,
+.sidebar-content::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for WebKit browsers */
+    width: 0; /* Ensures no width is taken up */
+    height: 0; /* Ensures no height is taken up */
+}
+
+/* For Firefox */
+.sidebar-container,
+.sidebar-content {
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar for Internet Explorer and Edge (legacy) */
+}
+
+/* Ensure content remains scrollable */
+.sidebar-container,
+.sidebar-content {
+    overflow-y: auto; /* Important: Keep this for vertical scrolling */
+}
+

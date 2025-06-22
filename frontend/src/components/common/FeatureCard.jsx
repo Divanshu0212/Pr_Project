@@ -3,37 +3,32 @@ import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import './FeatureCard.css';
 
-const FeatureCard = ({ feature }) => {
-  const { title, description, icon, image, link, isSpecial } = feature;
+const FeatureCard = ({ feature, animationOrder = 0 }) => {
+  const { title, description, icon, link, isSpecial } = feature;
 
   return (
-    <div className={`feature-card ${isSpecial ? 'special-feature-card' : ''}`}>
+    <div
+      className={`feature-card ${isSpecial ? 'feature-card-special' : ''}`}
+      style={{ 
+        animationDelay: `${animationOrder * 0.15}s`,
+        opacity: 0 
+      }}
+    >
+      <div className="feature-card-glow"></div>
       {icon && (
-        <div className="feature-icon">
+        <div className="feature-icon-wrapper">
           {icon}
         </div>
       )}
-      <div className={`feature-content ${isSpecial ? 'special-feature-content' : ''}`}>
-        <h3>{title}</h3>
-        {typeof description === 'string' ? (
-          <p>{description}</p>
-        ) : (
-          // Check if description is a React element (JSX)
-          React.isValidElement(description) ? (
-            description
-          ) : (
-            // Fallback if description is neither a string nor a React element
-            <p>Error: Invalid description format.</p>
-          )
-        )}
-        {image && (
-          <div className="feature-img">
-            <img src={image} alt={`${title} Preview`} />
-          </div>
-        )}
+      <div className="feature-content">
+        <h3 className="feature-title">{title}</h3>
+        <p className="feature-description">{description}</p>
         {link && (
           <Link to={link} className="feature-link">
-            Learn More
+            <span>Learn More</span>
+            <svg className="feature-link-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 2L14 8L8 14M14 8H2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </Link>
         )}
       </div>
@@ -44,17 +39,12 @@ const FeatureCard = ({ feature }) => {
 FeatureCard.propTypes = {
   feature: PropTypes.shape({
     title: PropTypes.string.isRequired,
-    // Update description prop type to allow string or React node
-    description: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.node, // Allows React elements (JSX)
-    ]).isRequired,
+    description: PropTypes.node.isRequired,
     icon: PropTypes.node,
-    image: PropTypes.string,
     link: PropTypes.string,
     isSpecial: PropTypes.bool,
-    animationOrder: PropTypes.number
   }).isRequired,
+  animationOrder: PropTypes.number,
 };
 
 export default FeatureCard;
