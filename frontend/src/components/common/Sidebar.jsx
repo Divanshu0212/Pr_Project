@@ -1,18 +1,19 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef, useContext, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Link, useLocation } from 'react-router-dom';
 import { FiHome, FiBriefcase, FiFileText, FiActivity, FiChevronRight, FiHelpCircle, FiMessageSquare, FiPlus, FiTrello, FiUsers, FiPieChart, FiBarChart2, FiSearch } from 'react-icons/fi';
 import './Sidebar.css';
 import { AuthContext } from '../../context/AuthContext';
-import { ThemeContext } from '../../context/ThemeContext'; // Import ThemeContext
+import { ThemeContext } from '../../context/ThemeContext';
 
 const Sidebar = ({ user, isOpen, onClose }) => {
   const location = useLocation();
   const sidebarRef = useRef(null);
   const { portfolioDetails } = useContext(AuthContext);
-  const { theme } = useContext(ThemeContext); // Consume the theme context
+  const { theme } = useContext(ThemeContext);
 
-  const menuItems = [
+  // FIXED: Move menuItems to useMemo to prevent recreation on every render
+  const menuItems = useMemo(() => [
     {
       title: 'Dashboard',
       path: '/home',
@@ -50,7 +51,7 @@ const Sidebar = ({ user, isOpen, onClose }) => {
         { title: 'Keywords', path: '/ats/keywords', icon: <FiSearch size={14} /> },
       ]
     }
-  ];
+  ], []); // Empty dependency array since these are static
 
   const isActive = (path) => {
     return location.pathname === path || location.pathname.startsWith(`${path}/`);
@@ -59,10 +60,10 @@ const Sidebar = ({ user, isOpen, onClose }) => {
   const [expandedItems, setExpandedItems] = useState({});
 
   const toggleSubMenu = (title) => {
-    setExpandedItems({
-      ...expandedItems,
-      [title]: !expandedItems[title]
-    });
+    setExpandedItems(prev => ({
+      ...prev,
+      [title]: !prev[title]
+    }));
   };
 
   // Click outside handler to close sidebar on mobile
@@ -77,7 +78,7 @@ const Sidebar = ({ user, isOpen, onClose }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, onClose]);
 
-  // Determine if any paths in a section are active to auto-expand that section
+  // FIXED: Auto-expand sections based on current path
   useEffect(() => {
     const newExpandedState = {};
 
@@ -93,11 +94,19 @@ const Sidebar = ({ user, isOpen, onClose }) => {
       }
     });
 
-    // Only update if we have new sections to expand
-    if (Object.keys(newExpandedState).length > 0) {
-      setExpandedItems(prev => ({ ...prev, ...newExpandedState }));
-    }
-  }, [location.pathname, menuItems]); // Added menuItems to dependency array for completeness
+    // Update expanded state only if there are changes
+    setExpandedItems(prev => {
+      const hasChanges = Object.keys(newExpandedState).some(
+        key => newExpandedState[key] !== prev[key]
+      );
+      
+      if (hasChanges) {
+        return { ...prev, ...newExpandedState };
+      }
+      
+      return prev;
+    });
+  }, [location.pathname, menuItems]); // Now menuItems won't change on every render
 
   return (
     <>
@@ -112,7 +121,6 @@ const Sidebar = ({ user, isOpen, onClose }) => {
 
       <aside 
         ref={sidebarRef}
-        // Apply the 'dark' or 'light' class based on the theme context
         className={`sidebar ${isOpen ? 'open' : ''} ${theme}`} 
         aria-label="Main navigation"
       >

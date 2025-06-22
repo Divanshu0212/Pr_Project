@@ -65,14 +65,19 @@ const pageTransition = {
   ease: 'easeInOut',
 };
 
-// Adjusted ProtectedRoute to wrap children and use existing PrivateRoute
+// FIXED: Simplified ProtectedRoute component
 const ProtectedRoute = ({ children }) => {
   const { currentUser, loading } = useAuth();
 
   if (loading) {
     return <Loader />;
   }
-  return <PrivateRoute>{children}</PrivateRoute>;
+
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
 };
 
 ProtectedRoute.propTypes = {
@@ -91,7 +96,7 @@ const AnimatedRoutes = () => {
         initial="initial"
         animate="animate"
         exit="exit"
-        transition={{ pageTransition }}
+        transition={pageTransition}
         className="page-container"
       >
         <Routes location={location}>
@@ -99,92 +104,177 @@ const AnimatedRoutes = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
           
-          {/* Public Routes - Pass currentUser to MainLayout */}
+          {/* Public Routes */}
           <Route path="/" element={<MainLayout user={currentUser}><LandingPage /></MainLayout>} />
           <Route path="/faqs" element={<MainLayout user={currentUser}><FAQs /></MainLayout>} />
           <Route path="/contact-us" element={<MainLayout user={currentUser}><ContactUs /></MainLayout>} />
           <Route path="/privacy-policy" element={<MainLayout user={currentUser}><PrivacyPolicy /></MainLayout>} />
           <Route path="/terms-and-conditions" element={<MainLayout user={currentUser}><TermsAndConditions /></MainLayout>} />
           <Route path="/oauth-callback" element={<OAuthCallback />} />
-          
-          {/* NEW: Add the public About page route */}
           <Route path="/about" element={<MainLayout user={currentUser}><About /></MainLayout>} />
 
-          {/* Protected Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/home" element={
+          {/* Protected Routes - FIXED: Proper structure */}
+          <Route path="/home" element={
+            <ProtectedRoute>
               <DashboardLayout user={currentUser}>
                 <HomePage />
               </DashboardLayout>
-            } />
-            
-            {/* NEW: Add Profile and Settings routes inside the DashboardLayout */}
-            <Route path="/profile" element={
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/profile" element={
+            <ProtectedRoute>
               <DashboardLayout user={currentUser}>
                 <Profile />
               </DashboardLayout>
-            } />
-             <Route path="/settings" element={
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/settings" element={
+            <ProtectedRoute>
               <DashboardLayout user={currentUser}>
                 <Settings />
               </DashboardLayout>
-            } />
-            
-              <Route path="/help" element={
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/help" element={
+            <ProtectedRoute>
               <DashboardLayout user={currentUser}>
                 <HelpCenter />
               </DashboardLayout>
-            } />
+            </ProtectedRoute>
+          } />
 
-
-            {/* Post */}
-            <Route path="/post/:id" element={
-              <MainLayout>
+          {/* Post Route */}
+          <Route path="/post/:id" element={
+            <ProtectedRoute>
+              <MainLayout user={currentUser}>
                 <Post />
               </MainLayout>
-            } />
+            </ProtectedRoute>
+          } />
 
-            {/* Portfolio Routes */}
-            <Route path="/portfolioHome" element={
+          {/* Portfolio Routes */}
+          <Route path="/portfolioHome" element={
+            <ProtectedRoute>
               <DashboardLayout user={currentUser}>
                 <PortfolioHome />
               </DashboardLayout>
-            } />
-            {/* ... other portfolio routes */}
-            <Route path="/portfolio/skills" element={<DashboardLayout user={currentUser}><SkillManagement /></DashboardLayout>} />
-            <Route path="/portfolio/add" element={<DashboardLayout user={currentUser}><ProjectForm /></DashboardLayout>} />
-            <Route path="/portfolio/:id" element={<DashboardLayout user={currentUser}><ProjectDetails /></DashboardLayout>} />
-            <Route path="/portfolio/edit/:id" element={<DashboardLayout user={currentUser}><ProjectForm editMode={true} /></DashboardLayout>} />
-            <Route path="/portfolio/tracking" element={<DashboardLayout user={currentUser}><ProjectTracking /></DashboardLayout>} />
-            <Route path="/portfolio/team" element={<DashboardLayout user={currentUser}><TeamCollab /></DashboardLayout>} />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/portfolio/skills" element={
+            <ProtectedRoute>
+              <DashboardLayout user={currentUser}>
+                <SkillManagement />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/portfolio/add" element={
+            <ProtectedRoute>
+              <DashboardLayout user={currentUser}>
+                <ProjectForm />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/portfolio/:id" element={
+            <ProtectedRoute>
+              <DashboardLayout user={currentUser}>
+                <ProjectDetails />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/portfolio/edit/:id" element={
+            <ProtectedRoute>
+              <DashboardLayout user={currentUser}>
+                <ProjectForm editMode={true} />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/portfolio/tracking" element={
+            <ProtectedRoute>
+              <DashboardLayout user={currentUser}>
+                <ProjectTracking />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/portfolio/team" element={
+            <ProtectedRoute>
+              <DashboardLayout user={currentUser}>
+                <TeamCollab />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } />
 
-
-            {/* Resume Routes */}
-            <Route path="/resume-builder-home" element={
+          {/* Resume Routes */}
+          <Route path="/resume-builder-home" element={
+            <ProtectedRoute>
               <DashboardLayout user={currentUser}>
                 <ResumeBuilderHome />
               </DashboardLayout>
-            } />
-            {/* ... other resume routes */}
-            <Route path="/resume-builder" element={<DashboardLayout user={currentUser}><BuildResume /></DashboardLayout>} />
-            <Route path="/resume/templates" element={<DashboardLayout user={currentUser}><TemplateGallery /></DashboardLayout>} />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/resume-builder" element={
+            <ProtectedRoute>
+              <DashboardLayout user={currentUser}>
+                <BuildResume />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/resume/templates" element={
+            <ProtectedRoute>
+              <DashboardLayout user={currentUser}>
+                <TemplateGallery />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } />
 
-            {/* ATS Routes */}
-            <Route path="/ats/home" element={
+          {/* ATS Routes */}
+          <Route path="/ats/home" element={
+            <ProtectedRoute>
               <DashboardLayout user={currentUser}>
                 <AtsHome />
               </DashboardLayout>
-            } />
-            {/* ... other ATS routes */}
-            <Route path="/ats/tracker" element={<DashboardLayout user={currentUser}><ResumeATSScanner /></DashboardLayout>} />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/ats/tracker" element={
+            <ProtectedRoute>
+              <DashboardLayout user={currentUser}>
+                <ResumeATSScanner />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } />
 
-            {/*  <Route path="/ats/analysis/:analysisId" element={<AnalysisView />}/> */}
-            <Route path="/ats/analysis" element={<AnalysisView />}/> 
-            <Route path="/ats/results" element={ <AnalysisResults />} />
-            <Route path="/ats/keywords" element={<DashboardLayout user={currentUser}><KeywordAnalysis /></DashboardLayout>} />
+          <Route path="/ats/analysis" element={
+            <ProtectedRoute>
+              <AnalysisView />
+            </ProtectedRoute>
+          } /> 
+          
+          <Route path="/ats/results" element={
+            <ProtectedRoute>
+              <AnalysisResults />
+            </ProtectedRoute>
+          } />
+          
+          <Route path="/ats/keywords" element={
+            <ProtectedRoute>
+              <DashboardLayout user={currentUser}>
+                <KeywordAnalysis />
+              </DashboardLayout>
+            </ProtectedRoute>
+          } />
 
-          </Route>
-
+          {/* Fallback Routes */}
           <Route path="/index.html" element={<Navigate to="/" replace />} />
           <Route path="*" element={<MainLayout user={currentUser}><NotFound /></MainLayout>} />
         </Routes>
@@ -214,9 +304,9 @@ function App() {
 
   return (
     <AuthProvider onError={handleAuthError}>
-     <ThemeProvider>
+      <ThemeProvider>
         <Router>
-          <div className="app-container min-h-screen" >
+          <div className="app-container min-h-screen">
             <Suspense fallback={<Loader />}>
               <AnimatedRoutes />
             </Suspense>
