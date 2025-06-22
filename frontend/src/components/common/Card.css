@@ -1,170 +1,346 @@
-.card {
-  position: relative;
-  background: linear-gradient(135deg, #161B22 0%, #0D1117 100%);
-  border: 1px solid rgba(64, 224, 208, 0.1);
-  border-radius: var(--border-radius-md);
+/* src/components/common/Card.css - Enhanced with New Theme & Animations */
+
+.card-wrapper {
+  @apply relative rounded-2xl isolate;
+  background-color: rgb(var(--color-background-secondary));
+  transition: all 0.4s ease-smooth;
+  border: 1px solid rgb(var(--color-accent-neutral) / 0.2);
   overflow: hidden;
-  transition: all var(--transition-normal);
+  position: relative;
 }
 
-.card::before {
+/* Animated gradient border that appears on hover */
+.card-wrapper::before {
   content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(64, 224, 208, 0.03) 0%, rgba(156, 39, 176, 0.03) 100%);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.card-spotlight {
-  pointer-events: none;
-  position: absolute;
-  inset: 0;
+  @apply absolute -inset-px rounded-2xl z-[-1];
+  background: linear-gradient(135deg, 
+    rgb(var(--color-accent-primary) / 0.6),
+    rgb(var(--color-accent-secondary) / 0.6),
+    rgb(var(--color-accent-primary) / 0.4)
+  );
+  background-size: 300% 300%;
   opacity: 0;
-  transition: opacity 500ms ease-in-out;
-  z-index: 2;
+  transition: opacity 0.4s ease-smooth;
+  animation: gradient-shift 6s ease-in-out infinite;
 }
 
-/* Card variants */
-.card-default {
-  padding: var(--spacing-lg);
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
-.card-compact {
-  padding: var(--spacing-md);
+.card-wrapper:hover::before {
+  opacity: 1;
 }
 
-.card-flat {
-  padding: var(--spacing-md);
-  border: 1px solid rgba(64, 224, 208, 0.2);
-  background: rgba(22, 27, 34, 0.6);
-  backdrop-filter: blur(10px);
+/* Floating animation for cards */
+.card-wrapper {
+  animation: card-float 8s ease-in-out infinite;
 }
 
-.card-interactive {
-  cursor: pointer;
+@keyframes card-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
 }
 
-.card-interactive:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(64, 224, 208, 0.15);
-  border-color: rgba(64, 224, 208, 0.3);
-}
-
-/* Card elevations */
-.card-elevation-low {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.card-elevation-medium {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(64, 224, 208, 0.05);
-}
-
-.card-elevation-high {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(64, 224, 208, 0.1);
-}
-
-.card-clickable {
-  cursor: pointer;
-  transition: all var(--transition-normal);
+.card-clickable { 
+  @apply cursor-pointer;
+  transition: all 0.3s ease-smooth;
 }
 
 .card-clickable:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 24px rgba(64, 224, 208, 0.1), 0 0 0 1px rgba(64, 224, 208, 0.2);
-  border-color: rgba(64, 224, 208, 0.4);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px -10px rgb(var(--color-accent-primary) / 0.3);
 }
 
-.card-clickable:hover .card-spotlight {
-  opacity: 0.4 !important;
+/* Enhanced noise texture with subtle animation */
+.card-noise {
+  @apply absolute inset-0 z-0 rounded-2xl pointer-events-none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.03;
+  animation: noise-shift 20s linear infinite;
 }
 
-/* Post card specific styles */
-.card-post {
+@keyframes noise-shift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-1px, -1px); }
+  50% { transform: translate(1px, 0); }
+  75% { transform: translate(0, 1px); }
+  100% { transform: translate(0, 0); }
+}
+
+.dark .card-noise { 
+  opacity: 0.06; 
+}
+
+/* Enhanced spotlight with color animation */
+.card-spotlight {
+  @apply absolute inset-0 z-10 rounded-2xl pointer-events-none;
+  transition: all 0.5s ease-smooth;
+  mix-blend-mode: overlay;
+}
+
+/* Content container with subtle backdrop blur */
+.card-content {
+  @apply relative z-20 h-full w-full;
+  background: rgb(var(--color-background-secondary) / 0.95);
+  backdrop-filter: blur(20px);
+  @apply rounded-[15px];
+  border: 1px solid rgb(var(--color-background-primary) / 0.1);
   position: relative;
-}
-
-.card-post .link {
-  position: relative;
-  z-index: 3;
-  display: block;
-  color: inherit;
-  text-decoration: none;
-  padding: var(--spacing-lg);
-}
-
-.card-post .title {
-  display: block;
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin-bottom: var(--spacing-md);
-  position: relative;
-  z-index: 3;
-}
-
-.card-post .img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  border-radius: var(--border-radius-sm);
-  margin: var(--spacing-md) 0;
-  position: relative;
-  z-index: 3;
-}
-
-.card-post .desc {
-  color: var(--text-secondary);
-  margin-bottom: var(--spacing-md);
-  line-height: 1.6;
-  position: relative;
-  z-index: 3;
-}
-
-.card-post .cardButton {
-  background: linear-gradient(135deg, #40E0D0 0%, #9C27B0 100%);
-  color: #0D1117;
-  border: none;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--border-radius-sm);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  position: relative;
-  z-index: 3;
   overflow: hidden;
 }
 
-.card-post .cardButton::before {
+/* Subtle inner glow effect */
+.card-content::before {
   content: '';
   position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, 
+    rgb(var(--color-accent-primary) / 0.05) 0%,
+    transparent 50%,
+    rgb(var(--color-accent-secondary) / 0.05) 100%
+  );
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.card-wrapper:hover .card-content::before {
+  opacity: 1;
+}
+
+/*
+  ==========================================
+  POST CARD ENHANCEMENTS
+  ==========================================
+*/
+.card-post-link {
+  @apply block h-full w-full no-underline;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-post-img {
+  @apply w-full h-48 object-cover;
+  border-radius: 15px 15px 0 0;
+  transition: all 0.4s ease-smooth;
+  position: relative;
+}
+
+/* Image overlay effect */
+.card-post-img::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgb(var(--color-accent-primary) / 0.1) 0%,
+    transparent 50%,
+    rgb(var(--color-accent-secondary) / 0.1) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card-wrapper:hover .card-post-img {
+  transform: scale(1.05);
+}
+
+.card-wrapper:hover .card-post-img::after {
+  opacity: 1;
+}
+
+.card-post-content {
+  @apply p-6 flex flex-col;
+  position: relative;
+}
+
+/* Enhanced post title with gradient text */
+.card-post-title {
+  @apply block text-xl font-bold mb-3;
+  background: linear-gradient(135deg, 
+    rgb(var(--color-text-primary)),
+    rgb(var(--color-accent-primary))
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  transition: all 0.3s ease-smooth;
+  line-height: 1.3;
+}
+
+.card-wrapper:hover .card-post-title {
+  background: linear-gradient(135deg, 
+    rgb(var(--color-accent-primary)),
+    rgb(var(--color-accent-secondary))
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  transform: translateX(4px);
+}
+
+/* Enhanced description with better typography */
+.card-post-desc {
+  @apply text-text-secondary mb-6 leading-relaxed flex-grow;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  transition: color 0.3s ease;
+}
+
+.card-wrapper:hover .card-post-desc {
+  color: rgb(var(--color-text-primary));
+}
+
+/* Dope "Read More" button with animations */
+.card-post-button {
+  @apply self-start font-semibold relative;
+  background: linear-gradient(135deg, 
+    rgb(var(--color-accent-primary)),
+    rgb(var(--color-accent-secondary))
+  );
+  background-size: 200% 200%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  transition: all 0.4s ease-smooth;
+  position: relative;
+  padding-right: 20px;
+}
+
+/* Animated arrow */
+.card-post-button::after {
+  content: '→';
+  position: absolute;
+  right: 0;
   top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
+  background: linear-gradient(135deg, 
+    rgb(var(--color-accent-primary)),
+    rgb(var(--color-accent-secondary))
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  transition: transform 0.3s ease-smooth;
 }
 
-.card-post .cardButton:hover::before {
-  left: 100%;
+.card-wrapper:hover .card-post-button {
+  background-position: 100% 0;
+  transform: translateX(8px);
 }
 
-.card-post .cardButton:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(64, 224, 208, 0.3);
+.card-wrapper:hover .card-post-button::after {
+  transform: translateX(4px) scale(1.2);
 }
 
-/* Responsive adjustments */
-@media (prefers-reduced-motion: reduce) {
-  .card-spotlight {
-    transition: none;
+/* Underline animation */
+.card-post-button::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(135deg, 
+    rgb(var(--color-accent-primary)),
+    rgb(var(--color-accent-secondary))
+  );
+  transition: width 0.4s ease-smooth;
+}
+
+.card-wrapper:hover .card-post-button::before {
+  width: calc(100% - 20px);
+}
+
+/*
+  ==========================================
+  SCROLL ANIMATIONS & STAGGER EFFECTS
+  ==========================================
+*/
+
+/* Default hidden state for scroll animations */
+.card-wrapper {
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+}
+
+/* When cards come into view */
+.card-wrapper.animate-in {
+  animation: card-fade-in 0.6s ease-out forwards;
+}
+
+@keyframes card-fade-in {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Staggered animation delays */
+.card-wrapper:nth-child(1) { animation-delay: 0s; }
+.card-wrapper:nth-child(2) { animation-delay: 0.1s; }
+.card-wrapper:nth-child(3) { animation-delay: 0.2s; }
+.card-wrapper:nth-child(4) { animation-delay: 0.3s; }
+.card-wrapper:nth-child(5) { animation-delay: 0.4s; }
+.card-wrapper:nth-child(6) { animation-delay: 0.5s; }
+
+/*
+  ==========================================
+  RESPONSIVE ENHANCEMENTS
+  ==========================================
+*/
+@media (max-width: 768px) {
+  .card-wrapper {
+    @apply rounded-xl;
   }
   
-  .card {
-    transition: none;
+  .card-content {
+    @apply rounded-[11px];
+  }
+  
+  .card-post-content {
+    @apply p-4;
+  }
+  
+  .card-post-title {
+    @apply text-lg;
+  }
+  
+  .card-clickable:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
+}
+
+/* Dark mode specific enhancements */
+.dark .card-wrapper {
+  background-color: rgb(var(--color-background-secondary));
+  border-color: rgb(var(--color-accent-neutral) / 0.3);
+}
+
+.dark .card-content {
+  background: rgb(var(--color-background-secondary) / 0.98);
+  border-color: rgb(var(--color-background-primary) / 0.2);
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  .card-wrapper,
+  .card-post-img,
+  .card-post-title,
+  .card-post-button {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .card-wrapper::before {
+    animation: none !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .card-wrapper {
+    border-width: 2px;
+    border-color: rgb(var(--color-accent-primary));
   }
 }

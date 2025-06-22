@@ -1,7 +1,11 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
+import PropTypes from 'prop-types';
+import { FiUploadCloud, FiCamera } from 'react-icons/fi';
+import './ProfileImageUpload.css';
 
 const ProfileImageUpload = ({ onImageChange, initialImage = '' }) => {
   const [preview, setPreview] = useState(initialImage);
+  const [isHovered, setIsHovered] = useState(false);
   const fileInputRef = useRef(null);
   
   const handleImageClick = () => {
@@ -11,30 +15,49 @@ const ProfileImageUpload = ({ onImageChange, initialImage = '' }) => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const previewUrl = URL.createObjectURL(file);
-      setPreview(previewUrl);
-      onImageChange({
-        file,
-        previewUrl
-      });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+      onImageChange({ file, previewUrl: URL.createObjectURL(file) });
     }
   };
 
   return (
     <div className="profile-image-upload">
       <div 
-        className="image-preview cursor-pointer" 
+        className={`image-preview-wrapper ${isHovered ? 'hovered' : ''}`}
         onClick={handleImageClick}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
       >
-        {preview ? (
-          <img 
-            src={preview} 
-            alt="Preview" 
-            className="preview-image"
-          />
-        ) : (
-          <div className="placeholder">Click to upload image</div>
-        )}
+        <div className="gradient-border">
+          <div className="image-container">
+            {preview ? (
+              <img 
+                src={preview} 
+                alt="Profile Preview" 
+                className="preview-image"
+              />
+            ) : (
+              <div className="placeholder">
+                <div className="placeholder-icon-wrapper">
+                  <FiUploadCloud className="placeholder-icon" />
+                </div>
+                <span className="placeholder-text">Upload Photo</span>
+                <span className="placeholder-subtext">Click to browse</span>
+              </div>
+            )}
+            
+            <div className="upload-overlay">
+              <div className="upload-content">
+                <FiCamera className="upload-icon" />
+                <span className="upload-text">Change Photo</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       
       <input 
@@ -43,43 +66,15 @@ const ProfileImageUpload = ({ onImageChange, initialImage = '' }) => {
         onChange={handleImageChange} 
         accept="image/*"
         id="profileImage"
-        className="hidden"
+        className="hidden-file-input"
       />
-      
-      <style jsx="true">{`
-        .profile-image-upload {
-          margin: 20px 0;
-          text-align: center;
-        }
-        .image-preview {
-          width: 150px;
-          height: 150px;
-          border-radius: 50%;
-          margin: 0 auto 15px;
-          overflow: hidden;
-          border: 2px solid #ddd;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.3s;
-        }
-        .image-preview:hover {
-          border-color: #4CAF50;
-        }
-        .preview-image {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-        .placeholder {
-          color: #999;
-          padding: 20px;
-          text-align: center;
-        }
-      `}</style>
     </div>
   );
+};
+
+ProfileImageUpload.propTypes = {
+  onImageChange: PropTypes.func.isRequired,
+  initialImage: PropTypes.string,
 };
 
 export default ProfileImageUpload;

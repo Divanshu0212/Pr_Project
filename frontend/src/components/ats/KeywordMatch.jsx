@@ -1,147 +1,152 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import Card from '../common/Card';
+import Button from '../common/Button';
 
 const KeywordMatch = ({ keywords, resumeContent }) => {
   const [showAll, setShowAll] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
-  // Calculate match statistics
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
+
   const matchedKeywords = keywords.filter(kw => kw.found);
   const matchPercentage = Math.round((matchedKeywords.length / keywords.length) * 100);
 
-  // Sort keywords by importance and then by match status
   const sortedKeywords = [...keywords].sort((a, b) => {
-    // Sort by importance first (high to low)
     if (b.importance !== a.importance) {
       return b.importance - a.importance;
     }
-    // Then sort by found status (found first)
     return b.found - a.found;
   });
 
-  // Display only top keywords or all based on showAll state
-  const displayKeywords = showAll ? sortedKeywords : sortedKeywords.slice(0, 10);
+  const displayKeywords = showAll ? sortedKeywords : sortedKeywords.slice(0, 8);
+
+  const getScoreColor = (score) => {
+    if (score >= 70) return 'text-green-400';
+    if (score >= 40) return 'text-yellow-400';
+    return 'text-red-400';
+  };
+
+  const getScoreBorder = (score) => {
+    if (score >= 70) return 'border-green-400';
+    if (score >= 40) return 'border-yellow-400';
+    return 'border-red-400';
+  };
 
   return (
-    <div className="bg-[#161B22] rounded-xl p-6 shadow-lg">
-      <h3 className="text-[#E5E5E5] text-xl font-semibold mb-4">Keyword Analysis</h3>
+    <div className={`transition-all duration-800 ${isVisible ? 'animate-fade-in-up opacity-100' : 'opacity-0'}`}>
+      <Card className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-hero opacity-50"></div>
+        <div className="relative z-10">
+          <h3 className="text-2xl font-bold bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent mb-6">
+            Keyword Analysis
+          </h3>
 
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
-        <div className="flex items-center">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center border-4"
-            style={{ borderColor: matchPercentage >= 70 ? '#4CAF50' : matchPercentage >= 40 ? '#FFC107' : '#F44336' }}>
-            <span className="text-xl font-bold"
-              style={{ color: matchPercentage >= 70 ? '#4CAF50' : matchPercentage >= 40 ? '#FFC107' : '#F44336' }}>
-              {matchPercentage}%
-            </span>
+          <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center mb-8 gap-6">
+            <div className="flex items-center animate-scale-in">
+              <div className={`w-20 h-20 rounded-full flex items-center justify-center border-4 ${getScoreBorder(matchPercentage)} relative overflow-hidden`}>
+                <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/20 to-accent-secondary/20"></div>
+                <span className={`text-2xl font-bold ${getScoreColor(matchPercentage)} relative z-10`}>
+                  {matchPercentage}%
+                </span>
+              </div>
+              <div className="ml-6">
+                <h4 className="text-text-primary font-bold text-xl">Keyword Match</h4>
+                <p className="text-text-secondary">
+                  <span className="font-semibold text-accent-primary">{matchedKeywords.length}</span> of {keywords.length} keywords found
+                </p>
+              </div>
+            </div>
+
+            <Card className="bg-gradient-card-light dark:bg-gradient-card-dark p-4 max-w-md">
+              <p className="text-text-primary font-medium">
+                {matchPercentage >= 70 ? (
+                  <span className="text-green-400">🎉 Excellent! Your resume is highly optimized for ATS systems</span>
+                ) : matchPercentage >= 40 ? (
+                  <span className="text-yellow-400">⚡ Good progress! Consider adding more relevant keywords</span>
+                ) : (
+                  <span className="text-red-400">🎯 Needs improvement! Add missing keywords to boost your chances</span>
+                )}
+              </p>
+            </Card>
           </div>
-          <div className="ml-4">
-            <h4 className="text-[#E5E5E5] font-medium">Keyword Match</h4>
-            <p className="text-gray-400 text-sm">
-              {matchedKeywords.length} of {keywords.length} keywords found
-            </p>
-          </div>
-        </div>
 
-        <div className="bg-[#0D1117] p-3 rounded-lg">
-          <p className="text-[#E5E5E5] text-sm">
-            {matchPercentage >= 70 ? (
-              "Strong keyword match! Your resume is well-optimized for this job."
-            ) : matchPercentage >= 40 ? (
-              "Average keyword match. Consider adding more relevant keywords."
-            ) : (
-              "Low keyword match. Add missing keywords to improve your chances."
-            )}
-          </p>
-        </div>
-      </div>
-
-      <div className="overflow-hidden rounded-lg border border-gray-700">
-        <table className="min-w-full divide-y divide-gray-700">
-          <thead className="bg-[#0D1117]">
-            <tr>
-              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Keyword
-              </th>
-              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Status
-              </th>
-              <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Importance
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-[#161B22] divide-y divide-gray-700">
-            {displayKeywords.map((keyword, index) => (
-              <tr key={index}>
-                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-[#E5E5E5]">
-                  {keyword.text}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm">
-                  {keyword.found ? (
-                    <span className="px-2 inline-flex text-xs leading-5 font-medium rounded-full bg-green-100 text-green-800">
-                      Found
-                    </span>
-                  ) : (
-                    <span className="px-2 inline-flex text-xs leading-5 font-medium rounded-full bg-red-100 text-red-800">
-                      Missing
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm text-[#E5E5E5]">
+          <div className="overflow-hidden rounded-2xl border border-accent-neutral/30 shadow-card">
+            <div className="bg-background-secondary p-4">
+              <div className="grid grid-cols-3 gap-4 font-semibold text-text-secondary text-sm uppercase tracking-wider">
+                <div>Keyword</div>
+                <div>Status</div>
+                <div>Importance</div>
+              </div>
+            </div>
+            <div className="divide-y divide-accent-neutral/20">
+              {displayKeywords.map((keyword, index) => (
+                <div 
+                  key={index} 
+                  className="grid grid-cols-3 gap-4 p-4 hover:bg-background-secondary/50 transition-all duration-300 transform hover:scale-105"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <div className="font-semibold text-text-primary">{keyword.text}</div>
+                  <div>
+                    {keyword.found ? (
+                      <span className="px-3 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-green-400 to-green-500 text-white shadow-glow">
+                        ✓ Found
+                      </span>
+                    ) : (
+                      <span className="px-3 py-1 text-xs font-bold rounded-full bg-gradient-to-r from-red-400 to-red-500 text-white">
+                        ✗ Missing
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center">
                     {Array(keyword.importance).fill().map((_, i) => (
-                      <svg key={i} xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-[#00FFFF]" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
+                      <div key={i} className="w-4 h-4 mr-1">
+                        <div className="w-full h-full bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full animate-pulse-slow"></div>
+                      </div>
                     ))}
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-      {keywords.length > 10 && (
-        <div className="mt-4 text-center">
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="text-[#00FFFF] hover:text-[#9C27B0] text-sm font-medium transition-colors"
-          >
-            {showAll ? 'Show Less' : `Show All Keywords (${keywords.length})`}
-          </button>
+          {keywords.length > 8 && (
+            <div className="mt-6 text-center">
+              <Button
+                text={showAll ? 'Show Less' : `Show All Keywords (${keywords.length})`}
+                onClick={() => setShowAll(!showAll)}
+                className="bg-gradient-to-r from-accent-primary to-accent-secondary hover:shadow-glow transform hover:scale-105 transition-all duration-300"
+              />
+            </div>
+          )}
+
+          <Card className="mt-8 bg-gradient-mesh relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/10 to-accent-secondary/10"></div>
+            <div className="relative z-10">
+              <h4 className="text-xl font-bold bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent mb-4">
+                💡 How To Improve
+              </h4>
+              <div className="space-y-4">
+                {[
+                  "Include missing keywords naturally in your resume, especially high-importance ones",
+                  "Use exact matches when possible, rather than variations or synonyms",
+                  "Place important keywords in section headings and bullet points",
+                  "Include both spelled-out terms and acronyms (e.g., \"Application Tracking System (ATS)\")"
+                ].map((tip, index) => (
+                  <div key={index} className="flex items-start group">
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-r from-accent-primary to-accent-secondary flex items-center justify-center mr-4 mt-0.5 group-hover:scale-110 transition-transform duration-300">
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                    </div>
+                    <p className="text-text-primary font-medium leading-relaxed">{tip}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
         </div>
-      )}
-
-      <div className="mt-6 p-4 bg-[#0D1117] rounded-lg">
-        <h4 className="text-[#E5E5E5] text-lg font-semibold mb-3">How To Improve</h4>
-        <ul className="space-y-2 text-sm text-[#E5E5E5]">
-          <li className="flex items-start">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#00FFFF] mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            Include missing keywords naturally in your resume, especially high-importance ones
-          </li>
-          <li className="flex items-start">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#00FFFF] mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            Use exact matches when possible, rather than variations or synonyms
-          </li>
-          <li className="flex items-start">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#00FFFF] mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            Place important keywords in section headings and bullet points
-          </li>
-          <li className="flex items-start">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#00FFFF] mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            Include both spelled-out terms and acronyms (e.g., "Application Tracking System (ATS)")
-          </li>
-        </ul>
-      </div>
+      </Card>
     </div>
   );
 };

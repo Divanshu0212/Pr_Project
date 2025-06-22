@@ -13,7 +13,7 @@ export const useAuth = () => {
     ...context,
 
     signup: async (email, password, username, displayName, profileImageFile) => {
-      try {
+  
         const formData = new FormData();
         formData.append('username', username);
         formData.append('email', email);
@@ -43,9 +43,6 @@ export const useAuth = () => {
         }
 
         return response.data;
-      } catch (error) {
-        throw error;
-      }
     }
   };
 

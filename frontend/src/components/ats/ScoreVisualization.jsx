@@ -1,122 +1,170 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import Card from '../common/Card';
 
 const ScoreVisualization = ({ score, categories }) => {
-  // Function to determine color based on score
+  const [isVisible, setIsVisible] = useState(false);
+  const [animatedScore, setAnimatedScore] = useState(0);
+
+  useEffect(() => {
+    setIsVisible(true);
+    // Animate score counting
+    const timer = setTimeout(() => {
+      let current = 0;
+      const increment = score / 50;
+      const counter = setInterval(() => {
+        current += increment;
+        if (current >= score) {
+          current = score;
+          clearInterval(counter);
+        }
+        setAnimatedScore(Math.round(current));
+      }, 30);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [score]);
+
   const getScoreColor = (value) => {
-    if (value >= 80) return '#4CAF50'; // Green for high scores
-    if (value >= 60) return '#FFC107'; // Yellow for medium scores
-    return '#F44336'; // Red for low scores
+    if (value >= 80) return '#10B981'; // green-500
+    if (value >= 60) return '#F59E0B'; // yellow-500
+    return '#EF4444'; // red-500
   };
 
+  const getScoreGradient = (value) => {
+    if (value >= 80) return 'from-green-400 to-green-600';
+    if (value >= 60) return 'from-yellow-400 to-yellow-600';
+    return 'from-red-400 to-red-600';
+  };
+
+  const circumference = 2 * Math.PI * 45;
+  const strokeDasharray = `${circumference * (animatedScore / 100)} ${circumference * (1 - animatedScore / 100)}`;
+
   return (
-    <div className="bg-[#161B22] rounded-xl p-6 shadow-lg">
-      <div className="flex flex-col items-center mb-8">
-        <h3 className="text-[#E5E5E5] text-xl font-semibold mb-4">Overall ATS Score</h3>
+    <div className={`transition-all duration-800 ${isVisible ? 'animate-fade-in-up opacity-100' : 'opacity-0'}`}>
+      <Card className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-hero opacity-30"></div>
+        <div className="relative z-10">
+          <div className="flex flex-col items-center mb-8">
+            <h3 className="text-2xl font-bold bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent mb-6">
+              🎯 Overall ATS Score
+            </h3>
 
-        <div className="relative w-48 h-48">
-          {/* Circular background */}
-          <svg className="w-full h-full" viewBox="0 0 100 100">
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="transparent"
-              stroke="#2D3748"
-              strokeWidth="10"
-            />
+            <div className="relative w-52 h-52 animate-scale-in">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="45"
+                  fill="transparent"
+                  stroke="rgb(var(--color-accent-neutral))"
+                  strokeWidth="8"
+                  opacity="0.3"
+                />
+                
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="45"
+                  fill="transparent"
+                  stroke={getScoreColor(score)}
+                  strokeWidth="8"
+                  strokeDasharray={strokeDasharray}
+                  strokeDashoffset="0"
+                  strokeLinecap="round"
+                  className="transition-all duration-1200 ease-smooth"
+                  style={{
+                    filter: `drop-shadow(0 0 10px ${getScoreColor(score)}40)`
+                  }}
+                />
+              </svg>
 
-            {/* Score circle with score-dependent coloring */}
-            <circle
-              cx="50"
-              cy="50"
-              r="45"
-              fill="transparent"
-              stroke={getScoreColor(score)}
-              strokeWidth="10"
-              strokeDasharray={`${2 * Math.PI * 45 * (score / 100)} ${2 * Math.PI * 45 * (1 - score / 100)}`}
-              strokeDashoffset={2 * Math.PI * 45 * 0.25} // Start at top
-              transform="rotate(-90 50 50)"
-            />
-          </svg>
-
-          {/* Score text */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-4xl font-bold" style={{ color: getScoreColor(score) }}>
-              {score}
-            </span>
-            <span className="text-[#E5E5E5] text-sm">out of 100</span>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span 
+                  className={`text-5xl font-bold bg-gradient-to-br ${getScoreGradient(score)} bg-clip-text text-transparent`}
+                >
+                  {animatedScore}
+                </span>
+                <span className="text-text-secondary font-medium">out of 100</span>
+              </div>
+            </div>
           </div>
+
+          <div className="space-y-6">
+            <h4 className="text-xl font-bold text-text-primary mb-4">📊 Category Breakdown</h4>
+
+            {categories.map((category, index) => (
+              <div 
+                key={category.name} 
+                className="space-y-3 animate-fade-in-left"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="flex justify-between items-center">
+                  <span className="text-text-primary font-semibold">{category.name}</span>
+                  <span className={`font-bold bg-gradient-to-r ${getScoreGradient(category.score)} bg-clip-text text-transparent`}>
+                    {category.score}/100
+                  </span>
+                </div>
+
+                <div className="relative w-full bg-background-secondary rounded-full h-3 overflow-hidden">
+                  <div
+                    className={`h-3 rounded-full bg-gradient-to-r ${getScoreGradient(category.score)} transition-all duration-1200 ease-smooth shadow-glow`}
+                    style={{
+                      width: `${category.score}%`,
+                      animationDelay: `${index * 200}ms`
+                    }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <Card className="mt-8 bg-gradient-mesh relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-accent-primary/10 to-accent-secondary/10"></div>
+            <div className="relative z-10">
+              <h4 className="text-xl font-bold bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent mb-4">
+                💭 Quick Insights
+              </h4>
+
+              <div className="space-y-4">
+                {score >= 80 ? (
+                  <div className="flex items-start group">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-400 to-green-500 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300">
+                      <span className="text-white text-lg">✓</span>
+                    </div>
+                    <span className="text-text-primary font-medium">🎉 Your resume is highly optimized for ATS systems</span>
+                  </div>
+                ) : score >= 60 ? (
+                  <div className="flex items-start group">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300">
+                      <span className="text-white text-lg">⚡</span>
+                    </div>
+                    <span className="text-text-primary font-medium">⚡ Your resume has good ATS compatibility with room for improvement</span>
+                  </div>
+                ) : (
+                  <div className="flex items-start group">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-red-400 to-red-500 flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300">
+                      <span className="text-white text-lg">⚠</span>
+                    </div>
+                    <span className="text-text-primary font-medium">🎯 Your resume needs optimization to pass ATS filters</span>
+                  </div>
+                )}
+
+                {categories.filter(cat => cat.score < 60).map((category, index) => (
+                  <div key={`insight-${category.name}`} className="flex items-start group">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-accent-primary to-accent-secondary flex items-center justify-center mr-4 group-hover:scale-110 transition-transform duration-300">
+                      <span className="text-white text-sm">💡</span>
+                    </div>
+                    <span className="text-text-primary font-medium">
+                      Focus on improving your <span className="text-accent-primary font-bold">{category.name.toLowerCase()}</span> score
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
         </div>
-      </div>
-
-      {/* Category breakdown */}
-      <div className="space-y-4">
-        <h4 className="text-[#E5E5E5] text-lg font-semibold mb-3">Category Breakdown</h4>
-
-        {categories.map((category) => (
-          <div key={category.name} className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-[#E5E5E5]">{category.name}</span>
-              <span className="text-[#E5E5E5]">{category.score}/100</span>
-            </div>
-
-            <div className="w-full bg-[#0D1117] rounded-full h-2.5">
-              <div
-                className="h-2.5 rounded-full"
-                style={{
-                  width: `${category.score}%`,
-                  backgroundColor: getScoreColor(category.score),
-                }}
-              ></div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Quick insights */}
-      <div className="mt-8 pt-6 border-t border-gray-700">
-        <h4 className="text-[#E5E5E5] text-lg font-semibold mb-4">Quick Insights</h4>
-
-        <ul className="space-y-3">
-          {score >= 80 ? (
-            <li className="flex items-start">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-500 mt-0.5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              <span className="text-[#E5E5E5]">Your resume is highly optimized for ATS systems</span>
-            </li>
-          ) : score >= 60 ? (
-            <li className="flex items-start">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-yellow-500 mt-0.5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-              <span className="text-[#E5E5E5]">Your resume has adequate ATS compatibility with room for improvement</span>
-            </li>
-          ) : (
-            <li className="flex items-start">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-500 mt-0.5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-              <span className="text-[#E5E5E5]">Your resume may be filtered out by ATS systems - see our recommendations</span>
-            </li>
-          )}
-
-          {categories.map((category) => {
-            if (category.score < 60) {
-              return (
-                <li key={`insight-${category.name}`} className="flex items-start">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#00FFFF] mt-0.5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
-                  <span className="text-[#E5E5E5]">Focus on improving your {category.name.toLowerCase()} score</span>
-                </li>
-              );
-            }
-            return null;
-          }).filter(Boolean)}
-        </ul>
-      </div>
+      </Card>
     </div>
   );
 };

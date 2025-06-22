@@ -1,6 +1,6 @@
 import React from 'react';
 import './Form.css';
-import PropTypes from 'prop-types'; // Import PropTypes for prop validation
+import PropTypes from 'prop-types';
 
 const Form = ({
   type = 'text',
@@ -21,18 +21,29 @@ const Form = ({
           {required && <span className="input-required">*</span>}
         </label>
       )}
-      <input
-        type={type}
-        id={name}
-        name={name}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        className={`input ${error ? 'input-error' : ''}`}
-        disabled={disabled}
-        required={required}
-      />
-      {error && <p className="input-error-message">{error}</p>}
+      <div className="input-container">
+        <input
+          type={type}
+          id={name}
+          name={name}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          className={`input ${error ? 'input-error' : ''}`}
+          disabled={disabled}
+          required={required}
+        />
+        <div className="input-focus-ring"></div>
+      </div>
+      {error && (
+        <div className="input-error-message">
+          <svg className="input-error-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="2"/>
+            <path d="M8 4v4M8 12h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          {error}
+        </div>
+      )}
     </div>
   );
 };

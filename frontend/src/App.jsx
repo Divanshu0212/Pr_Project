@@ -1,6 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext'; 
 import PrivateRoute from './components/PrivateRoute';
 import { motion, AnimatePresence } from 'framer-motion';
 import Loader from './components/common/Loader';
@@ -14,7 +15,6 @@ import DashboardLayout from './components/layouts/DashboardLayout';
 import { useAuth } from './hooks/useAuth';
 
 // Styles
-import './styles/variables.css';
 import './styles/global.css';
 import './App.css';
 import './styles/animations.css';
@@ -55,9 +55,14 @@ const HelpCenter = lazy(() => import('./pages/static/HelpCenter'));
 
 // Page transition variants for Framer Motion
 const pageVariants = {
-  initial: { opacity: 0, scale: 0.98, x: 20 },
-  animate: { opacity: 1, scale: 1, x: 0 },
-  exit: { opacity: 0, scale: 0.98, x: -20 },
+  initial: { opacity: 0, y: 15 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -15 },
+};
+
+const pageTransition = {
+  duration: 0.35,
+  ease: 'easeInOut',
 };
 
 // Adjusted ProtectedRoute to wrap children and use existing PrivateRoute
@@ -86,7 +91,7 @@ const AnimatedRoutes = () => {
         initial="initial"
         animate="animate"
         exit="exit"
-        transition={{ duration: 0.4, ease: 'easeInOut' }}
+        transition={{ pageTransition }}
         className="page-container"
       >
         <Routes location={location}>
@@ -172,8 +177,10 @@ const AnimatedRoutes = () => {
             } />
             {/* ... other ATS routes */}
             <Route path="/ats/tracker" element={<DashboardLayout user={currentUser}><ResumeATSScanner /></DashboardLayout>} />
-            <Route path="/ats/analysis/:analysisId" element={<DashboardLayout user={currentUser}><AnalysisView /></DashboardLayout>} />
-            <Route path="/ats/results" element={<DashboardLayout user={currentUser}><AnalysisResults /></DashboardLayout>} />
+
+            {/*  <Route path="/ats/analysis/:analysisId" element={<AnalysisView />}/> */}
+            <Route path="/ats/analysis" element={<AnalysisView />}/> 
+            <Route path="/ats/results" element={ <AnalysisResults />} />
             <Route path="/ats/keywords" element={<DashboardLayout user={currentUser}><KeywordAnalysis /></DashboardLayout>} />
 
           </Route>
@@ -207,18 +214,20 @@ function App() {
 
   return (
     <AuthProvider onError={handleAuthError}>
-      <Router>
-        <div className="app-container min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
-          <Suspense fallback={<Loader />}>
-            <AnimatedRoutes />
-          </Suspense>
-          {authError && (
-            <div className="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg">
-              Authentication error: {authError.message}
-            </div>
-          )}
-        </div>
-      </Router>
+     <ThemeProvider>
+        <Router>
+          <div className="app-container min-h-screen" >
+            <Suspense fallback={<Loader />}>
+              <AnimatedRoutes />
+            </Suspense>
+            {authError && (
+              <div className="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg">
+                Authentication error: {authError.message}
+              </div>
+            )}
+          </div>
+        </Router>
+      </ThemeProvider>
     </AuthProvider>
   );
 }

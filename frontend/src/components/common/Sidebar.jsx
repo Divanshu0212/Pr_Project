@@ -4,11 +4,13 @@ import { Link, useLocation } from 'react-router-dom';
 import { FiHome, FiBriefcase, FiFileText, FiActivity, FiChevronRight, FiHelpCircle, FiMessageSquare, FiPlus, FiTrello, FiUsers, FiPieChart, FiBarChart2, FiSearch } from 'react-icons/fi';
 import './Sidebar.css';
 import { AuthContext } from '../../context/AuthContext';
+import { ThemeContext } from '../../context/ThemeContext'; // Import ThemeContext
 
 const Sidebar = ({ user, isOpen, onClose }) => {
   const location = useLocation();
   const sidebarRef = useRef(null);
   const { portfolioDetails } = useContext(AuthContext);
+  const { theme } = useContext(ThemeContext); // Consume the theme context
 
   const menuItems = [
     {
@@ -95,7 +97,7 @@ const Sidebar = ({ user, isOpen, onClose }) => {
     if (Object.keys(newExpandedState).length > 0) {
       setExpandedItems(prev => ({ ...prev, ...newExpandedState }));
     }
-  }, [location.pathname]);
+  }, [location.pathname, menuItems]); // Added menuItems to dependency array for completeness
 
   return (
     <>
@@ -110,7 +112,8 @@ const Sidebar = ({ user, isOpen, onClose }) => {
 
       <aside 
         ref={sidebarRef}
-        className={`sidebar ${isOpen ? 'open' : ''}`}
+        // Apply the 'dark' or 'light' class based on the theme context
+        className={`sidebar ${isOpen ? 'open' : ''} ${theme}`} 
         aria-label="Main navigation"
       >
         <div className="sidebar-container">
