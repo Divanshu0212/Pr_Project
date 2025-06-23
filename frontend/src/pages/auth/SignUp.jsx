@@ -5,9 +5,11 @@ import { useAuth } from '../../hooks/useAuth';
 import '../../styles/Auth.css';
 import ProfileImageUpload from '../../components/common/ProfileImageUpload';
 import { AuthContext } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext'; 
 
 const SignUp = () => {
   const navigate = useNavigate();
+    const { theme } = useTheme();
   const { signup, signInWithGoogle, signInWithGithub, isAuthenticated, error: authError } = useAuth();
   const context = React.useContext(AuthContext);
   const [formData, setFormData] = useState({
@@ -202,15 +204,16 @@ const SignUp = () => {
   };
 
   return (
-    <div className="flex flex-col md:flex-row h-screen bg-[#0D1117]">
+    
+    <div  className={'auth-wrapper ${theme}flex flex-col md:flex-row h-screen bg-[#0D1117]'}>
       <div className="left-section relative w-full md:w-2/5 bg-gradient-to-b from-[#0D1117] to-[#161B22] text-white flex flex-col justify-center items-center p-6 md:p-8 py-12 md:py-0">
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="glow-effect cyan absolute top-1/4 left-1/4 w-64 h-64"></div>
           <div className="glow-effect purple absolute bottom-1/3 right-1/4 w-80 h-80"></div>
         </div>
 
-        <div className="brand-logo mb-8 z-10 animate-float">
-          <div className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] animate-glow">
+        <div className="brand-logo mb-8 z-10 ">
+          <div className="text-8xl md:text-9xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] animate-glow">
             ResumeBuilder
           </div>
         </div>
@@ -290,21 +293,9 @@ const SignUp = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="form-group">
-              <label className="text-[#E5E5E5] block font-medium mb-2">Profile Picture (Optional)</label>
-              <ProfileImageUpload
-                onImageChange={(imageData) => {
-                  setProfileImage({
-                    file: imageData.file,
-                    url: imageData.previewUrl
-                  });
-                }}
-                initialImage={profileImage.url}
-              />
-            </div>
 
             <div className="space-y-2">
-              <label htmlFor="username" className="text-[#E5E5E5] block font-medium">Username</label>
+              <label htmlFor="username" className="text-[#ffffff] block font-medium">Username</label>
               <div className="input-container">
                 <input
                   type="text"
@@ -430,6 +421,18 @@ const SignUp = () => {
                 </button>
               </div>
               {errors.confirmPassword && <p className="text-red-400 text-sm mt-1">{errors.confirmPassword}</p>}
+            </div>
+             <div className="form-group">
+              <label className="text-[#E5E5E5] block font-medium mb-2">Profile Picture (Optional)</label>
+              <ProfileImageUpload
+                onImageChange={(imageData) => {
+                  setProfileImage({
+                    file: imageData.file,
+                    url: imageData.previewUrl
+                  });
+                }}
+                initialImage={profileImage.url}
+              />
             </div>
 
             <button

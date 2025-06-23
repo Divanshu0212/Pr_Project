@@ -1,8 +1,6 @@
 /* Enhanced Global CSS with Theme System */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-
-
 /* ==========================================================================
    THEME SYSTEM - COLOR PALETTES
    ========================================================================== */
@@ -540,8 +538,6 @@ select:focus {
   pointer-events: none;
 }
 
-/* Enhanced Global CSS with Theme System */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 /* ==========================================================================
    THEME SYSTEM - COLOR PALETTES
