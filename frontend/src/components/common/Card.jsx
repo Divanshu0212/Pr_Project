@@ -29,192 +29,101 @@ const Card = ({
       },
       {
         threshold: 0.2,
-        rootMargin: '50px 0px -100px 0px',
       }
     );
 
-    if (divRef.current) {
-      observer.observe(divRef.current);
+    const currentRef = divRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
     }
 
     return () => {
-      if (divRef.current) {
-        observer.unobserve(divRef.current);
+      if (currentRef) {
+        observer.unobserve(currentRef);
       }
     };
   }, [isVisible, disableAnimation]);
 
-  // Enhanced mouse move handler with smoother spotlight tracking
+  // Mouse move handler for spotlight effect
   const handleMouseMove = (e) => {
     if (!divRef.current || !enableSpotlight) return;
-    
     const rect = divRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    // Smooth position updates using requestAnimationFrame
-    requestAnimationFrame(() => {
-      setPosition({ x, y });
-    });
+    setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
   };
 
   const handleMouseEnter = () => { 
-    if (enableSpotlight) {
-      setOpacity(1);
-    }
+    if (enableSpotlight) setOpacity(1);
   };
 
   const handleMouseLeave = () => { 
-    if (enableSpotlight) {
-      setOpacity(0);
-    }
+    if (enableSpotlight) setOpacity(0);
   };
 
-  // Enhanced spotlight effect with dynamic colors
-  const spotlightStyle = enableSpotlight ? {
+  // Spotlight style with theme-aware colors
+  const spotlightStyle = {
     opacity,
-    background: `radial-gradient(
-      800px circle at ${position.x}px ${position.y}px, 
-      rgb(var(--color-accent-primary) / 0.15) 0%,
-      rgb(var(--color-accent-secondary) / 0.08) 40%,
-      transparent 70%
+    background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, 
+      rgba(var(--color-accent-primary), 0.1),
+      transparent 80%
     )`,
-    transition: 'opacity 0.3s ease-out',
-  } : {};
+  };
 
-  // Enhanced motion variants with better easing
   const cardVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 60, 
-      scale: 0.9,
-      rotateX: 10,
-    },
+    hidden: { opacity: 0, y: 30, scale: 0.98 },
     visible: { 
       opacity: 1, 
       y: 0, 
       scale: 1,
-      rotateX: 0,
       transition: { 
-        duration: 0.7, 
-        ease: [0.25, 0.46, 0.45, 0.94],
-        type: "spring",
-        stiffness: 100,
-        damping: 15,
+        duration: 0.5, 
+        ease: [0.25, 1, 0.5, 1]
       }
     }
   };
 
-  // Enhanced hover animations
   const hoverVariants = {
     hover: {
-      y: -12,
-      scale: 1.03,
-      rotateX: -2,
-      transition: {
-        duration: 0.3,
-        ease: "easeOut"
-      }
+      y: -8,
+      transition: { duration: 0.3, ease: "easeOut" }
     }
   };
-
+  
   const CardContent = (
     <>
-      {enableSpotlight && (
-        <div 
-          className="card-spotlight" 
-          style={spotlightStyle}
-        />
-      )}
-      
+      {enableSpotlight && <div className="card-spotlight" style={spotlightStyle} />}
       <div className="card-noise" />
-      
       <div className="card-content">
         {post ? (
-          <Link 
-            to={`/posts/${post.id}`} 
-            className="card-post-link"
-            onClick={onClick}
-          >
+          <Link to={`/posts/${post.id}`} className="card-link">
             {post.image && (
-              <motion.img 
-                src={post.image} 
-                alt={post.title}
-                className="card-post-img"
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-              />
+              <img src={post.image} alt={post.title} className="card-image" />
             )}
-            
-            <div className="card-post-content">
-              <motion.h3 
-                className="card-post-title"
-                whileHover={{ x: 6 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-              >
-                {post.title}
-              </motion.h3>
-              
-              <motion.p 
-                className="card-post-desc"
-                initial={{ opacity: 0.8 }}
-                whileHover={{ opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                {post.excerpt || post.description}
-              </motion.p>
-              
-              <motion.span 
-                className="card-post-button"
-                whileHover={{ x: 8 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-              >
-                Read More
-              </motion.span>
+            <div className="card-text-content">
+              <h3 className="card-title">{post.title}</h3>
+              <p className="card-description">{post.excerpt || post.description}</p>
+              <span className="card-read-more">Read More →</span>
             </div>
           </Link>
         ) : (
-          <div className="p-6">
-            {children}
-          </div>
+          children
         )}
       </div>
     </>
   );
 
-  // Conditional wrapper based on animation preference
-  if (disableAnimation) {
-    return (
-      <div
-        ref={divRef}
-        className={`card-wrapper ${onClick ? 'card-clickable' : ''} ${className}`}
-        onMouseMove={handleMouseMove}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        onClick={onClick}
-        style={{ opacity: 1, transform: 'none' }}
-      >
-        {CardContent}
-      </div>
-    );
-  }
-
   return (
     <motion.div
       ref={divRef}
-      className={`card-wrapper ${onClick ? 'card-clickable' : ''} ${className} ${isVisible ? 'animate-in' : ''}`}
+      // Added .panel class for consistent theming!
+      className={`card panel ${onClick ? 'is-clickable' : ''} ${className}`}
       variants={cardVariants}
-      initial="hidden"
-      animate={isVisible ? "visible" : "hidden"}
-      whileHover="hover"
+      initial={disableAnimation ? "visible" : "hidden"}
+      animate={isVisible || disableAnimation ? "visible" : "hidden"}
+      whileHover={onClick ? "hover" : ""}
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
-      style={{ 
-        perspective: '1000px',
-        transformStyle: 'preserve-3d',
-      }}
     >
       {CardContent}
     </motion.div>

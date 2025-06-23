@@ -51,7 +51,7 @@
 
 /* Navbar Base */
 .navbar {
-  background: rgba(var(--color-background-primary), 0.95);
+  background: rgba(var(--color-background-primary), 0.85);
   backdrop-filter: blur(20px);
   color: rgb(var(--color-text-primary));
   height: 70px;
@@ -60,13 +60,12 @@
   width: 100%;
   z-index: 50;
   transition: all 0.3s ease;
-  border-bottom: 1px solid rgba(var(--color-accent-primary), 0.1);
+  border-bottom: 1px solid rgba(var(--color-accent-primary), 0.4);
 }
 
 .navbar.scrolled {
-  background: rgba(var(--color-background-primary), 0.98);
-  box-shadow: 0 4px 20px rgba(var(--color-text-primary), 0.1);
-  border-bottom: 1px solid rgba(var(--color-accent-primary), 0.2);
+    background: rgba(var(--color-background-primary), 0.98);
+    box-shadow: 0 4px 20px rgba(var(--color-text-primary), 0.08);
 }
 
 .navbar-container {
@@ -110,9 +109,7 @@
 .page-title-container {
   display: flex;
   align-items: center;
-  border-left: 2px solid rgba(var(--color-accent-primary), 0.3);
-  padding-left: 2rem;
-  margin-left: 1rem;
+  margin-left: 0.1rem;
 }
 
 .page-title {
@@ -139,7 +136,7 @@
 .notification-btn, .settings-btn, .sidebar-toggle-btn, .theme-toggle-btn {
   background: transparent;
   border: none;
-  color: rgb(var(--color-text-secondary));
+  color: rgb(var(--color-text-primary));
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -164,7 +161,7 @@
 
 /* Theme Toggle Specific */
 .sun-icon {
-  color: #fbbf24;
+  color: #f3bf3cf1;
 }
 
 .moon-icon {
@@ -204,8 +201,8 @@
   width: 320px;
   background: rgb(var(--color-background-primary));
   border-radius: 12px;
-  box-shadow: 0 20px 40px rgba(var(--color-text-primary), 0.15);
-  border: 1px solid rgba(var(--color-accent-primary), 0.1);
+  box-shadow: 0 10px 40px rgba(var(--color-text-primary), 0.1);
+  border: 1px solid rgba(var(--color-accent-neutral), 0.1);
   z-index: 60;
   overflow: hidden;
 }
@@ -614,7 +611,7 @@
   .mobile-only {
     display: flex !important;
   }
-  
+
   .mobile-menu-btn {
     display: flex;
   }
@@ -654,7 +651,7 @@
 .sidebar-toggle-btn:focus,
 .theme-toggle-btn:focus,
 .user-info-btn:focus {
-  outline: 2px solid rgba(var(--color-accent-primary), 0.5);
+  outline: 1px solid rgba(var(--color-accent-primary), 0.5);
   outline-offset: 2px;
 }
 
@@ -667,7 +664,7 @@
   }
 }
 
-sidebar-toggle-btn .toggle-icon, .side-bar-icon {
+.sidebar-toggle-btn .toggle-icon, .side-bar-icon {
   display: inline-block;
   width: 0.5rem;
   height: 0.5rem;
@@ -683,32 +680,6 @@ sidebar-toggle-btn .toggle-icon, .side-bar-icon {
 
 /* Add this to your Navbar.css file */
 
-.brand-separator {
-  width: 1px;
-  height: 24px;
-  background: linear-gradient(
-    to bottom, 
-    transparent 0%, 
-    var(--text-secondary, #64748b) 20%, 
-    var(--text-secondary, #64748b) 80%, 
-    transparent 100%
-  );
-  margin: 0 16px;
-  opacity: 0.6;
-  transform-origin: center;
-  transition: all 0.3s ease;
-}
-
-/* Alternative solid separator */
-.brand-separator-solid {
-  width: 1px;
-  height: 20px;
-  background-color: var(--border-color, #e2e8f0);
-  margin: 0 16px;
-  opacity: 0.8;
-  border-radius: 0.5px;
-}
-
 /* Animated gradient separator */
 .brand-separator-gradient {
   width: 2px;
@@ -717,7 +688,7 @@ sidebar-toggle-btn .toggle-icon, .side-bar-icon {
     45deg,
     var(--primary-color, #3b82f6),
     var(--accent-color, #8b5cf6),
-    var(--primary-color, #3b82f6)
+    var(--primary-color, #ab3bf6)
   );
   background-size: 200% 200%;
   margin: 0 16px;
@@ -770,7 +741,7 @@ sidebar-toggle-btn .toggle-icon, .side-bar-icon {
 .brand-separator-pulse {
   width: 1px;
   height: 24px;
-  background: var(--text-secondary, #64748b);
+  background: var(--text-secondary, #ba52cf);
   margin: 0 16px;
   opacity: 0.6;
   animation: pulse 2s ease-in-out infinite;
@@ -784,5 +755,14 @@ sidebar-toggle-btn .toggle-icon, .side-bar-icon {
   50% {
     opacity: 1;
     transform: scaleY(1.2);
+  }
+}
+
+  @media (min-width: 769px) {
+  .desktop-only {
+    display: flex; /* Show the desktop toggle on larger screens */
+  }
+  .mobile-only {
+    display: none; /* Hide the mobile toggle on larger screens */
   }
 }

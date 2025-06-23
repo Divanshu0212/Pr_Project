@@ -1,120 +1,74 @@
-/* FeatureCard.css - Enhanced with new theme */
+/* === FEATURE CARD COMPONENT STYLES === */
 
 .feature-card {
+  /* .panel provides the base background, border, radius, and hover lift */
   position: relative;
-  padding: 2rem;
-  border-radius: 1rem;
   height: 100%;
   text-align: center;
-  background: rgb(var(--color-background-secondary));
-  border: 1px solid rgb(var(--color-accent-neutral) / 0.2);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 2rem;
   overflow: hidden;
+  /* Initial state for scroll animation */
   opacity: 0;
   animation: fade-in-up 0.8s ease-out forwards;
 }
 
-.feature-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, 
-    rgb(var(--color-accent-primary) / 0.3) 0%, 
-    transparent 50%, 
-    rgb(var(--color-accent-secondary) / 0.3) 100%
-  );
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.feature-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 
-    0 20px 40px rgb(var(--color-text-primary) / 0.1),
-    0 0 30px rgb(var(--color-accent-primary) / 0.15);
-}
-
-.feature-card:hover::before {
-  opacity: 1;
-}
-
+/* --- Effects --- */
 .feature-card-glow {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200%;
+  height: 150%;
   border-radius: inherit;
   background: radial-gradient(
     circle at 50% 0%, 
-    rgb(var(--color-accent-primary) / 0.1), 
-    transparent 60%
+    rgba(var(--color-accent-primary), 0.1), 
+    transparent 50%
   );
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.4s ease;
   pointer-events: none;
 }
-
 .feature-card:hover .feature-card-glow {
   opacity: 1;
 }
 
+/* --- Content --- */
 .feature-icon-wrapper {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 4rem;
-  height: 4rem;
-  margin-bottom: 1.5rem;
+  width: 4rem; /* 64px */
+  height: 4rem; /* 64px */
+  margin: 0 auto 1.5rem;
   border-radius: 1rem;
-  background: linear-gradient(135deg, 
-    rgb(var(--color-accent-primary)), 
-    rgb(var(--color-accent-secondary))
-  );
+  background: linear-gradient(135deg, rgb(var(--color-accent-primary)), rgb(var(--color-highlight)));
   color: white;
-  font-size: 1.5rem;
-  box-shadow: 0 8px 25px rgb(var(--color-accent-primary) / 0.4);
-  transition: all 0.3s ease;
+  font-size: 1.75rem;
+  box-shadow: 0 8px 25px rgba(var(--color-accent-primary), 0.3);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
 .feature-card:hover .feature-icon-wrapper {
   transform: scale(1.1) rotate(5deg);
-  box-shadow: 0 12px 35px rgb(var(--color-accent-primary) / 0.6);
+  box-shadow: 0 12px 35px rgba(var(--color-accent-primary), 0.4);
 }
-
-.feature-content {
-  position: relative;
-  z-index: 2;
-}
-
 .feature-title {
   font-size: 1.25rem;
   font-weight: 700;
   color: rgb(var(--color-text-primary));
   margin-bottom: 0.75rem;
-  background: linear-gradient(135deg, 
-    rgb(var(--color-text-primary)), 
-    rgb(var(--color-accent-primary))
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  transition: all 0.3s ease;
+  transition: color 0.3s ease;
 }
-
 .feature-card:hover .feature-title {
-  transform: translateY(-2px);
+  color: rgb(var(--color-accent-primary));
 }
-
 .feature-description {
   color: rgb(var(--color-text-secondary));
   line-height: 1.6;
   margin-bottom: 1.5rem;
-  font-size: 0.95rem;
 }
-
 .feature-link {
   display: inline-flex;
   align-items: center;
@@ -123,95 +77,42 @@
   color: rgb(var(--color-accent-primary));
   text-decoration: none;
   transition: all 0.3s ease;
-  font-size: 0.9rem;
 }
-
 .feature-link:hover {
-  color: rgb(var(--color-accent-secondary));
+  color: rgb(var(--color-highlight));
   transform: translateX(4px);
 }
-
 .feature-link-arrow {
   transition: transform 0.3s ease;
 }
 
-.feature-link:hover .feature-link-arrow {
-  transform: translateX(4px);
-}
-
-/* Special variant with gradient background */
-.feature-card-special {
-  background: linear-gradient(145deg, 
-    rgb(var(--color-accent-primary) / 0.9), 
-    rgb(var(--color-accent-secondary) / 0.9)
-  );
+/* --- Special Variant --- */
+.feature-card.is-special {
+  background: linear-gradient(145deg, rgb(var(--color-accent-primary)), rgb(var(--color-highlight)));
   color: white;
   border-color: transparent;
 }
-
-.feature-card-special .feature-title {
+.feature-card.is-special .feature-title,
+.feature-card.is-special .feature-link {
   color: white;
-  background: linear-gradient(135deg, white, rgba(255, 255, 255, 0.8));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
-
-.feature-card-special .feature-description {
+.feature-card.is-special .feature-description {
   color: rgba(255, 255, 255, 0.9);
 }
-
-.feature-card-special .feature-link {
-  color: white;
-}
-
-.feature-card-special .feature-link:hover {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.feature-card-special .feature-icon-wrapper {
-  background: rgba(255, 255, 255, 0.2);
+.feature-card.is-special .feature-icon-wrapper {
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+}
+.feature-card.is-special .feature-card-glow {
+  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.1), transparent 60%);
 }
 
-.feature-card-special .feature-card-glow {
-  background: radial-gradient(
-    circle at 50% 0%, 
-    rgba(255, 255, 255, 0.1), 
-    transparent 60%
-  );
-}
-
-/* Intersection Observer animation trigger */
-.feature-card.animate-in {
-  animation: fade-in-up 0.8s ease-out forwards;
-}
-
-/* Keyframe animations */
+/* --- Keyframes --- */
 @keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .feature-card {
-    padding: 1.5rem;
-  }
-  
-  .feature-icon-wrapper {
-    width: 3rem;
-    height: 3rem;
-    font-size: 1.25rem;
-  }
-  
-  .feature-title {
-    font-size: 1.125rem;
   }
 }

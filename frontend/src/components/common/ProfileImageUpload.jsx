@@ -5,7 +5,6 @@ import './ProfileImageUpload.css';
 
 const ProfileImageUpload = ({ onImageChange, initialImage = '' }) => {
   const [preview, setPreview] = useState(initialImage);
-  const [isHovered, setIsHovered] = useState(false);
   const fileInputRef = useRef(null);
   
   const handleImageClick = () => {
@@ -18,19 +17,20 @@ const ProfileImageUpload = ({ onImageChange, initialImage = '' }) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result);
+        onImageChange({ file, previewUrl: URL.createObjectURL(file) });
       };
       reader.readAsDataURL(file);
-      onImageChange({ file, previewUrl: URL.createObjectURL(file) });
     }
   };
 
   return (
     <div className="profile-image-upload">
       <div 
-        className={`image-preview-wrapper ${isHovered ? 'hovered' : ''}`}
+        className="image-preview-wrapper"
         onClick={handleImageClick}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        role="button"
+        tabIndex="0"
+        onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleImageClick()}
       >
         <div className="gradient-border">
           <div className="image-container">
@@ -46,10 +46,8 @@ const ProfileImageUpload = ({ onImageChange, initialImage = '' }) => {
                   <FiUploadCloud className="placeholder-icon" />
                 </div>
                 <span className="placeholder-text">Upload Photo</span>
-                <span className="placeholder-subtext">Click to browse</span>
               </div>
             )}
-            
             <div className="upload-overlay">
               <div className="upload-content">
                 <FiCamera className="upload-icon" />
@@ -67,6 +65,7 @@ const ProfileImageUpload = ({ onImageChange, initialImage = '' }) => {
         accept="image/*"
         id="profileImage"
         className="hidden-file-input"
+        aria-hidden="true"
       />
     </div>
   );

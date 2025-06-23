@@ -11,8 +11,12 @@ const Form = ({
   placeholder = '',
   error = '',
   required = false,
-  disabled = false
+  disabled = false,
+  as = 'input', // New prop to specify element type
+  ...props // Pass down other props like rows for textarea
 }) => {
+  const InputElement = as; // Use 'as' prop to render input or textarea
+
   return (
     <div className="input-wrapper">
       {label && (
@@ -22,34 +26,31 @@ const Form = ({
         </label>
       )}
       <div className="input-container">
-        <input
+        <InputElement
           type={type}
           id={name}
           name={name}
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className={`input ${error ? 'input-error' : ''}`}
+          className={`input ${error ? 'is-error' : ''}`}
           disabled={disabled}
           required={required}
+          {...props}
         />
         <div className="input-focus-ring"></div>
       </div>
       {error && (
-        <div className="input-error-message">
-          <svg className="input-error-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="2"/>
-            <path d="M8 4v4M8 12h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
+        <p className="input-error-message">
           {error}
-        </div>
+        </p>
       )}
     </div>
   );
 };
 
 Form.propTypes = {
-  type: PropTypes.oneOf(['text', 'password', 'email', 'number', 'date', 'checkbox', 'radio']).isRequired,
+  type: PropTypes.string.isRequired,
   label: PropTypes.string,
   name: PropTypes.string.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.bool]),
@@ -58,6 +59,7 @@ Form.propTypes = {
   error: PropTypes.string,
   required: PropTypes.bool,
   disabled: PropTypes.bool,
+  as: PropTypes.oneOf(['input', 'textarea']),
 };
 
 export default Form;

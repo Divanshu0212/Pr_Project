@@ -1,286 +1,136 @@
-/* src/components/common/Button.css - Enhanced with New Theme & Animations */
+/* === BUTTON COMPONENT STYLES (ENHANCED & RESTORED) === */
 
+/* --- Base Styles --- */
 .button {
-  @apply relative inline-flex items-center justify-center select-none;
-  @apply font-semibold tracking-wide rounded-lg;
-  @apply transition-all duration-400 ease-smooth;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font-weight: 600;
   border: 1px solid transparent;
   cursor: pointer;
-  outline: none;
+  user-select: none;
   overflow: hidden;
-  will-change: transform;
-  position: relative;
-}
-
-/* Scroll-triggered fade-in animation */
-.button {
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Scroll-triggered animation state */
   opacity: 0;
-  transform: translateY(20px);
-  animation: fade-in-up 0.6s ease-out forwards;
+  transform: translateY(15px);
+  will-change: transform, box-shadow;
 }
-
-.button:disabled {
-  @apply opacity-50 cursor-not-allowed;
-  transform: none !important;
-}
-
-/* Enhanced content with text animations */
-.button-content {
-  @apply relative z-10 flex items-center gap-2;
-  transition: all 0.3s ease-smooth;
-}
-
-/* Dope text effect - gradient text on hover */
-.button-primary .button-content {
-  background: linear-gradient(45deg, #ffffff, #f0f8ff);
-  background-clip: text;
-  -webkit-background-clip: text;
-  transition: all 0.3s ease;
-}
-
-.button-secondary .button-content,
-.button-ghost .button-content {
-  background: linear-gradient(45deg, rgb(var(--color-text-primary)), rgb(var(--color-accent-primary)));
-  background-size: 200% 200%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  transition: all 0.4s ease;
-}
-
-.button-secondary:hover:not(:disabled) .button-content,
-.button-ghost:hover:not(:disabled) .button-content {
-  background-position: 100% 0;
-  transform: scale(1.02);
-}
-
-/* Enhanced shine effect */
-.button-shine {
-  @apply absolute inset-0 pointer-events-none z-20;
-  opacity: 0;
-  transition: opacity 0.4s ease-smooth;
-  border-radius: inherit;
-}
-
-.button-shine-enabled:hover:not(:disabled) .button-shine {
+.button.animate-in {
   opacity: 1;
+  transform: translateY(0);
 }
-
-/* Floating animation for primary buttons */
-.button-primary {
-  animation: float 6s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-2px); }
-}
-
-/*
-  ==========================================
-  PRIMARY VARIANT - The Gradient Hero
-  ==========================================
-*/
-.button-primary {
-  color: white;
-  background: linear-gradient(135deg, rgb(var(--color-accent-primary)), rgb(var(--color-accent-secondary)));
-  background-size: 200% auto;
-  box-shadow: 0 4px 20px -5px rgb(var(--color-accent-primary) / 0.4);
+.button-content {
   position: relative;
+  z-index: 1;
+  display: inherit;
+  align-items: inherit;
+  gap: 0.5rem; /* 8px */
 }
 
-.button-primary::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, rgb(var(--color-accent-primary)), rgb(var(--color-accent-secondary)));
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: xor;
-  -webkit-mask-composite: xor;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+/* --- Variants --- */
+/* 1. Primary Button (Gradient Hero) */
+.button-primary {
+  color: #ffffff;
+  background: linear-gradient(135deg, rgb(var(--color-accent-primary)), rgb(var(--color-highlight)));
+  background-size: 200% auto;
+  box-shadow: 0 4px 15px -5px rgba(var(--color-accent-primary), 0.4);
+  animation: button-float 6s ease-in-out infinite; /* Restored floating animation */
 }
-
 .button-primary:hover:not(:disabled) {
   background-position: right center;
   transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 12px 30px -8px rgb(var(--color-accent-secondary) / 0.6);
+  box-shadow: 0 12px 30px -8px rgba(var(--color-highlight), 0.5);
 }
 
-.button-primary:hover:not(:disabled)::before {
-  opacity: 1;
-}
-
-.button-primary:active:not(:disabled) {
-  transform: translateY(-2px) scale(1.01);
-  box-shadow: 0 6px 20px -5px rgb(var(--color-accent-primary) / 0.5);
-}
-
-/*
-  ==========================================
-  SECONDARY VARIANT - The Polished Outline
-  ==========================================
-*/
+/* 2. Secondary Button (Polished Outline) */
 .button-secondary {
+  color: rgb(var(--color-text-primary));
   background-color: rgb(var(--color-background-secondary));
-  border: 1px solid rgb(var(--color-accent-neutral));
-  position: relative;
-  overflow: hidden;
+  border-color: rgb(var(--color-accent-neutral));
 }
-
-.button-secondary::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgb(var(--color-accent-primary) / 0.1), rgb(var(--color-accent-secondary) / 0.1));
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
 .button-secondary:hover:not(:disabled) {
+  color: rgb(var(--color-accent-primary));
   border-color: rgb(var(--color-accent-primary));
+  background-color: rgba(var(--color-accent-primary), 0.05);
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px -8px rgb(var(--color-accent-primary) / 0.2);
 }
 
-.button-secondary:hover:not(:disabled)::before {
-  opacity: 1;
-}
-
-/*
-  ==========================================
-  GHOST VARIANT - The Subtle Interaction
-  ==========================================
-*/
+/* 3. Ghost Button (Subtle Text) */
 .button-ghost {
-  background: transparent;
-  border: 1px solid transparent;
-  position: relative;
+  color: rgb(var(--color-text-primary));
+  background-color: transparent;
+}
+.button-ghost:hover:not(:disabled) {
+  color: rgb(var(--color-accent-primary));
+  background-color: rgba(var(--color-accent-primary), 0.1);
 }
 
-.button-ghost::after {
-  content: '';
+/* --- Sizes --- */
+.button-small {
+  font-size: 0.875rem; /* 14px */
+  padding: 0.5rem 1rem; /* 8px 16px */
+  border-radius: 0.5rem; /* 8px */
+}
+.button-medium {
+  font-size: 1rem; /* 16px */
+  padding: 0.625rem 1.25rem; /* 10px 20px */
+  border-radius: 0.625rem; /* 10px */
+}
+.button-large {
+  font-size: 1.125rem; /* 18px */
+  padding: 0.75rem 1.5rem; /* 12px 24px */
+  border-radius: 0.75rem; /* 12px */
+}
+
+/* --- States & Modifiers --- */
+.button-full-width {
+  width: 100%;
+}
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+  animation: none !important;
+}
+.button-shine {
   position: absolute;
   inset: 0;
-  background: rgb(var(--color-accent-neutral) / 0.1);
+  z-index: 2;
   border-radius: inherit;
-  opacity: 0;
-  transition: opacity 0.3s ease-smooth;
+  transition: background 0.1s ease-out;
+}
+.button-icon > svg {
+  width: 1.25em;
+  height: 1.25em;
 }
 
-.button-ghost:hover:not(:disabled)::after {
-  opacity: 1;
-}
-
-.button-ghost:hover:not(:disabled) {
-  transform: translateY(-2px);
-}
-
-/*
-  ==========================================
-  SIZES WITH ENHANCED SPACING
-  ==========================================
-*/
-.button-small { 
-  @apply text-sm py-2 px-4 rounded-lg;
-  font-weight: 600;
-}
-
-.button-medium { 
-  @apply text-base py-3 px-6 rounded-xl;
-  font-weight: 600;
-}
-
-.button-large { 
-  @apply text-lg py-4 px-8 rounded-2xl;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-}
-
-/*
-  ==========================================
-  ENHANCED STATES
-  ==========================================
-*/
-.button-full-width { 
-  @apply w-full; 
-}
-
-.button-icon {
-  @apply flex items-center;
-}
-
-.button-icon > svg { 
-  @apply w-5 h-5;
-  transition: transform 0.3s ease-smooth;
-}
-
-.button:hover:not(:disabled) .button-icon > svg {
-  transform: rotate(5deg) scale(1.1);
-}
-
-/* Enhanced Loading State with Pulse Effect */
-.button-loading .button-content {
+/* Loading State */
+.button.is-loading .button-content {
   opacity: 0;
 }
-
 .button-loader {
-  @apply absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2;
-  width: 20px;
-  height: 20px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: -0.625rem 0 0 -0.625rem;
   border: 2px solid currentColor;
   border-bottom-color: transparent;
   border-radius: 50%;
-  animation: button-spin 0.8s linear infinite, pulse-glow 2s ease-in-out infinite;
+  animation: button-spin 0.8s linear infinite;
 }
 
+/* --- Restored Animations --- */
 @keyframes button-spin {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to { transform: translate(-50%, -50%) rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
-
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 5px currentColor; }
-  50% { box-shadow: 0 0 20px currentColor; }
-}
-
-/* Enhanced Focus State */
-.button:focus-visible {
-  outline: 2px solid rgb(var(--color-accent-primary));
-  outline-offset: 3px;
-  box-shadow: 0 0 0 4px rgb(var(--color-accent-primary) / 0.2);
-}
-
-/* Text shimmer effect for primary buttons */
-.button-primary .button-content {
-  background: linear-gradient(90deg, #ffffff 0%, #f0f8ff 25%, #ffffff 50%, #f0f8ff 75%, #ffffff 100%);
-  background-size: 200% 100%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  animation: shimmer 3s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-/* Stagger animation delays for multiple buttons */
-.button:nth-child(1) { animation-delay: 0s; }
-.button:nth-child(2) { animation-delay: 0.1s; }
-.button:nth-child(3) { animation-delay: 0.2s; }
-.button:nth-child(4) { animation-delay: 0.3s; }
-.button:nth-child(5) { animation-delay: 0.4s; }
-
-/* Responsive enhancements */
-@media (max-width: 768px) {
-  .button {
-    min-height: 44px; /* Better touch targets */
-  }
-  
-  .button-large {
-    @apply py-3 px-6 text-base;
-  }
+@keyframes button-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-4px); }
 }
