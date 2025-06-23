@@ -428,6 +428,31 @@ const getSidebarIcon = () => {
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Link to="/signup" className="signup-btn gradient-bg">Sign Up</Link>
                 </motion.div>
+                  <motion.button
+                onClick={toggleTheme}
+                className="theme-toggle-btn "
+                aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                 whileHover={{ scale: 1.15, rotate: 360 }} 
+                whileTap={{ scale: 0.85 }}
+                title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              >
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.div
+                    key={theme === 'dark' ? 'sun' : 'moon'}
+                    initial={{ y: -20, opacity: 0, rotate: -180 }}
+                    animate={{ y: 0, opacity: 1, rotate: 0 }}
+                    exit={{ y: 20, opacity: 0, rotate: 180 }}
+                    transition={{ duration: 0.3 }}
+                    className="theme-icon-wrapper"
+                  >
+                    {theme === 'dark' ? (
+                      <FiSun className="theme-icon sun-icon" />
+                    ) : (
+                      <FiMoon className="theme-icon moon-icon" />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </motion.button>
               </motion.div>
             )}
           </div>

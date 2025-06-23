@@ -2,12 +2,14 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaGoogle, FaGithub, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuth } from "../../hooks/useAuth";
+import { useTheme } from '../../context/ThemeContext';
 import "../../styles/Auth.css";
+
 
 const Login = () => {
   const navigate = useNavigate();
   const { login, signInWithGoogle, signInWithGithub, isAuthenticated, error: authError } = useAuth();
-
+ const { theme } = useTheme();
   const [messageIndex, setMessageIndex] = useState(0);
   const [formData, setFormData] = useState({
     email: "",
@@ -135,7 +137,7 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-wrapper">
+    <div className={'auth-wrapper ${theme}'}>
       {/* Left Section - Branding & Messaging */}
       <div className="left-section">
         {/* Decorative Elements */}
@@ -145,7 +147,7 @@ const Login = () => {
         </div>
 
         {/* Logo Placeholder */}
-        <div className="brand-logo z-10 mb-12 animate-float">
+        <div className="brand-logo z-10 mb-12 ">
           <div className="animate-glow bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] bg-clip-text text-5xl font-bold text-transparent">
             ResumeBuilder
           </div>
