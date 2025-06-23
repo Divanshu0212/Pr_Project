@@ -1,4 +1,4 @@
-/* Form.css - Enhanced with new theme */
+/* === FORM INPUT COMPONENT STYLES === */
 
 .input-wrapper {
   display: flex;
@@ -12,154 +12,84 @@
   font-size: 0.875rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  letter-spacing: 0.025em;
-  transition: color 0.2s ease;
 }
-
 .input-required {
   color: rgb(var(--color-accent-error));
   margin-left: 0.25rem;
-  font-weight: 700;
 }
 
 .input-container {
   position: relative;
 }
-
-.input {
+.input,
+textarea.input { /* Style for textarea as well */
   width: 100%;
   background: rgb(var(--color-background-secondary));
-  border: 1px solid rgb(var(--color-accent-neutral) / 0.3);
+  border: 1px solid rgb(var(--color-accent-neutral));
   border-radius: 0.75rem;
   color: rgb(var(--color-text-primary));
   font-size: 1rem;
   padding: 0.875rem 1rem;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease-out;
   font-family: inherit;
   position: relative;
   z-index: 2;
 }
+textarea.input {
+  min-height: 120px;
+  resize: vertical;
+}
 
 .input::placeholder {
   color: rgb(var(--color-text-placeholder));
-  opacity: 0.7;
 }
 
 .input-focus-ring {
   position: absolute;
-  inset: 0;
+  inset: -1px; /* Cover the border */
   border-radius: inherit;
-  background: linear-gradient(135deg, 
-    rgb(var(--color-accent-primary) / 0.2), 
-    rgb(var(--color-accent-secondary) / 0.2)
-  );
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: 1;
+  border: 2px solid transparent;
+  pointer-events: none;
+  z-index: 3;
+  transition: border-color 0.2s ease-out;
 }
-
-.input:focus {
+.input:focus-visible {
   outline: none;
   border-color: rgb(var(--color-accent-primary));
-  transform: translateY(-1px);
-  box-shadow: 
-    0 0 0 3px rgb(var(--color-accent-primary) / 0.1),
-    0 8px 25px rgb(var(--color-accent-primary) / 0.15);
+}
+.input:focus-visible + .input-focus-ring {
+  border-color: rgb(var(--color-accent-primary));
 }
 
-.input:focus + .input-focus-ring {
-  opacity: 1;
+.input:hover:not(:disabled):not(:focus-visible) {
+  border-color: rgba(var(--color-accent-primary), 0.5);
 }
-
-.input:hover:not(:disabled):not(:focus) {
-  border-color: rgb(var(--color-accent-primary) / 0.5);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgb(var(--color-text-primary) / 0.1);
-}
-
 .input:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
-  background: rgb(var(--color-background-primary));
-  transform: none !important;
+  background-color: rgb(var(--color-accent-neutral));
 }
 
-.input-error {
+/* --- Error State --- */
+.input.is-error {
   border-color: rgb(var(--color-accent-error));
-  background: rgb(var(--color-accent-error) / 0.05);
-  animation: shake 0.5s ease-in-out;
+  animation: shake 0.4s ease-in-out;
 }
-
-.input-error:focus {
+.input.is-error:focus-visible {
   border-color: rgb(var(--color-accent-error));
-  box-shadow: 
-    0 0 0 3px rgb(var(--color-accent-error) / 0.1),
-    0 8px 25px rgb(var(--color-accent-error) / 0.15);
 }
-
-.input-error + .input-focus-ring {
-  background: linear-gradient(135deg, 
-    rgb(var(--color-accent-error) / 0.1), 
-    rgb(var(--color-accent-error) / 0.1)
-  );
+.input.is-error:focus-visible + .input-focus-ring {
+  border-color: rgb(var(--color-accent-error));
 }
-
 .input-error-message {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
   color: rgb(var(--color-accent-error));
   font-size: 0.875rem;
   margin-top: 0.5rem;
   font-weight: 500;
-  animation: fade-in-up 0.3s ease;
 }
 
-.input-error-icon {
-  flex-shrink: 0;
-  width: 16px;
-  height: 16px;
-}
-
-/* Animations */
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-4px); }
   75% { transform: translateX(4px); }
-}
-
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Enhanced focus styles for better accessibility */
-.input:focus-visible {
-  outline: 2px solid rgb(var(--color-accent-primary));
-  outline-offset: 2px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 640px) {
-  .input {
-    padding: 0.75rem 0.875rem;
-    font-size: 0.95rem;
-  }
-  
-  .input-wrapper {
-    margin-bottom: 1.25rem;
-  }
-}
-
-/* Dark mode specific adjustments */
-@media (prefers-color-scheme: dark) {
-  .input {
-    box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.1);
-  }
 }

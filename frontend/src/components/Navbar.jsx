@@ -5,32 +5,20 @@ import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
+
+
 import { 
-  FiMenu, FiX, FiUser, FiLogOut, FiBell, FiSettings, FiChevronDown, 
-  FiInfo, FiHelpCircle, FiFolder, FiFileText, FiTarget, FiGrid,
-  FiSun, FiMoon, FiStar, FiBookmark, FiTrendingUp, FiSidebar,
-  FiChevronRight, FiChevronLeft  // Add these
+  FiMenu, FiX, FiUser, FiLogOut, FiBell, FiChevronDown, 
+  FiInfo, FiHelpCircle, FiTarget,  FiSun, FiMoon,   FiChevronRight, FiChevronLeft  // Add these
 } from 'react-icons/fi';
 import { 
-  HiSparkles, HiLightningBolt, HiColorSwatch, HiViewGrid,
-  HiDocumentText, HiCollection, HiUserGroup, HiCog, HiTrendingUp,
-  HiMenuAlt3, HiOutlineMenuAlt2, HiViewList, HiOutlineViewList
-} from 'react-icons/hi';
-import { 
-  RiSideBarLine, RiSideBarFill, RiMenuFoldLine, RiMenuUnfoldLine,
-  RiLayoutLeft2Line, RiLayoutLeftLine 
-} from 'react-icons/ri';
-import { 
-  MdDashboard, MdDashboardCustomize, MdMenuOpen, MdMenu,
-  MdKeyboardArrowLeft, MdKeyboardArrowRight 
-} from 'react-icons/md';
-import { 
-  BsLayoutSidebar, BsLayoutSidebarInset, BsChevronDoubleLeft, 
-  BsChevronDoubleRight, BsArrowBarLeft, BsArrowBarRight 
-} from 'react-icons/bs';
+  HiSparkles, HiLightningBolt,  HiViewGrid,
+  HiDocumentText, HiCollection,  HiCog, HiTrendingUp,
+  HiMenuAlt3,} from 'react-icons/hi';
+import {  RiMenuFoldLine, RiMenuUnfoldLine,} from 'react-icons/ri';
+
 
 import './Navbar.css';
-
 const dropdownVariants = {
   hidden: { opacity: 0, y: -10, scale: 0.95 },
   visible: { 
@@ -215,7 +203,7 @@ const getSidebarIcon = () => {
            {/* Add the vertical separator */}
             {isAuthenticated && (
               <motion.div 
-                className="brand-separator"
+                className="brand-separator-gradient"
                 initial={{ opacity: 0, scaleY: 0 }}
                 animate={{ opacity: 1, scaleY: 1 }}
                 transition={{ duration: 0.4, delay: 0.1 }}
@@ -514,9 +502,6 @@ const getSidebarIcon = () => {
                 {[
                   { to: '/home', icon: HiViewGrid, label: 'Dashboard', delay: 0.15 },
                   { to: '/profile', icon: FiUser, label: 'Profile', delay: 0.2 },
-                  { to: '/portfolioHome', icon: HiCollection, label: 'Portfolio', delay: 0.25 },
-                  { to: '/resume-builder-home', icon: HiDocumentText, label: 'Resume', delay: 0.3 },
-                  { to: '/ats/home', icon: FiTarget, label: 'ATS', delay: 0.35 },
                   { to: '/settings', icon: HiCog, label: 'Settings', delay: 0.4 },
                   { to: '/help', icon: FiHelpCircle, label: 'Help', delay: 0.45 }
                 ].map((item) => (

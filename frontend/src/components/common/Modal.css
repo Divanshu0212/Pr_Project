@@ -1,62 +1,43 @@
-/* Modal.css - Enhanced with new theme */
+/* === MODAL COMPONENT STYLES === */
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-  width: 100%;
-  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
   padding: 1rem;
-  background: rgb(var(--color-background-primary) / 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(var(--color-background-primary), 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   animation: modal-fade-in 0.3s ease-out;
 }
 
 .modal-container {
+  /* .panel class from global.css provides base styles */
   position: relative;
   width: 100%;
-  max-width: 32rem;
-  border-radius: 1.5rem;
-  background: rgb(var(--color-background-secondary));
-  border: 1px solid rgb(var(--color-accent-neutral) / 0.3);
-  box-shadow: 
-    0 25px 50px -12px rgb(var(--color-text-primary) / 0.25),
-    0 0 40px rgb(var(--color-accent-primary) / 0.1);
+  max-width: 36rem; /* 576px */
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
   overflow: hidden;
   animation: modal-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.modal-container::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: linear-gradient(135deg, 
-    rgb(var(--color-accent-primary) / 0.3) 0%, 
-    transparent 50%, 
-    rgb(var(--color-accent-secondary) / 0.3) 100%
-  );
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  opacity: 0.8;
-}
-
 .modal-glow {
   position: absolute;
-  inset: -20px;
-  border-radius: inherit;
+  top: 0;
+  left: 50%;
+  width: 150%;
+  height: 100%;
+  transform: translateX(-50%);
   background: radial-gradient(
     circle at 50% 0%, 
-    rgb(var(--color-accent-primary) / 0.15), 
+    rgba(var(--color-accent-primary), 0.1), 
     transparent 60%
   );
-  filter: blur(20px);
-  opacity: 0.6;
   pointer-events: none;
 }
 
@@ -64,147 +45,62 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem;
-  border-bottom: 1px solid rgb(var(--color-accent-neutral) / 0.2);
-  background: rgb(var(--color-background-primary) / 0.3);
-  backdrop-filter: blur(10px);
-  position: relative;
-  z-index: 2;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgb(var(--color-accent-neutral));
+  flex-shrink: 0;
 }
 
 .modal-title {
   font-size: 1.25rem;
   font-weight: 700;
   color: rgb(var(--color-text-primary));
-  background: linear-gradient(135deg, 
-    rgb(var(--color-text-primary)), 
-    rgb(var(--color-accent-primary))
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin: 0;
 }
 
 .modal-close-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.25rem;
+  height: 2.25rem;
   padding: 0;
   border: none;
-  border-radius: 0.75rem;
-  background: rgb(var(--color-background-primary) / 0.5);
+  border-radius: 0.5rem;
+  background: transparent;
   color: rgb(var(--color-text-secondary));
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  font-size: 1.25rem;
+  transition: all 0.2s ease;
+  font-size: 1.5rem;
 }
 
 .modal-close-btn:hover {
-  background: rgb(var(--color-accent-error) / 0.1);
+  background: rgba(var(--color-accent-error), 0.1);
   color: rgb(var(--color-accent-error));
-  transform: scale(1.1) rotate(90deg);
-  box-shadow: 0 4px 12px rgb(var(--color-accent-error) / 0.2);
-}
-
-.modal-close-btn:active {
-  transform: scale(0.95) rotate(90deg);
+  transform: rotate(90deg);
 }
 
 .modal-content {
   padding: 1.5rem;
-  max-height: 70vh;
   overflow-y: auto;
-  position: relative;
-  z-index: 2;
+  /* Custom scrollbar to match theme */
   scrollbar-width: thin;
-  scrollbar-color: rgb(var(--color-accent-primary) / 0.3) transparent;
+  scrollbar-color: rgb(var(--color-accent-neutral)) transparent;
 }
-
 .modal-content::-webkit-scrollbar {
   width: 6px;
 }
-
 .modal-content::-webkit-scrollbar-track {
   background: transparent;
 }
-
 .modal-content::-webkit-scrollbar-thumb {
-  background: rgb(var(--color-accent-primary) / 0.3);
+  background-color: rgb(var(--color-accent-neutral));
   border-radius: 3px;
 }
 
-.modal-content::-webkit-scrollbar-thumb:hover {
-  background: rgb(var(--color-accent-primary) / 0.5);
-}
-
-/* Animations */
 @keyframes modal-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-
 @keyframes modal-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Enhanced focus styles for accessibility */
-.modal-close-btn:focus-visible {
-  outline: 2px solid rgb(var(--color-accent-primary));
-  outline-offset: 2px;
-}
-
-/* Responsive design */
-@media (max-width: 640px) {
-  .modal-overlay {
-    padding: 0.5rem;
-  }
-  
-  .modal-container {
-    max-width: 100%;
-    margin: 0.5rem;
-    border-radius: 1rem;
-  }
-  
-  .modal-header {
-    padding: 1rem;
-  }
-  
-  .modal-content {
-    padding: 1rem;
-    max-height: 80vh;
-  }
-  
-  .modal-title {
-    font-size: 1.125rem;
-  }
-}
-
-/* Reduced motion preference */
-@media (prefers-reduced-motion: reduce) {
-  .modal-overlay,
-  .modal-container {
-    animation: none;
-  }
-  
-  .modal-close-btn {
-    transition: none;
-  }
-  
-  .modal-close-btn:hover {
-    transform: none;
-  }
+  from { opacity: 0; transform: translateY(20px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
