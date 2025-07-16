@@ -187,12 +187,12 @@ const LandingPage = ({ user }) => {
               <pre>
                 <code className="animated-code">
                   <span className="keyword">const</span> <span className="variable">developer</span> = {'{'}<br />
-                    <span className="property">name</span>: <span className="string">"Your Name"</span>,<br />
-                    <span className="property">skills</span>: [<span className="string">"React"</span>, <span className="string">"Node.js"</span>, <span className="string">"AI"</span>],<br />
-                    <span className="property">projects</span>: [...<span className="comment">amazing_work</span>],<br />
-                    <span className="property">experience</span>: [...<span className="comment">career_growth</span>],<br />
-                    <span className="property">success</span>: <span className="boolean">true</span>,<br />
-                    <span className="comment">// Let DevPortfolio handle the magic ✨</span><br />
+                  <span className="property">name</span>: <span className="string">"Your Name"</span>,<br />
+                  <span className="property">skills</span>: [<span className="string">"React"</span>, <span className="string">"Node.js"</span>, <span className="string">"AI"</span>],<br />
+                  <span className="property">projects</span>: [...<span className="comment">amazing_work</span>],<br />
+                  <span className="property">experience</span>: [...<span className="comment">career_growth</span>],<br />
+                  <span className="property">success</span>: <span className="boolean">true</span>,<br />
+                  <span className="comment"> Let DevPortfolio handle the magic ✨</span><br />
                   {'}'}
                 </code>
               </pre>
