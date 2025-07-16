@@ -13,9 +13,7 @@ const Home = () => {
   const navigate = useNavigate();
   const { currentUser } = useContext(AuthContext);
   const { theme: currentTheme } = useContext(ThemeContext); // Renamed to avoid conflict with useTheme hook
-  const [greeting, setGreeting] = useState(`Welcome back, ${currentUser?.displayName || 'Developer'}!`);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [greeting, setGreeting] = useState(`Welcome back, ${currentUser?.displayName || 'Developer'}!`);  const [activeTab, setActiveTab] = useState('overview');
   const [animate, setAnimate] = useState(false);
 
   // === COMPONENT INITIALIZATION EDITS ===
