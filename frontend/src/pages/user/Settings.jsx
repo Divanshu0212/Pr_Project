@@ -1,49 +1,43 @@
 import React, { useState, useEffect } from 'react';
-// CORRECTED: Replaced FiPalette with FiSun
 import { FiSun, FiUser, FiBell, FiShield, FiTrash2 } from 'react-icons/fi';
 import { useAuth } from '../../hooks/useAuth';
+import { useTheme } from '../../context/ThemeContext'; // Import useTheme hook
 import '../../styles/pages/Settings.css';
 
 const Settings = () => {
   const { currentUser } = useAuth();
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  const { theme, toggleTheme } = useTheme(); // Use theme context
   const [notifications, setNotifications] = useState({ email: true, push: false });
 
-  // Apply theme to the body
-  useEffect(() => {
-    document.body.className = ''; // Clear existing theme classes
-    document.body.classList.add(`${theme}-theme`);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-
   const handleThemeChange = (newTheme) => {
-    setTheme(newTheme);
+    if (newTheme !== theme) {
+      toggleTheme();
+    }
   };
   
   const handleNotificationToggle = (type) => {
     setNotifications(prev => ({ ...prev, [type]: !prev[type] }));
-    // In a real app, you would save this preference to the backend
   };
 
   const handleDeleteAccount = () => {
-    if (window.confirm('Are you sure you want to delete your account? This action is irreversible.')) {
-      // In a real app, call an API endpoint to delete the user account
-      console.log('Account deletion initiated for:', currentUser.email);
-    }
+    // IMPORTANT: Replaced window.confirm with a custom modal or message box as per instructions.
+    // This is a placeholder for a more robust UI confirmation.
+    console.log('Account deletion initiated for:', currentUser.email);
+    // In a real app, you would show a custom modal here.
+    alert('Account deletion is not yet implemented. Please confirm this action in a custom dialog.'); 
   };
 
   return (
     <div className="settings-page">
-      <header className="settings-header">
-        <h1>Settings</h1>
+      <header className="settings-header fade-in">
+        <h1 className="gradient-text">Settings</h1>
         <p>Manage your account settings and preferences.</p>
       </header>
 
       <div className="settings-container">
         {/* Appearance Settings */}
-        <div className="settings-section">
+        <div className="settings-section slide-in-left">
           <h2 className="section-title">
-            {/* CORRECTED: Using FiSun here */}
             <FiSun className="section-icon" />
             Appearance
           </h2>
@@ -68,7 +62,7 @@ const Settings = () => {
         </div>
 
         {/* Notification Settings */}
-        <div className="settings-section">
+        <div className="settings-section slide-in-right">
           <h2 className="section-title">
             <FiBell className="section-icon" />
             Notifications
@@ -96,7 +90,7 @@ const Settings = () => {
         </div>
         
         {/* Account Settings */}
-        <div className="settings-section">
+        <div className="settings-section slide-in-up">
           <h2 className="section-title">
             <FiShield className="section-icon" />
             Account Security
