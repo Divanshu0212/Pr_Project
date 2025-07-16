@@ -1,162 +1,492 @@
+/* src/styles/Profile.css - Clean and Professional Look */
+
+/* Base Page Layout */
 .profile-page {
-  max-width: 900px;
-  margin: 2rem auto;
-  padding: 1rem 2rem;
-  color: var(--text-primary);
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem; /* Consistent padding */
+  color: rgb(var(--color-text-primary));
+  min-height: 100vh;
+  /* Removed radial gradients for a cleaner background */
+  background-color: rgb(var(--color-background-primary));
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; /* Standard gap for main sections */
 }
 
-.profile-card {
-  background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary));
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 2rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+/* Hero Section */
+.profile-hero-section {
+  position: relative;
+  overflow: hidden;
 }
 
+.profile-hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 180px; /* Slightly reduced height */
+  background: var(--gradient-hero);
+  opacity: 0.1; /* More subtle opacity */
+  z-index: 1;
+  /* Removed pulse-opacity animation for a calmer feel */
+}
+
+.profile-hero-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Standard spacing */
+}
+
+/* Reusable Glass Card Style (applied via className on Card component) */
+.profile-glass-card {
+  background: rgba(var(--color-background-secondary), 0.9); /* Simpler background */
+  border: 1px solid rgba(var(--color-accent-neutral), 0.3); /* Neutral border for clean look */
+  border-radius: 12px; /* Slightly less rounded */
+  padding: 1.8rem; /* Slightly reduced padding */
+  backdrop-filter: blur(8px); /* Slightly less blur */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08); /* Lighter, cleaner shadow */
+  transition: all 0.3s ease; /* Standard transition */
+}
+
+.profile-glass-card:hover {
+  transform: translateY(-4px); /* Subtle lift */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12); /* Slightly more pronounced hover shadow */
+}
+
+/* Profile Card Header */
 .profile-card-header {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--border-color);
+  gap: 2rem; /* Standard gap */
+  flex-wrap: wrap;
 }
 
+/* Avatar Styles */
 .profile-avatar-wrapper {
+  position: relative;
   flex-shrink: 0;
 }
 
-.profile-avatar {
-  width: 100px;
+.profile-avatar, .profile-default-avatar {
+  width: 100px; /* Reduced size */
   height: 100px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid var(--accent-color);
+  border: 3px solid rgb(var(--color-accent-primary)); /* Standard border */
+  box-shadow: 0 0 15px rgba(var(--color-accent-primary), 0.2); /* Softer glow */
+  transition: all 0.3s ease;
+}
+
+.profile-avatar:hover, .profile-default-avatar:hover {
+  transform: scale(1.05); /* Standard scale */
+  box-shadow: 0 0 20px rgba(var(--color-accent-primary), 0.3); /* Slightly more glow on hover */
 }
 
 .profile-default-avatar {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: var(--accent-color);
-  color: var(--bg-primary);
+  background: linear-gradient(135deg, 
+    rgb(var(--color-accent-primary)), 
+    rgb(var(--color-highlight)));
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 3rem;
-  font-weight: 700;
 }
 
+.avatar-text {
+  font-size: 2.5rem; /* Reduced size */
+  font-weight: 600; /* Softer bold */
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Standard shadow */
+}
+
+.avatar-status-indicator {
+  position: absolute;
+  bottom: 6px; /* Adjusted position */
+  right: 6px;
+  width: 18px; /* Reduced size */
+  height: 18px;
+  background: #10B981;
+  border-radius: 50%;
+  border: 2px solid rgb(var(--color-background-primary)); /* Thinner border */
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); /* Softer glow */
+  /* Removed pulse-glow animation */
+}
+
+/* Profile Info */
 .profile-info-main {
   flex-grow: 1;
+  min-width: 200px; /* Adjusted min-width */
 }
 
 .profile-name {
-  font-size: 2.2rem;
-  font-weight: 700;
-  margin: 0;
+  font-size: 2.2rem; /* Reduced size */
+  font-weight: 700; /* Standard bold */
+  margin: 0 0 0.4rem 0;
+  line-height: 1.2;
+}
+
+/* Gradient Text (retained from global.css, but ensure it's here if not globally imported) */
+.gradient-text {
+  background: linear-gradient(135deg, 
+    rgb(var(--color-accent-primary)), 
+    rgb(var(--color-highlight)));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 3s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% { filter: hue-rotate(0deg); }
+  50% { filter: hue-rotate(10deg); }
 }
 
 .profile-email {
-  color: var(--text-secondary);
-  font-size: 1.1rem;
+  color: rgb(var(--color-text-secondary));
+  font-size: 1rem; /* Standard size */
+  margin-bottom: 1rem;
 }
 
+.profile-badge {
+  display: inline-block;
+  background: rgba(var(--color-accent-primary), 0.15); /* Lighter background */
+  border: 1px solid rgba(var(--color-accent-primary), 0.2); /* Lighter border */
+  border-radius: 20px; /* Standard rounded */
+  padding: 0.4rem 1rem; /* Standard padding */
+  box-shadow: none; /* Removed shadow for cleaner look */
+}
+
+.badge-text {
+  color: rgb(var(--color-accent-primary));
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Edit Profile Button */
 .edit-profile-btn {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.2rem;
-  background-color: transparent;
-  border: 1px solid var(--accent-color);
-  color: var(--accent-color);
-  border-radius: 6px;
+  gap: 0.5rem; /* Standard gap */
+  padding: 0.7rem 1.4rem; /* Reduced padding */
+  background: transparent; /* Transparent background */
+  border: 1px solid rgb(var(--color-accent-primary)); /* Standard border */
+  color: rgb(var(--color-accent-primary));
+  border-radius: 8px; /* Standard rounded */
   text-decoration: none;
   font-weight: 500;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: none; /* Removed shadow */
+}
+
+.edit-profile-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.1), /* Softer shine */
+    transparent);
+  transition: left 0.5s ease; /* Faster shine */
+}
+
+.edit-profile-btn:hover::before {
+  left: 100%;
 }
 
 .edit-profile-btn:hover {
-  background-color: var(--accent-color);
-  color: var(--bg-primary);
+  background: rgb(var(--color-accent-primary));
+  color: white;
+  transform: translateY(-2px); /* Subtle lift */
+  box-shadow: 0 5px 15px rgba(var(--color-accent-primary), 0.2); /* Softer shadow */
 }
 
+/* Profile Stats Grid */
 .profile-stats {
-  display: flex;
-  justify-content: space-around;
-  padding-top: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Reduced min-width */
+  gap: 1.5rem; /* Standard gap */
 }
 
 .stat-item {
-  text-align: center;
-}
-
-.stat-item h3 {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--accent-color);
-  margin: 0;
-}
-
-.stat-item p {
-  color: var(--text-secondary);
-  margin: 0.25rem 0 0;
-}
-
-.profile-details-section {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1.5rem 2rem;
-  margin-bottom: 2rem;
-}
-
-.profile-details-section h2 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.profile-details-section ul {
-  list-style: none;
-  padding: 0;
-}
-
-.profile-details-section li {
   display: flex;
   align-items: center;
-  font-size: 1rem;
-  margin-bottom: 1rem;
+  gap: 1rem; /* Standard gap */
+  text-align: left;
+  padding: 1rem; /* Standard padding */
+  background: rgba(var(--color-background-secondary), 0.4); /* Lighter opacity */
+  border-radius: 10px; /* Less rounded */
+  border: 1px solid rgba(var(--color-accent-neutral), 0.2); /* Neutral border */
+  transition: all 0.3s ease;
+  box-shadow: none; /* Removed shadow */
 }
 
-.detail-icon {
-  color: var(--accent-color);
-  margin-right: 1rem;
-  font-size: 1.2rem;
+.stat-item:hover {
+  transform: translateY(-3px); /* Subtle lift */
+  background: rgba(var(--color-accent-primary), 0.08); /* Lighter hover background */
+  border-color: rgba(var(--color-accent-primary), 0.3); /* More prominent hover border */
+  box-shadow: 0 5px 15px rgba(var(--color-accent-primary), 0.1); /* Softer hover shadow */
 }
 
-.profile-details-section li strong {
-  color: var(--text-secondary);
-  width: 150px;
+.stat-icon {
+  width: 45px; /* Reduced size */
+  height: 45px;
+  background: linear-gradient(135deg, 
+    rgb(var(--color-accent-primary)), 
+    rgb(var(--color-highlight)));
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.4rem; /* Reduced size */
+  box-shadow: 0 3px 8px rgba(var(--color-accent-primary), 0.2); /* Softer shadow */
+  /* Removed float-icon animation */
+}
+
+.stat-number {
+  font-size: 1.8rem; /* Reduced size */
+  font-weight: 700;
+  color: rgb(var(--color-accent-primary));
+  margin: 0;
+  line-height: 1;
+}
+
+.stat-label {
+  color: rgb(var(--color-text-secondary));
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+}
+
+/* Profile Content Grid */
+.profile-content-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 350px), 1fr)); /* Reduced minmax */
+  gap: 2rem; /* Standard gap */
+}
+
+/* Section Title */
+.section-title {
+  font-size: 1.6rem; /* Reduced size */
+  margin-bottom: 1.2rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid rgba(var(--color-accent-neutral), 0.3); /* Neutral border */
+  position: relative;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -1px; /* Aligned with border */
+  left: 0;
+  width: 40px; /* Shorter line */
+  height: 2px; /* Thinner line */
+  background: linear-gradient(90deg, 
+    rgb(var(--color-accent-primary)), 
+    rgb(var(--color-highlight)));
+  box-shadow: none; /* Removed glow */
+}
+
+/* Details List */
+.details-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Standard gap */
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* Standard gap */
+  padding: 1rem; /* Standard padding */
+  background: rgba(var(--color-background-secondary), 0.3); /* Lighter opacity */
+  border-radius: 10px; /* Less rounded */
+  border: 1px solid rgba(var(--color-accent-neutral), 0.2); /* Neutral border */
+  transition: all 0.3s ease;
+  box-shadow: none; /* Removed shadow */
+}
+
+.detail-item:hover {
+  background: rgba(var(--color-accent-primary), 0.08); /* Lighter hover background */
+  border-color: rgba(var(--color-accent-primary), 0.3);
+  transform: translateX(3px); /* Subtle slide */
+  box-shadow: none; /* Removed shadow */
+}
+
+.detail-icon-wrapper {
+  width: 40px; /* Reduced size */
+  height: 40px;
+  background: linear-gradient(135deg, 
+    rgb(var(--color-accent-primary)), 
+    rgb(var(--color-highlight)));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem; /* Reduced size */
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(var(--color-accent-primary), 0.2); /* Softer shadow */
+}
+
+.detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem; /* Standard spacing */
+}
+
+.detail-content strong {
+  color: rgb(var(--color-text-secondary));
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.detail-content span {
+  color: rgb(var(--color-text-primary));
+  font-weight: 600;
+  font-size: 1rem; /* Standard size */
+}
+
+/* Security Section */
+.security-content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem; /* Standard spacing */
 }
 
 .security-note {
-    color: var(--text-secondary);
-    margin-bottom: 1.5rem;
+  color: rgb(var(--color-text-secondary));
+  margin-bottom: 0;
+  line-height: 1.6;
+  max-width: 450px; /* Reduced max-width */
 }
 
 .go-to-settings-btn {
-    display: inline-block;
-    padding: 0.6rem 1.2rem;
-    background-image: linear-gradient(to right, var(--accent-color), #9C27B0);
-    color: white;
-    border-radius: 6px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: transform 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem; /* Reduced gap */
+  padding: 0.9rem 2rem; /* Reduced padding */
+  background: linear-gradient(135deg, 
+    rgb(var(--color-accent-primary)), 
+    rgb(var(--color-highlight)));
+  color: white;
+  border-radius: 10px; /* Less rounded */
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(var(--color-accent-primary), 0.2); /* Softer shadow */
 }
 
 .go-to-settings-btn:hover {
-    transform: translateY(-2px);
+  transform: translateY(-3px); /* Subtle lift */
+  box-shadow: 0 6px 15px rgba(var(--color-accent-primary), 0.3); /* Slightly more pronounced hover shadow */
+}
+
+.btn-glow {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(255, 255, 255, 0.15), /* Softer shine */
+    transparent);
+  transition: left 0.6s ease;
+}
+
+.go-to-settings-btn:hover .btn-glow {
+  left: 100%;
+}
+
+/* Animation classes (retained, ensure these are also in global.css or available) */
+.animate-slide-up {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: slideUp 0.8s ease forwards;
+}
+
+.delay-1 { animation-delay: 0.2s; }
+.delay-2 { animation-delay: 0.4s; }
+.delay-3 { animation-delay: 0.6s; }
+
+@keyframes slideUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .profile-page {
+    padding: 1rem; /* Adjusted padding for smaller screens */
+    gap: 1.5rem; /* Adjusted gap for smaller screens */
+  }
+  
+  .profile-card-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem; /* Adjusted gap for mobile */
+  }
+  
+  .profile-stats {
+    grid-template-columns: 1fr;
+    gap: 1rem; /* Adjusted gap for mobile */
+  }
+  
+  .profile-content-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem; /* Adjusted gap for mobile */
+  }
+  
+  .profile-name {
+    font-size: 1.8rem; /* Adjusted font size for mobile */
+  }
+
+  .profile-email {
+    font-size: 0.9rem;
+  }
+
+  .edit-profile-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .go-to-settings-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .section-title {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.6rem;
+  }
+
+  .details-list {
+    gap: 1rem;
+  }
+
+  .detail-item {
+    padding: 0.8rem;
+  }
+
+  .detail-content strong, .detail-content span {
+    font-size: 0.85rem;
+  }
+
+  .security-note {
+    font-size: 0.85rem;
+  }
 }
