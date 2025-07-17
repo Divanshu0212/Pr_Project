@@ -14,6 +14,8 @@ import CertificateCard from '../../components/portfolio/CertificateCard';
 import AddCertificateForm from '../../components/portfolio/AddCertificateForm';
 import ExperienceTab from '../../components/portfolio/ExperienceTab';
 import axios from 'axios';
+import { useTheme } from '../../context/ThemeContext';
+
 
 const PortfolioHome = ({ user: propUser }) => {
     const navigate = useNavigate();
@@ -25,7 +27,7 @@ const PortfolioHome = ({ user: propUser }) => {
 
     const [hoveredProject, setHoveredProject] = useState(null);
     const [activeTab, setActiveTab] = useState('projects');
-
+const { theme, isDark } = useTheme();
     const [isEditingPic, setIsEditingPic] = useState(false);
     const [newProfilePic, setNewProfilePic] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -260,6 +262,26 @@ const PortfolioHome = ({ user: propUser }) => {
         if (!response.ok) throw new Error('Failed to fetch certificate count');
         return response.json();
     });
+    // Add scroll animation effect
+useEffect(() => {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate');
+            }
+        });
+    }, observerOptions);
+
+    const animateElements = document.querySelectorAll('.animate-on-scroll');
+    animateElements.forEach(el => observer.observe(el));
+
+    return () => observer.disconnect();
+}, []);
 
     useEffect(() => {
         if (certificatesData) {
@@ -358,9 +380,14 @@ const PortfolioHome = ({ user: propUser }) => {
     };
 
     return (
-        <div className="mx-auto px-6 py-8 w-full bg-[#0D1117] text-[#E5E5E5] min-h-screen">
+<div className={`portfolio-container mx-auto px-6 py-8 w-full min-h-screen ${isDark ? 'dark' : ''}`} 
+     style={{ 
+       background: `rgb(var(--color-background-primary))`, 
+       color: `rgb(var(--color-text-primary))` 
+     }}>
             {/* Profile Header Section */}
-            <div className="max-w-6xl mx-auto">
+           <div className="max-w-6xl mx-auto">
+    <div className="profile-section animate-on-scroll">
                 <div className="flex flex-col md:flex-row gap-8 mb-12">
                     {/* Profile Picture with Enhanced UI */}
                     <div className="flex-shrink-0 relative group">
@@ -498,7 +525,14 @@ const PortfolioHome = ({ user: propUser }) => {
                         </div>
 
                         {/* Stats Cards */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="stats-grid grid grid-cols-2 md:grid-cols-4 gap-4 animate-on-scroll">
+    {Object.entries(stats).map(([key, value], index) => (
+        <div key={key} className="stats-card" style={{ animationDelay: `${index * 0.1}s` }}>
+            <p className="stats-value">{value}</p>
+            <p className="stats-label">{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</p>
+        </div>
+    ))}
+</div>
                             <div className="bg-[#161B22] p-4 rounded-lg text-center shadow-md border border-gray-800">
                                 <p className="text-2xl font-bold text-[#00FFFF]">{stats.projectsCount}</p>
                                 <p className="text-sm text-gray-400">Projects</p>
@@ -524,20 +558,28 @@ const PortfolioHome = ({ user: propUser }) => {
                 >
                     <MdEdit className="inline-block relative right-1 bottom-0.5" />
                 </button>
+
+                
+</div> 
+{/* Close profile-section */}
                 {/* Skills Section */}
-                <div className="mb-16">
+             <div className="mb-16 animate-on-scroll">
+    <h2 className="text-2xl font-bold gradient-text mb-6 pb-2 border-b" 
+        style={{ borderColor: `rgba(var(--color-accent-primary), 0.3)` }}>
+        Skills
+    </h2>
+    <div className="skills-grid grid grid-cols-1 md:grid-cols-3 gap-6">
+
                     <h2 className="text-2xl font-bold text-[#00FFFF] mb-6 pb-2 border-b border-gray-700">Skills</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {Object.entries(skillCategories).map(([category, skills]) => (
                             skills.length > 0 && (
-                                <div key={category} className="bg-[#161B22] p-6 rounded-lg shadow-md border border-gray-800">
+                             <div key={category} className="skill-category-card animate-on-scroll slide-left" 
+     style={{ animationDelay: `${Object.keys(skillCategories).indexOf(category) * 0.1}s` }}>
                                     <h3 className="text-lg font-semibold text-[#E5E5E5] mb-4">{category}</h3>
                                     <div className="flex flex-wrap gap-2">
                                         {skills.map((skill, index) => (
-                                            <span
-                                                key={index}
-                                                className="px-3 py-1 bg-[#0D1117] border border-[#00FFFF] text-[#00FFFF] rounded-full text-xs"
-                                            >
+                                            <span key={index} className="skill-tag">
                                                 {skill}
                                             </span>
                                         ))}
@@ -555,27 +597,30 @@ const PortfolioHome = ({ user: propUser }) => {
                     <MdEdit /> Manage Skills
                 </button>
 
+
                 {/* Portfolio Tabs */}
-                <div className="mb-6">
-                    <div className="flex gap-4 border-b border-gray-700 pb-2">
-                        <button
-                            className={`px-6 py-3 text-lg ${activeTab === 'projects' ? 'text-[#00FFFF] border-b-2 border-[#00FFFF]' : 'text-gray-400'}`}
-                            onClick={() => setActiveTab('projects')}
-                        >
-                            Projects
-                        </button>
-                        <button
-                            className={`px-6 py-3 text-lg ${activeTab === 'certificates' ? 'text-[#00FFFF] border-b-2 border-[#00FFFF]' : 'text-gray-400'}`}
-                            onClick={() => setActiveTab('certificates')}
-                        >
-                            Certificates
-                        </button>
-                        <button
-                            className={`px-6 py-3 text-lg ${activeTab === 'experience' ? 'text-[#00FFFF] border-b-2 border-[#00FFFF]' : 'text-gray-400'}`}
-                            onClick={() => setActiveTab('experience')}
-                        >
-                            Experience
-                        </button>
+                <div className="mb-6 animate-on-scroll">
+                    <div className="filter-tabs">
+                        <div className="flex gap-4 border-b border-gray-700 pb-2">
+                            <button
+                                className={`filter-tab ${activeTab === 'projects' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('projects')}
+                            >
+                                Projects
+                            </button>
+                            <button
+                                className={`filter-tab ${activeTab === 'certificates' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('certificates')}
+                            >
+                                Certificates
+                            </button>
+                            <button
+                                className={`filter-tab ${activeTab === 'experience' ? 'active' : ''}`}
+                                onClick={() => setActiveTab('experience')}
+                            >
+                                Experience
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -586,7 +631,12 @@ const PortfolioHome = ({ user: propUser }) => {
                             <h2 className="text-2xl font-bold text-[#00FFFF]">Pinned Projects</h2>
                             <button
                                 onClick={() => navigate('/portfolio/add')}
-                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] text-black rounded-lg hover:opacity-90 transition-opacity"
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:transform hover:scale-105"
+                                style={{
+                                    background: `linear-gradient(135deg, rgb(var(--color-accent-primary)) 0%, rgb(var(--color-highlight)) 100%)`,
+                                    color: `rgb(var(--color-background-primary))`,
+                                    boxShadow: `0 4px 15px rgba(var(--color-accent-primary), 0.3)`
+                                }}
                             >
                                 <FaPlus /> Add Project
                             </button>
@@ -607,7 +657,7 @@ const PortfolioHome = ({ user: propUser }) => {
                                 </button>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="portfolio-grid animate-on-scroll">
                                 {pinnedProjects.map((project) => (
                                     <ProjectCard key={project._id} project={project} />
                                 ))}
@@ -632,7 +682,12 @@ const PortfolioHome = ({ user: propUser }) => {
                             <h2 className="text-2xl font-bold text-[#00FFFF]">Certificates</h2>
                             <button
                                 onClick={handleAddCertificate}
-                                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] text-black rounded-lg hover:opacity-90 transition-opacity"
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:transform hover:scale-105"
+                                style={{
+                                    background: `linear-gradient(135deg, rgb(var(--color-accent-primary)) 0%, rgb(var(--color-highlight)) 100%)`,
+                                    color: `rgb(var(--color-background-primary))`,
+                                    boxShadow: `0 4px 15px rgba(var(--color-accent-primary), 0.3)`
+                                }}
                             >
                                 <FaPlus /> Add Certificate
                             </button>
