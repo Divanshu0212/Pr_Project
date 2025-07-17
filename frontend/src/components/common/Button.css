@@ -1,6 +1,5 @@
-/* === BUTTON COMPONENT STYLES (ENHANCED & RESTORED) === */
+/* === BUTTON COMPONENT STYLES (ENHANCED & MINIMAL) === */
 
-/* --- Base Styles --- */
 .button {
   position: relative;
   display: inline-flex;
@@ -14,123 +13,217 @@
   overflow: hidden;
   text-decoration: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  /* Scroll-triggered animation state */
-  opacity: 0;
-  transform: translateY(15px);
-  will-change: transform, box-shadow;
+  isolation: isolate;
+  font-family: inherit;
 }
-.button.animate-in {
-  opacity: 1;
-  transform: translateY(0);
-}
+
 .button-content {
   position: relative;
-  z-index: 1;
-  display: inherit;
-  align-items: inherit;
-  gap: 0.5rem; /* 8px */
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-/* --- Variants --- */
-/* 1. Primary Button (Gradient Hero) */
+.button-text {
+  display: inline-block;
+}
+
+/* === VARIANTS === */
+
+/* Primary Button - Gradient Hero */
 .button-primary {
   color: #ffffff;
-  background: linear-gradient(135deg, rgb(var(--color-accent-primary)), rgb(var(--color-highlight)));
-  background-size: 200% auto;
-  box-shadow: 0 4px 15px -5px rgba(var(--color-accent-primary), 0.4);
-  animation: button-float 6s ease-in-out infinite; /* Restored floating animation */
-}
-.button-primary:hover:not(:disabled) {
-  background-position: right center;
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 12px 30px -8px rgba(var(--color-highlight), 0.5);
+  background: linear-gradient(135deg, 
+    rgb(var(--color-accent-primary)), 
+    rgb(var(--color-highlight))
+  );
+  background-size: 200% 100%;
+  border: 1px solid rgba(var(--color-accent-primary), 0.3);
+  box-shadow: 
+    0 4px 15px rgba(var(--color-accent-primary), 0.25),
+    0 0 0 0 rgba(var(--color-accent-primary), 0.5);
+  animation: gradient-shift 3s ease infinite;
 }
 
-/* 2. Secondary Button (Polished Outline) */
+.button-primary:hover:not(:disabled) {
+  background-position: 100% 0;
+  box-shadow: 
+    0 8px 25px rgba(var(--color-highlight), 0.4),
+    0 0 0 4px rgba(var(--color-accent-primary), 0.1);
+}
+
+/* Secondary Button - Outline with glow */
 .button-secondary {
   color: rgb(var(--color-text-primary));
-  background-color: rgb(var(--color-background-secondary));
-  border-color: rgb(var(--color-accent-neutral));
+  background: rgba(var(--color-background-secondary), 0.8);
+  border: 1px solid rgba(var(--color-accent-primary), 0.3);
+  backdrop-filter: blur(10px);
 }
+
 .button-secondary:hover:not(:disabled) {
   color: rgb(var(--color-accent-primary));
+  background: rgba(var(--color-accent-primary), 0.1);
   border-color: rgb(var(--color-accent-primary));
-  background-color: rgba(var(--color-accent-primary), 0.05);
-  transform: translateY(-3px);
+  box-shadow: 0 0 20px rgba(var(--color-accent-primary), 0.3);
 }
 
-/* 3. Ghost Button (Subtle Text) */
+/* Ghost Button - Minimal with hover fill */
 .button-ghost {
   color: rgb(var(--color-text-primary));
-  background-color: transparent;
+  background: transparent;
+  border: 1px solid transparent;
 }
+
 .button-ghost:hover:not(:disabled) {
   color: rgb(var(--color-accent-primary));
-  background-color: rgba(var(--color-accent-primary), 0.1);
+  background: linear-gradient(135deg, 
+    rgba(var(--color-accent-primary), 0.1), 
+    rgba(var(--color-highlight), 0.05)
+  );
+  border-color: rgba(var(--color-accent-primary), 0.2);
 }
 
-/* --- Sizes --- */
+/* === SIZES === */
 .button-small {
-  font-size: 0.875rem; /* 14px */
-  padding: 0.5rem 1rem; /* 8px 16px */
-  border-radius: 0.5rem; /* 8px */
-}
-.button-medium {
-  font-size: 1rem; /* 16px */
-  padding: 0.625rem 1.25rem; /* 10px 20px */
-  border-radius: 0.625rem; /* 10px */
-}
-.button-large {
-  font-size: 1.125rem; /* 18px */
-  padding: 0.75rem 1.5rem; /* 12px 24px */
-  border-radius: 0.75rem; /* 12px */
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
 }
 
-/* --- States & Modifiers --- */
+.button-medium {
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+}
+
+.button-large {
+  font-size: 1.125rem;
+  padding: 1rem 2rem;
+  border-radius: 1rem;
+}
+
+/* === EFFECTS === */
+
+/* Gradient border effect */
+.button-gradient-border {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, 
+    rgba(var(--color-accent-primary), 0.5), 
+    rgba(var(--color-highlight), 0.5)
+  );
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.button:hover .button-gradient-border {
+  opacity: 1;
+}
+
+/* Shine effect */
+.button-shine {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Loading state */
+.button-loading {
+  pointer-events: none;
+}
+
+.button-loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+.loader-spinner {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+.button-secondary .loader-spinner {
+  border: 2px solid rgba(var(--color-accent-primary), 0.3);
+  border-top: 2px solid rgb(var(--color-accent-primary));
+}
+
+/* Icon styling */
+.button-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button-icon svg {
+  width: 1.25em;
+  height: 1.25em;
+}
+
+/* === STATES === */
 .button-full-width {
   width: 100%;
 }
+
 .button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none !important;
   box-shadow: none !important;
-  animation: none !important;
-}
-.button-shine {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  border-radius: inherit;
-  transition: background 0.1s ease-out;
-}
-.button-icon > svg {
-  width: 1.25em;
-  height: 1.25em;
 }
 
-/* Loading State */
-.button.is-loading .button-content {
+.button:disabled .button-gradient-border {
   opacity: 0;
 }
-.button-loader {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 1.25rem;
-  height: 1.25rem;
-  margin: -0.625rem 0 0 -0.625rem;
-  border: 2px solid currentColor;
-  border-bottom-color: transparent;
-  border-radius: 50%;
-  animation: button-spin 0.8s linear infinite;
+
+/* === ANIMATIONS === */
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
-/* --- Restored Animations --- */
-@keyframes button-spin {
-  to { transform: rotate(360deg); }
+/* Dark theme enhancements */
+.dark .button-primary {
+  box-shadow: 
+    0 4px 15px rgba(0, 255, 255, 0.3),
+    0 0 0 0 rgba(0, 255, 255, 0.5);
 }
-@keyframes button-float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-4px); }
+
+.dark .button-primary:hover:not(:disabled) {
+  box-shadow: 
+    0 8px 25px rgba(156, 39, 176, 0.4),
+    0 0 0 4px rgba(0, 255, 255, 0.1);
+}
+
+.dark .button-secondary {
+  background: rgba(var(--color-background-secondary), 0.9);
+  border-color: rgba(0, 255, 255, 0.3);
+}
+
+.dark .button-secondary:hover:not(:disabled) {
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .button-large {
+    font-size: 1rem;
+    padding: 0.875rem 1.75rem;
+  }
+  
+  .button-medium {
+    font-size: 0.875rem;
+    padding: 0.625rem 1.25rem;
+  }
 }

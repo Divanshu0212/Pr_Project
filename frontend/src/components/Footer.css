@@ -1,142 +1,102 @@
-/* src/components/Footer.css - Enhanced with New Theme */
+/* src/components/Footer.css - Redesigned for a Clean & Integrated Look */
 
 .footer {
   position: relative;
   overflow: hidden;
-  padding-top: 5rem;
+  padding-top: 3rem; /* Reduced padding-top for a more compact footer */
   z-index: 10;
   color: rgb(var(--color-text-secondary));
   
-  /* Updated gradient using new theme colors */
-  background: rgb(var(--color-background-primary));
-  background-image: 
-    radial-gradient(circle at 20% 80%, rgba(49, 130, 206, 0.15) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(128, 90, 213, 0.15) 0%, transparent 50%),
-    linear-gradient(135deg, rgb(var(--color-background-primary)) 0%, rgb(var(--color-background-secondary)) 100%);
+  /* Clean solid background, no complex animations */
+  background-color: rgb(var(--color-background-primary));
+  border-top: 1px solid rgba(var(--color-accent-neutral), 0.3); /* Subtle top border for definition */
 }
 
-/* Animated mesh background for extra depth */
-.footer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -2;
-  background-image: 
-    radial-gradient(circle at 25% 25%, rgba(49, 130, 206, 0.1) 0%, transparent 70%),
-    radial-gradient(circle at 75% 75%, rgba(128, 90, 213, 0.1) 0%, transparent 70%);
-  animation: float 8s ease-in-out infinite;
-}
-
-/* Enhanced grid overlay */
-.footer::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-  pointer-events: none;
-  background-image:
-    linear-gradient(to right, rgb(var(--color-accent-neutral) / 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgb(var(--color-accent-neutral) / 0.1) 1px, transparent 1px);
-  background-size: 40px 40px;
-  animation: pan-grid 30s linear infinite;
-}
-
-@keyframes pan-grid {
-  from { background-position: 0 0; }
-  to { background-position: -40px -40px; }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px) scale(1); }
-  50% { transform: translateY(-10px) scale(1.02); }
-}
+/* Removed complex ::before and ::after background animations */
+/* .footer::before { ... } */
+/* .footer::after { ... } */
+/* @keyframes pan-grid { ... } */
+/* @keyframes float { ... } */
 
 .footer-container {
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr 1fr;
-  gap: 3rem;
+  gap: 2rem; /* Reduced gap for a tighter layout */
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 1.5rem; /* Consistent padding */
 }
 
-/* Enhanced logo with gradient and glow effects */
+/* Enhanced logo with gradient and subtle effects */
 .footer-logo {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 2.5rem;
+  font-size: 2.2rem; /* Slightly smaller for elegance */
   font-weight: 900;
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem; /* Reduced margin */
   background: linear-gradient(135deg, rgb(var(--color-accent-primary)), rgb(var(--color-accent-secondary)));
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  position: relative;
-  display: inline-block;
+  /* Ensure logo is block-level and centered */
+  display: block; /* Changed from inline-block to block */
+  margin-left: auto; /* Center horizontally */
+  margin-right: auto; /* Center horizontally */
+  text-align: center; /* Fallback for text within logo, though it's clipped */
   cursor: pointer;
   letter-spacing: -0.02em;
   line-height: 1.1;
+  transition: all 0.3s ease; /* Added transition for hover effects */
 }
 
-.footer-logo::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgb(var(--color-accent-primary)), rgb(var(--color-accent-secondary)));
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  animation: shimmer 3s ease-in-out infinite;
-  opacity: 0;
+/* Removed shimmer effect on logo for a cleaner look */
+/* .footer-logo::after { ... } */
+/* @keyframes shimmer { ... } */
+
+.footer-logo:hover {
+  transform: translateY(-2px); /* Subtle lift on hover */
+  filter: brightness(1.1); /* Slight brightness increase on hover */
+  /* text-shadow handled by motion.h2 in JSX */
 }
 
-.footer-logo:hover::after {
-  opacity: 1;
+/* Ensure footer-brand itself centers its content */
+.footer-brand {
+  /* Add display flex and justify-content center to center its children */
+  display: flex;
+  flex-direction: column; /* Stack children vertically */
+  align-items: center; /* Center items horizontally in a column */
+  text-align: center; /* Fallback for older browsers or non-flex items */
 }
 
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
 
 .footer-description {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 1rem;
-  line-height: 1.6;
-  max-width: 320px;
+  font-size: 0.95rem; /* Slightly smaller */
+  line-height: 1.5; /* Adjusted line height */
+  max-width: 300px; /* Adjusted max-width */
   color: rgb(var(--color-text-secondary));
   opacity: 0.9;
   font-weight: 400;
   letter-spacing: 0.01em;
+  text-align: center; /* Ensure description is centered */
 }
 
 .footer-heading {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  color: rgb(var(--color-text-primary));
-  font-size: 1.25rem;
+  color: rgb(var(--color-text-primary)); /* Changed to primary text color for better contrast */
+  font-size: 1.1rem; /* Slightly smaller */
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem; /* Reduced margin */
   letter-spacing: -0.01em;
   position: relative;
   cursor: pointer;
   text-transform: uppercase;
-  font-size: 0.875rem;
-  color: rgb(var(--color-accent-primary));
-  opacity: 0.8;
+  /* Removed accent color and opacity from heading for cleaner look */
 }
 
 .footer-heading::after {
   content: '';
   position: absolute;
-  bottom: -5px;
+  bottom: -4px; /* Adjusted position */
   left: 0;
   width: 0;
   height: 2px;
@@ -154,14 +114,14 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 0.75rem; /* Reduced gap */
 }
 
 .footer-links a {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: rgb(var(--color-text-secondary));
   text-decoration: none;
-  font-size: 1rem;
+  font-size: 0.95rem; /* Slightly smaller */
   font-weight: 500;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
@@ -173,7 +133,7 @@
   content: '';
   position: absolute;
   top: 50%;
-  left: -10px;
+  left: -8px; /* Adjusted position */
   width: 0;
   height: 1px;
   background: rgb(var(--color-accent-primary));
@@ -183,32 +143,34 @@
 
 .footer-links a:hover {
   color: rgb(var(--color-accent-primary));
-  transform: translateX(8px);
-  text-shadow: 0 0 10px rgba(49, 130, 206, 0.3);
+  transform: translateX(6px); /* Slightly less aggressive slide */
+  text-shadow: none; /* Removed text-shadow for cleaner look */
 }
 
 .footer-links a:hover::before {
-  width: 6px;
+  width: 5px; /* Slightly smaller indicator */
 }
 
 /* Enhanced social icons */
 .social-links {
   display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
+  gap: 0.8rem; /* Reduced gap */
+  margin-top: 1.2rem; /* Reduced margin */
+  justify-content: center; /* Explicitly center social icons */
 }
 
 .social-icon {
   color: rgb(var(--color-text-secondary));
-  font-size: 1.25rem;
+  font-size: 1.1rem; /* Slightly smaller */
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  padding: 8px;
+  padding: 6px; /* Reduced padding */
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(var(--color-background-secondary), 0.5); /* Use theme variable, more opaque */
+  backdrop-filter: blur(8px); /* Slightly less blur */
+  border: 1px solid rgba(var(--color-accent-neutral), 0.3); /* Stronger neutral border */
   position: relative;
   overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Subtle shadow */
 }
 
 .social-icon::before {
@@ -218,8 +180,8 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s ease;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent); /* Softer shine */
+  transition: left 0.4s ease; /* Faster shine */
 }
 
 .social-icon:hover::before {
@@ -228,9 +190,9 @@
 
 .social-icon:hover {
   color: rgb(var(--color-accent-primary));
-  background: rgba(49, 130, 206, 0.1);
-  border-color: rgb(var(--color-accent-primary) / 0.3);
-  box-shadow: 0 8px 25px rgba(49, 130, 206, 0.2);
+  background: rgba(var(--color-accent-primary), 0.1); /* Use theme variable for hover background */
+  border-color: rgb(var(--color-accent-primary)); /* Direct accent color for border */
+  box-shadow: 0 5px 15px rgba(var(--color-accent-primary), 0.2); /* Softer shadow */
 }
 
 /* Enhanced footer bottom */
@@ -238,13 +200,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem;
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  margin-top: 4rem;
+  padding: 1.2rem 1.5rem; /* Reduced padding */
+  background: rgb(var(--color-background-secondary)); /* Solid background for clarity */
+  border-top: 1px solid rgba(var(--color-accent-neutral), 0.3); /* Stronger border */
+  margin-top: 3rem; /* Reduced margin */
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.85rem; /* Slightly smaller */
   font-weight: 400;
   color: rgb(var(--color-text-secondary));
   letter-spacing: 0.01em;
@@ -253,20 +214,20 @@
 .scroll-top-button {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem; /* Reduced gap */
   background: linear-gradient(135deg, rgb(var(--color-accent-primary)), rgb(var(--color-accent-secondary)));
   background-size: 200% auto;
   color: white;
   border: none;
   cursor: pointer;
-  padding: 0.75rem 1.25rem;
-  border-radius: 50px;
+  padding: 0.6rem 1rem; /* Reduced padding */
+  border-radius: 30px; /* More rounded */
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.8rem; /* Slightly smaller */
   letter-spacing: 0.01em;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 15px rgba(49, 130, 206, 0.3);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 3px 10px rgba(var(--color-accent-primary), 0.25); /* Softer shadow */
   position: relative;
   overflow: hidden;
 }
@@ -278,8 +239,8 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-  transition: left 0.6s ease;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent); /* Softer shine */
+  transition: left 0.5s ease;
 }
 
 .scroll-top-button:hover::before {
@@ -288,23 +249,33 @@
 
 .scroll-top-button:hover {
   background-position: right center;
-  box-shadow: 0 8px 30px rgba(49, 130, 206, 0.4);
-  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(var(--color-accent-primary), 0.35); /* More subtle hover shadow */
+  transform: translateY(-1px); /* Subtle lift */
 }
 
 .scroll-top-icon {
-  font-size: 1.1rem;
+  font-size: 1rem; /* Slightly smaller */
 }
 
 /* Responsive Design */
 @media (max-width: 900px) {
   .footer-container {
     grid-template-columns: repeat(2, 1fr);
-    gap: 2.5rem;
+    gap: 2rem;
   }
   .footer-brand {
     grid-column: span 2;
+    text-align: center; /* Ensure text is centered */
+    align-items: center; /* Center flex items for mobile */
+  }
+  .footer-section { /* Ensure sections are centered on mobile */
     text-align: center;
+  }
+  .footer-links { /* Center links in columns on mobile */
+    align-items: center;
+  }
+  .footer-links a::before { /* Adjust position for centered links */
+    left: -18px; /* Move indicator further left */
   }
 }
 
@@ -318,16 +289,34 @@
   }
   .footer-bottom {
     flex-direction: column-reverse;
-    gap: 1.5rem;
+    gap: 1rem; /* Reduced gap */
     text-align: center;
   }
   
   .footer-logo {
-    font-size: 2.25rem;
-    letter-spacing: -0.015em;
+    font-size: 2rem; /* Adjusted for mobile */
+    letter-spacing: -0.01em;
   }
   
   .social-links {
     justify-content: center;
+  }
+
+  .footer-description {
+    font-size: 0.85rem;
+  }
+
+  .footer-heading {
+    font-size: 0.8rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .footer-links a {
+    font-size: 0.85rem;
+  }
+
+  .scroll-top-button {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.75rem;
   }
 }

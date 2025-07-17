@@ -1,5 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { motion } from 'framer-motion';
+import { useTheme } from '../../context/ThemeContext';
 import './Button.css';
 
 const Button = ({
@@ -14,6 +16,7 @@ const Button = ({
   enableShine = true,
   isLoading = false,
 }) => {
+  const { theme } = useTheme();
   const buttonRef = useRef(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
@@ -52,7 +55,6 @@ const Button = ({
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
     
-    // Smooth the position updates
     requestAnimationFrame(() => {
       setPosition({ x, y });
     });
@@ -70,17 +72,54 @@ const Button = ({
     }
   };
 
-  // Enhanced shine effect with better gradient
+  // Enhanced shine effect with theme-aware colors
   const shineStyle = enableShine && isHovered ? {
     background: `radial-gradient(circle at ${position.x}px ${position.y}px, 
-      rgba(255, 255, 255, 0.3) 0%, 
-      rgba(255, 255, 255, 0.1) 30%, 
+      rgba(255, 255, 255, ${theme === 'dark' ? '0.2' : '0.3'}) 0%, 
+      rgba(255, 255, 255, ${theme === 'dark' ? '0.1' : '0.15'}) 30%, 
       transparent 70%)`,
-    transition: 'background 0.1s ease-out',
+    transition: 'background 0.15s ease-out',
   } : {};
 
+  const buttonVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: 20, 
+      scale: 0.9 
+    },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      scale: 1,
+      transition: { 
+        duration: 0.4, 
+        ease: [0.25, 0.1, 0.25, 1] 
+      }
+    }
+  };
+
+  const hoverVariants = {
+    hover: {
+      y: -3,
+      scale: 1.02,
+      transition: { duration: 0.2, ease: "easeOut" }
+    },
+    tap: {
+      y: 0,
+      scale: 0.98,
+      transition: { duration: 0.1 }
+    }
+  };
+
+  const iconVariants = {
+    hover: {
+      rotate: [0, -10, 10, 0],
+      transition: { duration: 0.4 }
+    }
+  };
+
   return (
-    <button
+    <motion.button
       ref={buttonRef}
       type={type}
       className={`
@@ -90,16 +129,17 @@ const Button = ({
         ${fullWidth ? 'button-full-width' : ''}
         ${enableShine ? 'button-shine-enabled' : ''}
         ${isLoading ? 'button-loading' : ''}
-        ${isVisible ? 'animate-in' : ''}
       `}
+      variants={buttonVariants}
+      initial="hidden"
+      animate={isVisible ? "visible" : "hidden"}
+      whileHover={!disabled && !isLoading ? "hover" : ""}
+      whileTap={!disabled && !isLoading ? "tap" : ""}
       onClick={onClick}
       disabled={disabled || isLoading}
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      style={{
-        animationDelay: isVisible ? '0s' : 'initial',
-      }}
     >
       {enableShine && (
         <div 
@@ -110,21 +150,34 @@ const Button = ({
       )}
       
       {isLoading ? (
-        <span className="button-loader" aria-label="Loading..."></span>
+        <div className="button-loader">
+          <motion.div 
+            className="loader-spinner"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+        </div>
       ) : (
-        <span className="button-content">
+        <motion.span 
+          className="button-content"
+          variants={hoverVariants}
+        >
           {icon && (
-            <span 
+            <motion.span 
               className="button-icon"
+              variants={iconVariants}
               aria-hidden="true"
             >
               {icon}
-            </span>
+            </motion.span>
           )}
-          {children}
-        </span>
+          <span className="button-text">{children}</span>
+        </motion.span>
       )}
-    </button>
+      
+      {/* Gradient border effect */}
+      <div className="button-gradient-border" aria-hidden="true" />
+    </motion.button>
   );
 };
 

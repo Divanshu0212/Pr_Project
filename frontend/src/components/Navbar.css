@@ -1,30 +1,36 @@
-/* Simplified CSS Variables */
+/* 1. Update CSS Variables for new color palette */
 :root {
   --color-background-primary: 255, 255, 255;
   --color-background-secondary: 248, 250, 252;
   --color-text-primary: 15, 23, 42;
   --color-text-secondary: 100, 116, 139;
-  --color-accent-primary: 99, 102, 241;
-  --color-accent-secondary: 168, 85, 247;
-  --color-accent-tertiary: 236, 72, 153;
+  --color-accent-primary: 79, 70, 229;
+  --color-accent-secondary: 147, 51, 234;
+  --color-accent-tertiary: 219, 39, 119; /* New tertiary accent */
   --color-accent-error: 239, 68, 68;
+  --color-accent-success: 34, 197, 94;
+  --color-accent-warning: 245, 158, 11;
   
-  --gradient-primary: linear-gradient(135deg, rgb(99, 102, 241), rgb(168, 85, 247));
-  --gradient-secondary: linear-gradient(135deg, rgb(168, 85, 247), rgb(236, 72, 153));
+  --gradient-primary: linear-gradient(135deg, rgb(79, 70, 229) 0%, rgb(147, 51, 234) 100%);
+  --gradient-secondary: linear-gradient(135deg, rgb(147, 51, 234) 0%, rgb(219, 39, 119) 100%);
+  --gradient-accent: linear-gradient(135deg, rgb(79, 70, 229) 0%, rgb(147, 51, 234) 50%, rgb(219, 39, 119) 100%);
 }
 
 .dark {
-  --color-background-primary: 7, 8, 20;
+  --color-background-primary: 2, 6, 23;
   --color-background-secondary: 15, 23, 42;
   --color-text-primary: 248, 250, 252;
   --color-text-secondary: 148, 163, 184;
   --color-accent-primary: 129, 140, 248;
   --color-accent-secondary: 196, 181, 253;
-  --color-accent-tertiary: 251, 146, 60;
+  --color-accent-tertiary: 251, 113, 133; /* New tertiary accent */
   --color-accent-error: 248, 113, 113;
+  --color-accent-success: 74, 222, 128;
+  --color-accent-warning: 251, 191, 36;
   
-  --gradient-primary: linear-gradient(135deg, rgb(129, 140, 248), rgb(196, 181, 253));
-  --gradient-secondary: linear-gradient(135deg, rgb(196, 181, 253), rgb(251, 146, 60));
+  --gradient-primary: linear-gradient(135deg, rgb(129, 140, 248) 0%, rgb(196, 181, 253) 100%);
+  --gradient-secondary: linear-gradient(135deg, rgb(196, 181, 253) 0%, rgb(251, 113, 133) 100%);
+  --gradient-accent: linear-gradient(135deg, rgb(129, 140, 248) 0%, rgb(196, 181, 253) 50%, rgb(251, 113, 133) 100%);
 }
 
 /* Core Animations */
@@ -33,23 +39,46 @@
   50% { background-position: 100% 50%; }
 }
 
+/* 2. Enhanced animations */
 @keyframes pulse-glow {
   0%, 100% { 
     transform: scale(1); 
     box-shadow: 0 0 0 0 rgba(var(--color-accent-primary), 0.7); 
   }
   50% { 
-    transform: scale(1.1); 
-    box-shadow: 0 0 20px 5px rgba(var(--color-accent-primary), 0); 
+    transform: scale(1.05); 
+    box-shadow: 0 0 15px 3px rgba(var(--color-accent-primary), 0); 
   }
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Navbar Base */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer { /* Added shimmer keyframe for dropdown headers */
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Navbar Base (retained from previous version, ensure consistency) */
 .navbar {
   background: rgba(var(--color-background-primary), 0.85);
   backdrop-filter: blur(20px);
@@ -64,8 +93,8 @@
 }
 
 .navbar.scrolled {
-    background: rgba(var(--color-background-primary), 0.98);
-    box-shadow: 0 4px 20px rgba(var(--color-text-primary), 0.08);
+  background: rgba(var(--color-background-primary), 0.98);
+  box-shadow: 0 4px 20px rgba(var(--color-text-primary), 0.08);
 }
 
 .navbar-container {
@@ -78,7 +107,7 @@
   margin: 0 auto;
 }
 
-/* Brand & Title */
+/* Brand & Title (retained from previous version) */
 .navbar-left {
   display: flex;
   align-items: center;
@@ -88,7 +117,6 @@
 .navbar-brand {
   text-decoration: none;
   transition: all 0.3s ease;
- 
 }
 
 .brand-text {
@@ -119,7 +147,7 @@
   margin: 0;
 }
 
-/* Right Section */
+/* Right Section (retained from previous version) */
 .navbar-right {
   display: flex;
   align-items: center;
@@ -132,92 +160,141 @@
   gap: 0.5rem;
 }
 
-/* Icon Buttons - Simple Circles */
+/* 3. Better responsive icon buttons */
 .notification-btn, .settings-btn, .sidebar-toggle-btn, .theme-toggle-btn {
-  background: transparent;
-  border: none;
+  background: rgba(var(--color-accent-primary), 0.05);
+  border: 1px solid rgba(var(--color-accent-primary), 0.1);
   color: rgb(var(--color-text-primary));
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.3rem;
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  transition: all 0.3s ease;
+  font-size: 1.2rem;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
 }
 
 .notification-btn:hover, .settings-btn:hover, .sidebar-toggle-btn:hover, .theme-toggle-btn:hover {
-  background: rgba(var(--color-accent-primary), 0.1);
+  background: rgba(var(--color-accent-primary), 0.15);
+  border-color: rgba(var(--color-accent-primary), 0.3);
   color: rgb(var(--color-accent-primary));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(var(--color-accent-primary), 0.2);
 }
 
 .notification-btn.active {
-  background: rgba(var(--color-accent-primary), 0.15);
+  background: rgba(var(--color-accent-primary), 0.2);
+  border-color: rgba(var(--color-accent-primary), 0.4);
   color: rgb(var(--color-accent-primary));
 }
 
-/* Theme Toggle Specific */
+/* 4. Enhanced sidebar toggle animations */
+.sidebar-toggle-btn {
+  background: rgba(var(--color-accent-primary), 0.08);
+  border: 1px solid rgba(var(--color-accent-primary), 0.15);
+}
+
+.sidebar-toggle-btn:hover {
+  background: rgba(var(--color-accent-primary), 0.18);
+  border-color: rgba(var(--color-accent-primary), 0.35);
+}
+
+.sidebar-icon {
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+/* 5. Better theme toggle styling */
+.theme-toggle-btn {
+  background: rgba(var(--color-accent-secondary), 0.08);
+  border: 1px solid rgba(var(--color-accent-secondary), 0.15);
+}
+
+.theme-toggle-btn:hover {
+  background: rgba(var(--color-accent-secondary), 0.18);
+  border-color: rgba(var(--color-accent-secondary), 0.35);
+}
+
 .sun-icon {
-  color: #f3bf3cf1;
+  color: rgb(251, 191, 36); /* Using direct RGB for strong contrast */
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.3));
 }
 
 .moon-icon {
   color: rgb(var(--color-accent-secondary));
+  filter: drop-shadow(0 0 4px rgba(var(--color-accent-secondary), 0.3));
 }
 
 .theme-toggle-btn:hover .sun-icon {
-  filter: drop-shadow(0 0 10px #fbbf24);
+  filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.5));
 }
 
 .theme-toggle-btn:hover .moon-icon {
-  filter: drop-shadow(0 0 10px rgba(var(--color-accent-secondary), 0.8));
+  filter: drop-shadow(0 0 8px rgba(var(--color-accent-secondary), 0.5));
 }
 
-/* Notification Indicator */
+/* Notification Indicator (retained from previous version) */
 .notification-wrapper {
   position: relative;
 }
 
+/* 6. Enhanced notification indicator */
 .notification-indicator {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 12px;
-  height: 12px;
-  background: var(--gradient-primary);
+  top: 4px;
+  right: 4px;
+  width: 10px;
+  height: 10px;
+  background: var(--gradient-accent); /* Using new gradient-accent */
   border: 2px solid rgb(var(--color-background-primary));
   border-radius: 50%;
   animation: pulse-glow 2s infinite;
 }
 
-/* Dropdowns - Solid Background */
+/* 7. Better dropdown styling */
 .notifications-dropdown, .user-dropdown {
   position: absolute;
-  top: calc(100% + 10px);
+  top: calc(100% + 8px); /* Adjusted for better spacing */
   right: 0;
   width: 320px;
-  background: rgb(var(--color-background-primary));
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(var(--color-text-primary), 0.1);
-  border: 1px solid rgba(var(--color-accent-neutral), 0.1);
+  background: rgba(var(--color-background-primary), 0.98); /* Slightly less opaque */
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  box-shadow: 
+    0 20px 40px rgba(var(--color-text-primary), 0.1),
+    0 0 0 1px rgba(var(--color-accent-primary), 0.1); /* Subtle border glow */
   z-index: 60;
   overflow: hidden;
+  animation: slide-down 0.3s ease; /* Using new slide-down animation */
 }
 
 .notifications-header, .dropdown-header {
   padding: 1.5rem;
-  border-bottom: 1px solid rgba(var(--color-accent-primary), 0.1);
-  background: var(--gradient-primary);
+  background: var(--gradient-primary); /* Using new gradient-primary */
   color: white;
+  position: relative;
+  overflow: hidden;
 }
 
 .notifications-header h3 {
   font-size: 1.1rem;
   font-weight: 700;
   margin: 0 0 0.5rem 0;
+}
+
+.notifications-header::before, .dropdown-header::before { /* Shimmer effect for headers */
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+  animation: shimmer 3s infinite;
 }
 
 .mark-all-read {
@@ -303,7 +380,7 @@
   text-decoration: underline;
 }
 
-/* User Profile */
+/* User Profile (retained from previous version) */
 .user-profile {
   position: relative;
 }
@@ -423,7 +500,7 @@
   background: rgba(var(--color-accent-error), 0.08);
 }
 
-/* Auth Buttons */
+/* Auth Buttons (retained from previous version) */
 .auth-buttons {
   display: flex;
   align-items: center;
@@ -463,7 +540,7 @@
   box-shadow: 0 8px 20px rgba(var(--color-accent-primary), 0.3);
 }
 
-/* Mobile Menu */
+/* Mobile Menu (retained from previous version) */
 .mobile-menu-btn {
   display: none;
   background: transparent;
@@ -546,6 +623,7 @@
   padding: 1rem 0;
 }
 
+/* 11. Enhanced mobile navigation */
 .mobile-nav-link {
   display: flex;
   align-items: center;
@@ -555,17 +633,33 @@
   text-decoration: none;
   font-size: 1rem;
   font-weight: 500;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease; /* Unified transition */
+  border-radius: 8px;
+  margin: 0 0.5rem; /* Added margin for spacing */
+  position: relative;
+  overflow: hidden;
 }
 
 .mobile-nav-link:hover {
   background: rgba(var(--color-accent-primary), 0.08);
   color: rgb(var(--color-accent-primary));
+  transform: translateX(4px); /* Subtle slide on hover */
 }
 
 .mobile-nav-link.active {
   background: var(--gradient-primary);
   color: white;
+}
+
+.mobile-nav-link.active::before { /* Active indicator */
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 0 4px 4px 0; /* Rounded edge */
 }
 
 .mobile-nav-icon {
@@ -599,9 +693,11 @@
   }
 }
 
+/* 8. Enhanced mobile responsiveness */
 @media (max-width: 768px) {
   .navbar-container {
     padding: 0 1rem;
+    gap: 0.5rem; /* Reduced gap */
   }
   
   .desktop-only {
@@ -612,8 +708,19 @@
     display: flex !important;
   }
 
-  .mobile-menu-btn {
+  .mobile-menu-btn { /* Ensure mobile menu button is visible */
     display: flex;
+    background: rgba(var(--color-accent-primary), 0.08); /* Specific background */
+    border: 1px solid rgba(var(--color-accent-primary), 0.15); /* Specific border */
+    border-radius: 10px; /* Specific border-radius */
+    width: 38px; /* Specific size */
+    height: 38px; /* Specific size */
+    font-size: 1.1rem; /* Specific font size */
+  }
+
+  .mobile-menu-btn:hover { /* Specific hover for mobile menu button */
+    background: rgba(var(--color-accent-primary), 0.18);
+    border-color: rgba(var(--color-accent-primary), 0.35);
   }
   
   .brand-text {
@@ -636,6 +743,34 @@
   .notifications-dropdown, .user-dropdown {
     width: calc(100vw - 2rem);
     right: 1rem;
+    max-width: 360px; /* Max width for mobile dropdowns */
+  }
+
+  /* Specific mobile-only sidebar toggle styling */
+  .sidebar-toggle-btn.mobile-only {
+    background: rgba(var(--color-accent-tertiary), 0.08);
+    border: 1px solid rgba(var(--color-accent-tertiary), 0.15);
+    border-radius: 10px; /* Specific border-radius */
+    width: 38px; /* Specific size */
+    height: 38px; /* Specific size */
+    font-size: 1.1rem; /* Specific font size */
+  }
+  
+  .sidebar-toggle-btn.mobile-only:hover {
+    background: rgba(var(--color-accent-tertiary), 0.18);
+    border-color: rgba(var(--color-accent-tertiary), 0.35);
+    color: rgb(var(--color-accent-tertiary));
+  }
+
+  .navbar-actions { /* Adjust gap for mobile */
+    gap: 0.25rem;
+  }
+
+  .notification-btn, .theme-toggle-btn { /* Apply mobile sizes to these as well */
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+    border-radius: 10px;
   }
 }
 
@@ -645,17 +780,23 @@
   }
 }
 
-/* Focus States */
-.notification-btn:focus,
-.settings-btn:focus,
-.sidebar-toggle-btn:focus,
-.theme-toggle-btn:focus,
-.user-info-btn:focus {
-  outline: 1px solid rgba(var(--color-accent-primary), 0.5);
+/* 10. Better focus states */
+.notification-btn:focus-visible,
+.settings-btn:focus-visible,
+.sidebar-toggle-btn:focus-visible,
+.theme-toggle-btn:focus-visible,
+.user-info-btn:focus-visible,
+.login-btn:focus-visible,
+.signup-btn:focus-visible,
+.mobile-menu-btn:focus-visible,
+.mobile-nav-link:focus-visible,
+.mobile-logout:focus-visible {
+  outline: 2px solid rgba(var(--color-accent-primary), 0.6);
   outline-offset: 2px;
+  border-color: rgba(var(--color-accent-primary), 0.4);
 }
 
-/* Reduced Motion */
+/* Reduced Motion (retained from previous version) */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
@@ -664,105 +805,30 @@
   }
 }
 
-.sidebar-toggle-btn .toggle-icon, .side-bar-icon {
-  display: inline-block;
-  width: 0.5rem;
-  height: 0.5rem;
-  border-right: 2px solid currentColor; /* Key: Right border */
-  border-bottom: 2px solid currentColor; /* Key: Bottom border */
-  transform: rotate(-45deg); /* Key: Rotation */
-  transition: transform 0.2s ease;
-}
-
-.sidebar-toggle.expanded .toggle-icon , .sidebar-icon{
-  transform: rotate(45deg); /* Key: Rotation change for expanded state */
-}
-
-/* Add this to your Navbar.css file */
-
-/* Animated gradient separator */
+/* 9. Enhanced brand separator */
 .brand-separator-gradient {
   width: 2px;
-  height: 24px;
-  background: linear-gradient(
-    45deg,
-    var(--primary-color, #3b82f6),
-    var(--accent-color, #8b5cf6),
-    var(--primary-color, #ab3bf6)
-  );
+  height: 28px;
+  background: var(--gradient-accent); /* Using new gradient-accent */
   background-size: 200% 200%;
-  margin: 0 16px;
-  border-radius: 1px;
-  animation: gradientShift 3s ease-in-out infinite;
-  opacity: 0.7;
+  margin: 0 1.5rem; /* Adjusted margin */
+  border-radius: 2px;
+  animation: gradient-flow 4s ease-in-out infinite; /* Using new gradient-flow */
+  opacity: 0.8;
+  transition: all 0.3s ease;
 }
 
-@keyframes gradientShift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
-/* Dark theme adjustments */
-[data-theme="dark"] .brand-separator {
-  background: linear-gradient(
-    to bottom, 
-    transparent 0%, 
-    var(--text-secondary, #94a3b8) 20%, 
-    var(--text-secondary, #94a3b8) 80%, 
-    transparent 100%
-  );
-}
-
-[data-theme="dark"] .brand-separator-solid {
-  background-color: var(--border-color, #374151);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .brand-separator,
-  .brand-separator-solid,
-  .brand-separator-gradient {
-    height: 18px;
-    margin: 0 12px;
-  }
-}
-
-/* Optional: Add hover effect */
-.navbar-left:hover .brand-separator {
+.navbar-left:hover .brand-separator-gradient {
   opacity: 1;
   transform: scaleY(1.1);
+  box-shadow: 0 0 10px rgba(var(--color-accent-primary), 0.3);
 }
 
-/* If you want the separator to pulse */
-.brand-separator-pulse {
-  width: 1px;
-  height: 24px;
-  background: var(--text-secondary, #ba52cf);
-  margin: 0 16px;
-  opacity: 0.6;
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.6;
-    transform: scaleY(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scaleY(1.2);
+/* Responsive adjustments for separator */
+@media (max-width: 768px) {
+  .brand-separator-gradient {
+    height: 20px; /* Adjusted height for mobile */
+    margin: 0 1rem; /* Adjusted margin for mobile */
   }
 }
 
-  @media (min-width: 769px) {
-  .desktop-only {
-    display: flex; /* Show the desktop toggle on larger screens */
-  }
-  .mobile-only {
-    display: none; /* Hide the mobile toggle on larger screens */
-  }
-}

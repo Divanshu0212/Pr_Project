@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaUserTie, FaBriefcase, FaSearch, FaRocket, FaCode, FaChartLine } from 'react-icons/fa';
-import { HiSparkles, HiLightningBolt } from 'react-icons/hi';
+// Consolidated all Fa icons into one import
+import { FaGithub, FaLinkedin, FaTwitter, FaArrowRight, FaUserTie, FaBriefcase, FaSearch, FaRocket, FaCode, FaChartLine } from 'react-icons/fa';
+// Consolidated all Hi icons into one import
+import { HiSparkles, HiLightningBolt, HiStar } from 'react-icons/hi';
+// Consolidated all Io5 icons into one import
+import { IoRocketSharp, IoTrendingUp, IoCheckmarkCircle } from 'react-icons/io5';
+// Consolidated all Bs icons into one import
+import { BsCode, BsGraphUp, BsShieldCheck } from 'react-icons/bs';
+
 import PropTypes from 'prop-types';
 import { useInView } from 'react-intersection-observer';
 
@@ -64,7 +71,7 @@ const LandingPage = ({ user }) => {
     navigate(user ? '/home' : '/signup');
   };
 
-  // Standard feature cards with enhanced icons
+  // Replace the standardFeatures array with enhanced icons:
   const standardFeatures = [
     {
       icon: <FaBriefcase className="feature-icon gradient-icon" />,
@@ -75,13 +82,13 @@ const LandingPage = ({ user }) => {
     },
     {
       icon: <FaUserTie className="feature-icon gradient-icon" />,
-      title: 'Resume Generator',
+      title: 'Resume Generator', 
       description: 'Create professional, ATS-optimized resumes from your portfolio with just a few clicks.',
       image: resumeImg,
       link: '/resume-builder-home',
     },
     {
-      icon: <FaSearch className="feature-icon gradient-icon" />,
+      icon: <BsShieldCheck className="feature-icon gradient-icon" />,
       title: 'ATS Tracker',
       description: 'Upload your resume to test against ATS systems and get actionable improvement suggestions.',
       image: atsImg,
@@ -133,10 +140,13 @@ const LandingPage = ({ user }) => {
           </div>
           
           <h1 className="hero-title">
-            Build Your 
-            <span className="gradient-text animated-text"> Developer Portfolio</span>
-            <br />
-            <span className="typing-text">That Gets You Hired</span>
+            <span className="title-line">
+              Build Your 
+              <span className="gradient-text glow-text"> Developer Portfolio</span>
+            </span>
+            <span className="title-line">
+              <span className="typing-text">That Gets You Hired</span>
+            </span>
           </h1>
           
           <p className="hero-subtitle">
@@ -144,35 +154,42 @@ const LandingPage = ({ user }) => {
             and track your application success with AI-powered insights
           </p>
           
-          <div className="hero-features-list">
-            <div className="hero-feature">
-              <HiLightningBolt className="hero-feature-icon" />
+          {/* Redesigned hero-features-list to be more subtle */}
+          <div className="hero-features-tags">
+            <div className="hero-feature-tag">
+              <IoTrendingUp className="tag-icon" />
               <span>Real-time ATS Scoring</span>
             </div>
-            <div className="hero-feature">
-              <FaRocket className="hero-feature-icon" />
+            <div className="hero-feature-tag">
+              <HiLightningBolt className="tag-icon" />
               <span>AI-Powered Optimization</span>
             </div>
-            <div className="hero-feature">
-              <FaChartLine className="hero-feature-icon" />
+            <div className="hero-feature-tag">
+              <BsGraphUp className="tag-icon" />
               <span>Performance Analytics</span>
             </div>
           </div>
           
           <div className="hero-cta">
-            <button onClick={handleGetStarted} className="btn-primary pulse-animation">
-              <span>{user ? 'Go to Dashboard' : 'Start Building Now'}</span>
-              <FaRocket className="btn-icon" />
+            <button onClick={handleGetStarted} className="btn-primary btn-enhanced pulse-animation">
+              <span className="btn-text">{user ? 'Go to Dashboard' : 'Start Building Now'}</span>
+              <div className="btn-icon-wrapper">
+                <IoRocketSharp className="btn-icon" />
+              </div>
             </button>
             <button
               onClick={() => window.scrollTo({ top: document.getElementById('features').offsetTop, behavior: 'smooth' })}
-              className="btn-secondary glass-effect"
+              className="btn-secondary btn-enhanced glass-effect"
             >
-              Explore Features
+              <span className="btn-text">Explore Features</span>
+              <div className="btn-icon-wrapper">
+                <FaArrowRight className="btn-icon" />
+              </div>
             </button>
           </div>
         </div>
         
+        {/* Enhanced hero-visual to fill space and be more central */}
         <div className={`hero-visual ${heroSectionInView ? 'animate-in' : ''}`}>
           <div className="code-window enhanced-code-window">
             <div className="code-header">
@@ -199,15 +216,21 @@ const LandingPage = ({ user }) => {
             </div>
           </div>
         </div>
+
+        {/* Removed hero-robot div completely */}
+
       </section>
 
       {/* Features Section */}
-      <section id="features" className="features-section">
-        <div ref={featuresHeaderRef} className={`section-header ${featuresHeaderInView ? 'slide-up' : ''}`}>
+      <section id="features" className={`features-section ${featuresHeaderInView ? 'animate-in' : ''}`}>
+        <div ref={featuresHeaderRef} className={`section-header enhanced-header ${featuresHeaderInView ? 'slide-up' : ''}`}>
+          <div className="header-decoration">
+            <div className="decoration-line"></div>
+            <HiSparkles className="decoration-icon" />
+            <div className="decoration-line"></div>
+          </div>
           <h2 className="section-title gradient-text">
-            <span className="title-decoration">🚀</span>
             Why Choose DevPortfolio?
-            <span className="title-decoration">✨</span>
           </h2>
           <p className="section-subtitle">
             Everything you need to streamline your job application process and showcase your talents.
@@ -236,15 +259,15 @@ const LandingPage = ({ user }) => {
             <div className="card-content">
               <div className="features-list">
                 <div className="feature-item">
-                  <FaChartLine className="item-icon" />
+                  <BsGraphUp className="item-icon" />
                   <span>Real-time ATS resume scoring with instant feedback</span>
                 </div>
                 <div className="feature-item">
-                  <FaCode className="item-icon" />
+                  <BsCode className="item-icon" />
                   <span>AI-powered suggestions for optimal resume adjustments</span>
                 </div>
                 <div className="feature-item">
-                  <FaRocket className="item-icon" />
+                  <IoRocketSharp className="item-icon" />
                   <span>Smart Portfolio customization with personalized features</span>
                 </div>
                 <div className="feature-item">
@@ -252,7 +275,7 @@ const LandingPage = ({ user }) => {
                   <span>Dynamic Skill Mapping for real-time professional development</span>
                 </div>
                 <div className="feature-item">
-                  <FaChartLine className="item-icon" />
+                  <IoTrendingUp className="item-icon" />
                   <span>Data-driven insights to track resume performance</span>
                 </div>
               </div>
@@ -272,7 +295,7 @@ const LandingPage = ({ user }) => {
       </section>
 
       {/* How It Works Section */}
-      <section className="how-it-works">
+      <section className={`how-it-works ${howItWorksHeaderInView ? 'animate-in' : ''}`}>
         <div ref={howItWorksHeaderRef} className={`section-header ${howItWorksHeaderInView ? 'slide-up' : ''}`}>
           <h2 className="section-title gradient-text">How It Works</h2>
           <p className="section-subtitle">Three simple steps to boost your developer career</p>
@@ -316,7 +339,7 @@ const LandingPage = ({ user }) => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="testimonials-section">
+      <section className={`testimonials-section ${testimonialsHeaderInView ? 'animate-in' : ''}`}>
         <div ref={testimonialsHeaderRef} className={`section-header ${testimonialsHeaderInView ? 'slide-up' : ''}`}>
           <h2 className="section-title gradient-text">Developer Success Stories</h2>
           <p className="section-subtitle">See how other developers have benefited from our platform</p>
@@ -332,7 +355,7 @@ const LandingPage = ({ user }) => {
       </section>
 
       {/* Stats Section */}
-      <section ref={statsSectionRef} className={`stats-section ${statsSectionInView ? 'animate-stats' : ''}`}>
+      <section ref={statsSectionRef} className={`stats-section ${statsSectionInView ? 'animate-stats animate-in' : ''}`}>
         <div className="stats-container">
           <div className="stat-item" style={{ '--delay': '0s' }}>
             <div className="stat-number gradient-text" ref={statsRefs.users}>0</div>
@@ -369,9 +392,11 @@ const LandingPage = ({ user }) => {
             Start building your professional portfolio today and unlock new career opportunities
           </p>
           
-          <button onClick={handleGetStarted} className="btn-primary btn-lg pulse-animation">
-            <span>{user ? 'Go to Dashboard' : 'Create Your Account'}</span>
-            <FaRocket className="btn-icon" />
+          <button onClick={handleGetStarted} className="btn-primary btn-enhanced btn-lg pulse-animation">
+            <span className="btn-text">{user ? 'Go to Dashboard' : 'Create Your Account'}</span>
+            <div className="btn-icon-wrapper">
+              <IoRocketSharp className="btn-icon" />
+            </div>
           </button>
         </div>
       </section>

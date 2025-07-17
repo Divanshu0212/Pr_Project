@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { motion } from 'framer-motion';
+import { useTheme } from '../../context/ThemeContext';
 import './Card.css';
 
 const Card = ({
@@ -12,6 +13,7 @@ const Card = ({
   enableSpotlight = true,
   disableAnimation = false,
 }) => {
+  const { theme } = useTheme();
   const divRef = useRef(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [opacity, setOpacity] = useState(0);
@@ -28,7 +30,8 @@ const Card = ({
         }
       },
       {
-        threshold: 0.2,
+        threshold: 0.1,
+        rootMargin: '50px 0px -50px 0px',
       }
     );
 
@@ -44,11 +47,16 @@ const Card = ({
     };
   }, [isVisible, disableAnimation]);
 
-  // Mouse move handler for spotlight effect
+  // Enhanced mouse move handler for spotlight effect
   const handleMouseMove = (e) => {
     if (!divRef.current || !enableSpotlight) return;
     const rect = divRef.current.getBoundingClientRect();
-    setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    requestAnimationFrame(() => {
+      setPosition({ x, y });
+    });
   };
 
   const handleMouseEnter = () => { 
@@ -59,32 +67,54 @@ const Card = ({
     if (enableSpotlight) setOpacity(0);
   };
 
-  // Spotlight style with theme-aware colors
+  // Enhanced spotlight style with theme-aware colors
   const spotlightStyle = {
     opacity,
-    background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, 
-      rgba(var(--color-accent-primary), 0.1),
-      transparent 80%
+    background: `radial-gradient(400px circle at ${position.x}px ${position.y}px, 
+      rgba(var(--color-accent-primary), 0.15),
+      rgba(var(--color-highlight), 0.1),
+      transparent 70%
     )`,
+    transition: 'opacity 0.3s ease',
   };
 
   const cardVariants = {
-    hidden: { opacity: 0, y: 30, scale: 0.98 },
+    hidden: { 
+      opacity: 0, 
+      y: 50, 
+      scale: 0.95,
+      filter: 'blur(4px)'
+    },
     visible: { 
       opacity: 1, 
       y: 0, 
       scale: 1,
+      filter: 'blur(0px)',
       transition: { 
-        duration: 0.5, 
-        ease: [0.25, 1, 0.5, 1]
+        duration: 0.6, 
+        ease: [0.25, 0.1, 0.25, 1],
+        staggerChildren: 0.1
       }
     }
   };
 
   const hoverVariants = {
     hover: {
-      y: -8,
-      transition: { duration: 0.3, ease: "easeOut" }
+      y: -10,
+      scale: 1.02,
+      transition: { 
+        duration: 0.3, 
+        ease: "easeOut" 
+      }
+    }
+  };
+
+  const glowVariants = {
+    hover: {
+      boxShadow: theme === 'dark' 
+        ? `0 25px 50px -12px rgba(0, 255, 255, 0.25), 0 0 0 1px rgba(0, 255, 255, 0.1)`
+        : `0 25px 50px -12px rgba(49, 130, 206, 0.25), 0 0 0 1px rgba(49, 130, 206, 0.1)`,
+      transition: { duration: 0.3 }
     }
   };
   
@@ -95,13 +125,42 @@ const Card = ({
       <div className="card-content">
         {post ? (
           <Link to={`/posts/${post.id}`} className="card-link">
-            {post.image && (
-              <img src={post.image} alt={post.title} className="card-image" />
-            )}
+            <motion.div 
+              className="card-image-wrapper"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.4 }}
+            >
+              {post.image && (
+                <img src={post.image} alt={post.title} className="card-image" />
+              )}
+              <div className="card-overlay" />
+            </motion.div>
             <div className="card-text-content">
-              <h3 className="card-title">{post.title}</h3>
-              <p className="card-description">{post.excerpt || post.description}</p>
-              <span className="card-read-more">Read More →</span>
+              <motion.h3 
+                className="card-title gradient-text"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                {post.title}
+              </motion.h3>
+              <motion.p 
+                className="card-description"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                {post.excerpt || post.description}
+              </motion.p>
+              <motion.span 
+                className="card-read-more"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+                whileHover={{ x: 8 }}
+              >
+                Read More →
+              </motion.span>
             </div>
           </Link>
         ) : (
@@ -114,12 +173,11 @@ const Card = ({
   return (
     <motion.div
       ref={divRef}
-      // Added .panel class for consistent theming!
       className={`card panel ${onClick ? 'is-clickable' : ''} ${className}`}
       variants={cardVariants}
       initial={disableAnimation ? "visible" : "hidden"}
       animate={isVisible || disableAnimation ? "visible" : "hidden"}
-      whileHover={onClick ? "hover" : ""}
+      whileHover={onClick ? { ...hoverVariants.hover, ...glowVariants.hover } : glowVariants.hover}
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
