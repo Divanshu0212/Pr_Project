@@ -1,27 +1,30 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import { useTheme } from '../../context/ThemeContext';
 import './FeatureCard.css';
 
 const FeatureCard = ({ feature, animationOrder = 0 }) => {
+  const { theme } = useTheme();
   const { title, description, icon, link, isSpecial } = feature;
 
   return (
     <div
-      className={`feature-card ${isSpecial ? 'feature-card-special' : ''}`}
+      className={`feature-card ${isSpecial ? 'feature-card-special' : ''} ${theme}`}
       style={{ 
         animationDelay: `${animationOrder * 0.15}s`,
         opacity: 0 
       }}
     >
       <div className="feature-card-glow"></div>
+      <div className="feature-card-border"></div>
       {icon && (
         <div className="feature-icon-wrapper">
           {icon}
         </div>
       )}
       <div className="feature-content">
-        <h3 className="feature-title">{title}</h3>
+        <h3 className="feature-title gradient-text">{title}</h3>
         <p className="feature-description">{description}</p>
         {link && (
           <Link to={link} className="feature-link">

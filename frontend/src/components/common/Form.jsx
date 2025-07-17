@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import './Form.css';
 import PropTypes from 'prop-types';
 
@@ -12,16 +13,17 @@ const Form = ({
   error = '',
   required = false,
   disabled = false,
-  as = 'input', // New prop to specify element type
-  ...props // Pass down other props like rows for textarea
+  as = 'input',
+  ...props
 }) => {
-  const InputElement = as; // Use 'as' prop to render input or textarea
+  const { theme } = useTheme();
+  const InputElement = as;
 
   return (
-    <div className="input-wrapper">
+    <div className={`input-wrapper ${theme}`}>
       {label && (
         <label className="input-label" htmlFor={name}>
-          {label}
+          <span className="label-text">{label}</span>
           {required && <span className="input-required">*</span>}
         </label>
       )}
@@ -39,9 +41,11 @@ const Form = ({
           {...props}
         />
         <div className="input-focus-ring"></div>
+        <div className="input-glow"></div>
       </div>
       {error && (
         <p className="input-error-message">
+          <span className="error-icon">⚠</span>
           {error}
         </p>
       )}

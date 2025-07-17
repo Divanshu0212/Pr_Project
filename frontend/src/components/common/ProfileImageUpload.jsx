@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { FiUploadCloud, FiCamera, FiX } from 'react-icons/fi';
 import { useTheme } from '../../context/ThemeContext';
@@ -8,8 +8,28 @@ const ProfileImageUpload = ({ onImageChange, initialImage = '' }) => {
   const [preview, setPreview] = useState(initialImage);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const fileInputRef = useRef(null);
+  const componentRef = useRef(null);
   const { theme } = useTheme();
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (componentRef.current) {
+      observer.observe(componentRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
   
   const handleImageClick = () => {
     fileInputRef.current.click();
@@ -20,7 +40,7 @@ const ProfileImageUpload = ({ onImageChange, initialImage = '' }) => {
       setIsUploading(true);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setTimeout(() => { // Simulate upload delay for better UX
+        setTimeout(() => {
           setPreview(reader.result);
           onImageChange({ file, previewUrl: URL.createObjectURL(file) });
           setIsUploading(false);
@@ -61,7 +81,10 @@ const ProfileImageUpload = ({ onImageChange, initialImage = '' }) => {
   };
 
   return (
-    <div className={`profile-image-upload ${theme}`}>
+    <div 
+      ref={componentRef}
+      className={`profile-image-upload ${theme} ${isVisible ? 'animate-in' : ''}`}
+    >
       <div 
         className={`image-preview-wrapper ${isDragging ? 'dragging' : ''} ${isUploading ? 'uploading' : ''}`}
         onClick={handleImageClick}

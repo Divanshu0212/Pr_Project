@@ -1,9 +1,12 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { FiX } from 'react-icons/fi';
+import { useTheme } from '../../context/ThemeContext';
 import './Modal.css';
 
 const Modal = ({ isOpen, onClose, title, children }) => {
+  const { theme } = useTheme();
+
   // Effect to handle escape key press
   useEffect(() => {
     const handleEsc = (event) => {
@@ -24,7 +27,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className={`modal-overlay ${theme}`} onClick={onClose}>
       <div
         className="modal-container"
         onClick={(e) => e.stopPropagation()}

@@ -5,20 +5,26 @@ import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../context/ThemeContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
-
-
+// 1. Update imports - Replace the existing icon imports with these better ones
 import { 
   FiMenu, FiX, FiUser, FiLogOut, FiBell, FiChevronDown, 
-  FiInfo, FiHelpCircle, FiTarget,  FiSun, FiMoon,   FiChevronRight, FiChevronLeft  // Add these
+  FiInfo, FiHelpCircle, FiTarget, FiSun, FiMoon, FiChevronRight, 
+  FiChevronLeft, FiHome, FiSettings, FiSearch 
 } from 'react-icons/fi';
+
 import { 
-  HiSparkles, HiLightningBolt,  HiViewGrid,
-  HiDocumentText, HiCollection,  HiCog, HiTrendingUp,
-  HiMenuAlt3,} from 'react-icons/hi';
-import {  RiMenuFoldLine, RiMenuUnfoldLine,} from 'react-icons/ri';
+  HiSparkles, HiLightningBolt, HiViewGrid, HiDocumentText, 
+  HiCollection, HiCog, HiTrendingUp, HiMenuAlt3, HiOutlineHome,
+  HiOutlineCog, HiOutlineUser, HiOutlineQuestionMarkCircle 
+} from 'react-icons/hi';
+
+import { 
+  RiMenuFoldLine, RiMenuUnfoldLine, RiHomeLine, RiHome3Line 
+} from 'react-icons/ri';
 
 
 import './Navbar.css';
+
 const dropdownVariants = {
   hidden: { opacity: 0, y: -10, scale: 0.95 },
   visible: { 
@@ -120,13 +126,13 @@ const Navbar = ({ onToggleSidebar, sidebarCollapsed = false }) => {
   };
 
   // Enhanced sidebar icon logic with better animations and icons
-const getSidebarIcon = () => {
-  if (sidebarCollapsed) {
-    return <FiChevronRight className="sidebar-icon" />;
-  } else {
-    return <FiChevronLeft className="sidebar-icon" />;
-  }
-};
+  const getSidebarIcon = () => {
+    if (sidebarCollapsed) {
+      return <FiChevronRight className="sidebar-icon" />;
+    } else {
+      return <FiChevronLeft className="sidebar-icon" />;
+    }
+  };
 
   // Alternative icon set for different visual styles
   const getSidebarIconAlt = () => {
@@ -142,6 +148,47 @@ const getSidebarIcon = () => {
     return sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar";
   };
 
+  // 2. Update the mobile nav items array to include Home logic
+  const getMobileNavItems = () => {
+    const baseItems = [
+      { to: '/home', icon: HiOutlineHome, label: 'Dashboard', delay: 0.15 },
+      { to: '/profile', icon: HiOutlineUser, label: 'Profile', delay: 0.2 },
+      { to: '/settings', icon: HiOutlineCog, label: 'Settings', delay: 0.35 },
+      { to: '/help', icon: HiOutlineQuestionMarkCircle, label: 'Help', delay: 0.4 }
+    ];
+
+    // Add Home link if user is authenticated
+    if (isAuthenticated) {
+      return [
+        { to: '/', icon: RiHome3Line, label: 'Home', delay: 0.1 },
+        ...baseItems
+      ];
+    }
+    
+    return baseItems;
+  };
+
+  // 3. Update the dropdown items to include Home
+  const getDropdownItems = () => {
+    const baseItems = [
+      { to: '/profile', icon: HiOutlineUser, label: 'Profile' },
+      { to: '/settings', icon: HiOutlineCog, label: 'Settings' },
+      { to: '/help', icon: HiOutlineQuestionMarkCircle, label: 'Help Center' },
+      { to: '/about', icon: FiInfo, label: 'About' }
+    ];
+
+    // Add Home link if user is authenticated
+    if (isAuthenticated) {
+      return [
+        { to: '/', icon: RiHome3Line, label: 'Home' },
+        ...baseItems
+      ];
+    }
+    
+    return baseItems;
+  };
+
+
   return (
     <motion.header 
       className={`navbar ${scrolled ? 'scrolled' : ''}`}
@@ -151,40 +198,42 @@ const getSidebarIcon = () => {
     >
       <div className="navbar-container">
         <div className="navbar-left">
+          {/* 4. Replace the sidebar toggle button section with better responsiveness */}
           {isAuthenticated && onToggleSidebar && (
             <motion.button 
               className="sidebar-toggle-btn desktop-only" 
               onClick={handleToggleSidebar} 
               aria-label={getSidebarTooltip()}
               whileHover={{ 
-                scale: 1.1, 
-                rotate: sidebarCollapsed ? 12 : -12,
+                scale: 1.1,
+                rotate: sidebarCollapsed ? 8 : -8,
               }}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.9 }}
               title={getSidebarTooltip()}
             >
               <motion.div
                 animate={{ 
-                  rotate: sidebarCollapsed ? 0 : 0,
-                  scale: sidebarCollapsed ? 1.1 : 1
+                  rotate: sidebarCollapsed ? 0 : 180,
+                  scale: sidebarCollapsed ? 1 : 1.1
                 }}
                 transition={{ 
-                  duration: 0.3, 
-                  ease: [0.16, 1, 0.3, 1],
-                  type: "spring",
-                  stiffness: 200,
-                  damping: 20
+                  duration: 0.25, 
+                  ease: "easeInOut"
                 }}
               >
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={sidebarCollapsed ? 'collapsed' : 'expanded'}
-                    initial={{ opacity: 0, scale: 0.8, rotate: -90 }}
-                    animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                    exit={{ opacity: 0, scale: 0.8, rotate: 90 }}
-                    transition={{ duration: 0.2 }}
+                    initial={{ opacity: 0, scale: 0.6 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.6 }}
+                    transition={{ duration: 0.15 }}
                   >
-                    {getSidebarIcon()}
+                    {sidebarCollapsed ? (
+                      <FiChevronRight className="sidebar-icon" />
+                    ) : (
+                      <FiChevronLeft className="sidebar-icon" />
+                    )}
                   </motion.div>
                 </AnimatePresence>
               </motion.div>
@@ -200,7 +249,7 @@ const getSidebarIcon = () => {
             </motion.span>
           </Link>
 
-           {/* Add the vertical separator */}
+            {/* Add the vertical separator */}
             {isAuthenticated && (
               <motion.div 
                 className="brand-separator-gradient"
@@ -211,16 +260,16 @@ const getSidebarIcon = () => {
               )}
 
 
-          {isAuthenticated && (         
-            <motion.div 
-              className="page-title-container"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <h1 className="page-title animated-text">{getPageTitle()}</h1>
-            </motion.div>
-          )}
+            {isAuthenticated && ( 
+              <motion.div 
+                className="page-title-container"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <h1 className="page-title animated-text">{getPageTitle()}</h1>
+              </motion.div>
+            )}
         </div>
 
         <div className="navbar-middle"></div>
@@ -237,17 +286,24 @@ const getSidebarIcon = () => {
                 onClick={toggleTheme}
                 className="theme-toggle-btn "
                 aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-                 whileHover={{ scale: 1.15, rotate: 360 }} 
+                whileHover={{ 
+                  scale: 1.15, 
+                  rotate: [0, 10, -10, 0], // Changed from 360 to a subtle wobble
+                  transition: { duration: 0.3 }
+                }} 
                 whileTap={{ scale: 0.85 }}
                 title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
               >
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.div
                     key={theme === 'dark' ? 'sun' : 'moon'}
-                    initial={{ y: -20, opacity: 0, rotate: -180 }}
-                    animate={{ y: 0, opacity: 1, rotate: 0 }}
-                    exit={{ y: 20, opacity: 0, rotate: 180 }}
-                    transition={{ duration: 0.3 }}
+                    initial={{ y: -30, opacity: 0, rotate: -180, scale: 0.5 }} // Added scale initial
+                    animate={{ y: 0, opacity: 1, rotate: 0, scale: 1 }} // Added scale animate
+                    exit={{ y: 30, opacity: 0, rotate: 180, scale: 0.5 }} // Added scale exit
+                    transition={{ 
+                      duration: 0.35,
+                      ease: "easeInOut"
+                    }}
                     className="theme-icon-wrapper"
                   >
                     {theme === 'dark' ? (
@@ -260,25 +316,43 @@ const getSidebarIcon = () => {
               </motion.button>
 
               <div className="notification-wrapper" ref={notificationsRef}>
+                {/* 8. Enhanced notification button with better animation */}
                 <motion.button 
-                  className={`notification-btn  ${notificationsOpen ? 'active' : ''}`} 
+                  className={`notification-btn ${notificationsOpen ? 'active' : ''}`} 
                   onClick={toggleNotifications} 
                   aria-label="Notifications"
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ 
+                    scale: 1.1, 
+                    y: -2,
+                    transition: { duration: 0.2 }
+                  }}
+                  whileTap={{ scale: 0.9 }}
                 >
                   <motion.div
-                    animate={notifications.some(n => !n.read) ? { scale: [1, 1.2, 1] } : {}}
-                    transition={{ duration: 2, repeat: Infinity }}
+                    animate={notifications.some(n => !n.read) ? { 
+                      scale: [1, 1.1, 1],
+                      rotate: [0, -10, 10, 0] // Added rotation for bell effect
+                    } : {}}
+                    transition={{ 
+                      duration: 1.5, 
+                      repeat: Infinity,
+                      repeatDelay: 3
+                    }}
                   >
                     <FiBell />
                   </motion.div>
                   {notifications.some(n => !n.read) && (
                     <motion.span 
                       className="notification-indicator"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.3 }}
+                      initial={{ scale: 0, opacity: 0 }} // Added opacity initial
+                      animate={{ 
+                        scale: [0, 1.2, 1], // Bounce animation
+                        opacity: 1
+                      }}
+                      transition={{ 
+                        duration: 0.4,
+                        ease: "easeOut"
+                      }}
                     />
                   )}
                 </motion.button>
@@ -379,31 +453,16 @@ const getSidebarIcon = () => {
                         <h4 className="gradient-text">{user?.displayName}</h4>
                         <p>{user?.email}</p>
                       </motion.div>
+                      {/* 5. Update the dropdown content rendering for better responsiveness */}
                       <div className="dropdown-content">
-                        <motion.div variants={itemVariants}>
-                          <Link to="/profile" className="dropdown-item">
-                            <FiUser className="dropdown-icon" />
-                            <span>Profile</span>
-                          </Link>
-                        </motion.div>
-                        <motion.div variants={itemVariants}>
-                          <Link to="/settings" className="dropdown-item">
-                            <HiCog className="dropdown-icon" />
-                            <span>Settings</span>
-                          </Link>
-                        </motion.div>
-                        <motion.div variants={itemVariants}>
-                          <Link to="/help" className="dropdown-item">
-                            <FiHelpCircle className="dropdown-icon" />
-                            <span>Help Center</span>
-                          </Link>
-                        </motion.div>
-                        <motion.div variants={itemVariants}>
-                          <Link to="/about" className="dropdown-item">
-                            <FiInfo className="dropdown-icon" />
-                            <span>About</span>
-                          </Link>
-                        </motion.div>
+                        {getDropdownItems().map((item) => (
+                          <motion.div key={item.to} variants={itemVariants}>
+                            <Link to={item.to} className="dropdown-item">
+                              <item.icon className="dropdown-icon" />
+                              <span>{item.label}</span>
+                            </Link>
+                          </motion.div>
+                        ))}
                       </div>
                       <motion.div className="dropdown-footer" variants={itemVariants}>
                         <button onClick={handleLogout} className="logout-btn">
@@ -429,30 +488,33 @@ const getSidebarIcon = () => {
                   <Link to="/signup" className="signup-btn gradient-bg">Sign Up</Link>
                 </motion.div>
                   <motion.button
-                onClick={toggleTheme}
-                className="theme-toggle-btn "
-                aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-                 whileHover={{ scale: 1.15, rotate: 360 }} 
-                whileTap={{ scale: 0.85 }}
-                title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-              >
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={theme === 'dark' ? 'sun' : 'moon'}
-                    initial={{ y: -20, opacity: 0, rotate: -180 }}
-                    animate={{ y: 0, opacity: 1, rotate: 0 }}
-                    exit={{ y: 20, opacity: 0, rotate: 180 }}
-                    transition={{ duration: 0.3 }}
-                    className="theme-icon-wrapper"
+                    onClick={toggleTheme}
+                    className="theme-toggle-btn "
+                    aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                    whileHover={{ scale: 1.15, rotate: [0, 10, -10, 0] }} // Changed from 360 to a subtle wobble
+                    whileTap={{ scale: 0.85 }}
+                    title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
                   >
-                    {theme === 'dark' ? (
-                      <FiSun className="theme-icon sun-icon" />
-                    ) : (
-                      <FiMoon className="theme-icon moon-icon" />
-                    )}
-                  </motion.div>
-                </AnimatePresence>
-              </motion.button>
+                    <AnimatePresence mode="wait" initial={false}>
+                      <motion.div
+                        key={theme === 'dark' ? 'sun' : 'moon'}
+                        initial={{ y: -30, opacity: 0, rotate: -180, scale: 0.5 }} // Added scale initial
+                        animate={{ y: 0, opacity: 1, rotate: 0, scale: 1 }} // Added scale animate
+                        exit={{ y: 30, opacity: 0, rotate: 180, scale: 0.5 }} // Added scale exit
+                        transition={{ 
+                          duration: 0.35,
+                          ease: "easeInOut"
+                        }}
+                        className="theme-icon-wrapper"
+                      >
+                        {theme === 'dark' ? (
+                          <FiSun className="theme-icon sun-icon" />
+                        ) : (
+                          <FiMoon className="theme-icon moon-icon" />
+                        )}
+                      </motion.div>
+                    </AnimatePresence>
+                  </motion.button>
               </motion.div>
             )}
           </div>
@@ -479,19 +541,43 @@ const getSidebarIcon = () => {
                 </AnimatePresence>
               </motion.button>
               {onToggleSidebar && (
+                // 7. Enhanced mobile sidebar toggle with better icons
                 <motion.button 
-                  className="sidebar-toggle-btn mobile-only " 
+                  className="sidebar-toggle-btn mobile-only" 
                   onClick={handleToggleSidebar} 
                   aria-label={getSidebarTooltip()}
-                  whileHover={{ scale: 1.1, rotate: sidebarCollapsed ? 12 : -12  }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ 
+                    scale: 1.1, 
+                    rotate: sidebarCollapsed ? 12 : -12 
+                  }}
+                  whileTap={{ scale: 0.9 }}
                   title={getSidebarTooltip()}
                 >
                   <motion.div
-                    animate={{ rotate: sidebarCollapsed ? 5 : -5 }}
-                    transition={{ duration: 0.2 }}
+                    animate={{ 
+                      rotate: sidebarCollapsed ? 0 : 180, // Rotates the container
+                      scale: 1
+                    }}
+                    transition={{ 
+                      duration: 0.2,
+                      ease: "easeOut"
+                    }}
                   >
-                    {getSidebarIconAlt()}
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={sidebarCollapsed ? 'mobile-collapsed' : 'mobile-expanded'}
+                        initial={{ opacity: 0, rotate: -90 }} // Initial state for icon
+                        animate={{ opacity: 1, rotate: 0 }} // Animate to visible
+                        exit={{ opacity: 0, rotate: 90 }} // Exit state for icon
+                        transition={{ duration: 0.15 }}
+                      >
+                        {sidebarCollapsed ? (
+                          <RiMenuUnfoldLine className="sidebar-icon" />
+                        ) : (
+                          <RiMenuFoldLine className="sidebar-icon" />
+                        )}
+                      </motion.div>
+                    </AnimatePresence>
                   </motion.div>
                 </motion.button>
               )}
@@ -523,13 +609,9 @@ const getSidebarIcon = () => {
                 )}
                 <span className="mobile-username gradient-text">{user?.displayName}</span>
               </motion.div>
+              {/* 6. Update mobile navigation rendering */}
               <nav className="mobile-nav">
-                {[
-                  { to: '/home', icon: HiViewGrid, label: 'Dashboard', delay: 0.15 },
-                  { to: '/profile', icon: FiUser, label: 'Profile', delay: 0.2 },
-                  { to: '/settings', icon: HiCog, label: 'Settings', delay: 0.4 },
-                  { to: '/help', icon: FiHelpCircle, label: 'Help', delay: 0.45 }
-                ].map((item) => (
+                {getMobileNavItems().map((item) => (
                   <motion.div
                     key={item.to}
                     initial={{ opacity: 0, x: 50 }}
