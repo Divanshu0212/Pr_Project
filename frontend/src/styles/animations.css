@@ -1,4 +1,4 @@
-/* src/styles/animations.css - Enhanced with scroll replay and performance optimizations */
+/* src/styles/animations.css - Enhanced with scroll replay, performance optimizations, and new animations */
 
 :root {
   --transition-fast: 0.25s ease-in-out;
@@ -244,6 +244,24 @@
   50% { background-position: 100% 50%; }
 }
 
+/* NEW: Enhanced gradient animations */
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes gradient-xy {
+  0%, 100% { background-position: 0% 50%; }
+  25% { background-position: 100% 50%; }
+  50% { background-position: 100% 100%; }
+  75% { background-position: 0% 100%; }
+}
+
+@keyframes gradient-slow {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
 .gradient-text {
   background: linear-gradient(45deg,
     rgb(var(--color-accent-primary)),
@@ -306,11 +324,17 @@
     0 0 30px rgb(var(--color-accent-primary));
 }
 
-/* 4. Loading Animations */
+/* 4. Enhanced Loading Animations */
 @keyframes pulse {
   0% { opacity: 0.5; transform: scale(0.99) translateZ(0); }
   50% { opacity: 1; transform: scale(1) translateZ(0); }
   100% { opacity: 0.5; transform: scale(0.99) translateZ(0); }
+}
+
+/* NEW: Enhanced floating and pulsing animations */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
 
 @keyframes spin {
@@ -319,12 +343,84 @@
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes shimmer-slow {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* NEW: Enhanced glow and twinkle effects */
+@keyframes glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 10px currentColor); }
+  50% { filter: drop-shadow(0 0 20px currentColor); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.8) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
 }
 
 .pulse { animation: pulse 2s infinite ease-in-out; }
 .spin { animation: spin 1.2s infinite linear; }
+
+/* NEW: Enhanced animation utility classes */
+.animate-gradient-x {
+  background-size: 200% 200%;
+  animation: gradient-x 3s ease infinite;
+}
+
+.animate-gradient-xy {
+  background-size: 200% 200%;
+  animation: gradient-xy 8s ease infinite;
+}
+
+.animate-gradient-slow {
+  background-size: 200% 200%;
+  animation: gradient-slow 6s ease infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+.animate-shimmer-slow {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shimmer-slow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  animation: shimmer-slow 4s infinite;
+}
+
+.animate-twinkle {
+  animation: twinkle 2s ease-in-out infinite;
+}
 
 .shimmer {
   background: linear-gradient(90deg,
@@ -382,6 +478,15 @@
   transform: perspective(1000px) rotateX(10deg) rotateY(10deg) translateZ(0);
 }
 
+/* NEW: Enhanced shadow and glow effects */
+.shadow-glow {
+  box-shadow: 0 0 20px rgba(var(--color-accent-primary), 0.3);
+}
+
+.hover\:shadow-glow:hover {
+  box-shadow: 0 0 30px rgba(var(--color-accent-primary), 0.5);
+}
+
 /* 6. Feedback Animations */
 @keyframes success-pulse {
   0% { box-shadow: 0 0 0 0 rgba(var(--color-accent-primary), 0.7); }
@@ -427,6 +532,16 @@
   100% { opacity: 1; transform: scale(1) translateZ(0); }
 }
 .bounce-in { animation: bounceIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+
+/* NEW: Enhanced gentle animations */
+@keyframes bounce-gentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.animate-bounce-gentle {
+  animation: bounce-gentle 2s ease-in-out infinite;
+}
 
 /* 8. Enhanced Card Animations */
 .card-hover {
@@ -474,10 +589,11 @@
   transform: rotateY(180deg);
 }
 
-/* 9. Floating Elements */
+/* 9. Enhanced Floating Elements */
 @keyframes float {
-  0%, 100% { transform: translateY(0px) translateZ(0); }
-  50% { transform: translateY(-10px) translateZ(0); }
+  0%, 100% { transform: translateY(0px) rotate(0deg) translateZ(0); }
+  33% { transform: translateY(-10px) rotate(120deg) translateZ(0); }
+  66% { transform: translateY(5px) rotate(240deg) translateZ(0); }
 }
 
 @keyframes float-delayed {
@@ -493,6 +609,11 @@
 .float { animation: float 3s ease-in-out infinite; }
 .float-delayed { animation: float-delayed 4s ease-in-out infinite; }
 .float-rotate { animation: float-rotate 5s ease-in-out infinite; }
+
+/* NEW: Enhanced float animation */
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
 
 /* 10. Scroll-triggered morphing animations */
 .morph-circle-to-square {
@@ -576,6 +697,15 @@
   contain: layout style paint;
 }
 
+/* NEW: Enhanced transition utilities */
+.transition-all-smooth {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ease-smooth {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* 15. Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   .scroll-reveal,
@@ -593,7 +723,9 @@
   
   .float,
   .float-delayed,
-  .float-rotate {
+  .float-rotate,
+  .animate-float,
+  .animate-bounce-gentle {
     animation: none;
   }
   
@@ -601,7 +733,14 @@
   .text-glow,
   .pulse,
   .spin,
-  .shimmer {
+  .shimmer,
+  .animate-gradient-x,
+  .animate-gradient-xy,
+  .animate-gradient-slow,
+  .animate-pulse-slow,
+  .animate-shimmer,
+  .animate-shimmer-slow,
+  .animate-twinkle {
     animation: none;
   }
 }
