@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useTheme } from '../context/AuthContext'; // Assuming this is where your theme context is
+import Button from '../components/common/Button';
+import Card from '../components/common/Card';
 
 const ResumeATSScanner = () => {
+  const { isDark } = useTheme();
   const [activeTab, setActiveTab] = useState('upload');
   const [selectedFile, setSelectedFile] = useState(null);
   const [resumeText, setResumeText] = useState('');
@@ -9,8 +13,13 @@ const ResumeATSScanner = () => {
   const [error, setError] = useState('');
   const [results, setResults] = useState(null);
   const [dragover, setDragover] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   const API_BASE_URL = 'http://localhost:8001';
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -121,14 +130,18 @@ const ResumeATSScanner = () => {
   };
 
   const renderScoreGauge = (score, label) => (
-    <div className="mb-6">
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-text-primary font-medium">{label}</span>
-        <span className="text-text-primary font-bold">{Math.round(score)}%</span>
+    <div className="mb-6 opacity-0 animate-slide-in-left" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
+      <div className="flex justify-between items-center mb-3">
+        <span className={`font-semibold text-lg ${isDark ? 'text-white' : 'text-gray-800'}`}>
+          {label}
+        </span>
+        <span className={`font-bold text-xl bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent`}>
+          {Math.round(score)}%
+        </span>
       </div>
-      <div className="w-full bg-background-primary/50 h-3 rounded-full overflow-hidden">
+      <div className={`w-full h-4 rounded-full overflow-hidden ${isDark ? 'bg-gray-700/50' : 'bg-gray-200/70'} backdrop-blur-sm`}>
         <div 
-          className="h-full bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full" 
+          className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-full transition-all duration-1000 ease-out animate-pulse-glow" 
           style={{ width: `${score}%` }}
         ></div>
       </div>
@@ -136,55 +149,89 @@ const ResumeATSScanner = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background-primary to-background-secondary text-text-primary">
-      <div className="bg-gradient-mesh min-h-screen">
-        <div className="max-w-5xl mx-auto px-6 py-12">
-          <div className="mb-12 text-center animate-fade-in-down">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-accent-primary via-accent-secondary to-accent-primary bg-clip-text text-transparent mb-4 animate-gradient-x">
-              ATS Resume Analyzer
-            </h1>
-            <p className="text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed">
-              Optimize your resume for Applicant Tracking Systems with AI-powered analysis
-            </p>
+    <div className={`min-h-screen transition-all duration-500 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-purple-500/10 to-blue-600/10 animate-gradient-shift"></div>
+      
+      <div className={`relative z-10 max-w-6xl mx-auto px-6 py-12 ${isVisible ? 'animate-fade-in' : 'opacity-0'}`}>
+        {/* Hero Section */}
+        <div className="mb-16 text-center animate-slide-in-down">
+          <h1 className="text-6xl md:text-7xl font-black mb-6 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent animate-gradient-x leading-tight">
+            ATS Resume
+            <br />
+            <span className="animate-pulse">Analyzer</span>
+          </h1>
+          <p className={`text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'} animate-fade-in-up`} style={{ animationDelay: '0.2s' }}>
+            Optimize your resume for Applicant Tracking Systems with 
+            <span className="bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent font-semibold"> AI-powered analysis</span>
+          </p>
+        </div>
+        
+        {/* Error Display */}
+        {error && (
+          <div className="mb-8 animate-shake">
+            <Card className={`border-l-4 border-red-500 ${isDark ? 'bg-red-900/20 border-red-500/30 text-red-300' : 'bg-red-50 border-red-200 text-red-700'} backdrop-blur-sm`}>
+              <div className="flex items-center">
+                <span className="text-2xl mr-3">⚠️</span>
+                <span className="font-medium">{error}</span>
+              </div>
+            </Card>
           </div>
-          
-          {error && (
-            <div className="bg-red-900/20 border border-red-500/30 text-red-300 p-4 rounded-xl mb-6 backdrop-blur-sm">
-              {error}
-            </div>
-          )}
-          
-          {!results ? (
-            <div className="bg-gradient-card-dark backdrop-blur-lg rounded-2xl p-8 mb-8 shadow-lifted border border-accent-neutral/20 animate-fade-in-up">
-              <div className="flex space-x-2 mb-6 bg-background-primary/20 rounded-xl p-1">
+        )}
+        
+        {!results ? (
+          <Card className={`mb-12 backdrop-blur-lg border ${isDark ? 'bg-gray-800/50 border-gray-700/30' : 'bg-white/70 border-gray-200/50'} animate-slide-in-up shadow-2xl`}>
+            <div className="p-8">
+              {/* Tab Navigation */}
+              <div className={`flex space-x-2 mb-8 p-1 rounded-2xl ${isDark ? 'bg-gray-700/30' : 'bg-gray-100/50'} backdrop-blur-sm`}>
                 <button
-                  className={`flex-1 py-3 rounded-lg transition-all ${activeTab === 'upload' ? 'bg-accent-primary text-white' : 'text-text-secondary hover:text-text-primary'}`}
+                  className={`flex-1 py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
+                    activeTab === 'upload' 
+                      ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-white shadow-lg' 
+                      : `${isDark ? 'text-gray-300 hover:text-white hover:bg-gray-600/30' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'}`
+                  }`}
                   onClick={() => setActiveTab('upload')}
                 >
-                  📄 Upload File
+                  <span className="text-xl mr-2">📄</span>
+                  Upload File
                 </button>
                 <button
-                  className={`flex-1 py-3 rounded-lg transition-all ${activeTab === 'text' ? 'bg-accent-primary text-white' : 'text-text-secondary hover:text-text-primary'}`}
+                  className={`flex-1 py-4 px-6 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
+                    activeTab === 'text' 
+                      ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-white shadow-lg' 
+                      : `${isDark ? 'text-gray-300 hover:text-white hover:bg-gray-600/30' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200/50'}`
+                  }`}
                   onClick={() => setActiveTab('text')}
                 >
-                  📝 Paste Text
+                  <span className="text-xl mr-2">📝</span>
+                  Paste Text
                 </button>
               </div>
 
+              {/* Upload Tab Content */}
               {activeTab === 'upload' ? (
-                <div className="space-y-6">
+                <div className="space-y-8">
                   <div 
-                    className={`flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-2xl cursor-pointer transition-all ${dragover ? 'border-accent-primary bg-accent-primary/10' : 'border-accent-primary/50 hover:border-accent-primary bg-accent-primary/5 hover:bg-accent-primary/10'}`}
+                    className={`flex flex-col items-center justify-center p-16 border-2 border-dashed rounded-2xl cursor-pointer transition-all duration-300 transform hover:scale-102 ${
+                      dragover 
+                        ? 'border-cyan-400 bg-cyan-400/20 scale-105' 
+                        : `border-cyan-400/50 hover:border-cyan-400 ${isDark ? 'bg-cyan-400/5 hover:bg-cyan-400/10' : 'bg-cyan-50/50 hover:bg-cyan-100/50'}`
+                    }`}
                     onClick={() => document.getElementById('file-input').click()}
                     onDrop={handleDrop}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                   >
-                    <div className="text-4xl mb-4 text-accent-primary">📁</div>
-                    <div className="text-center">
-                      <p className="font-bold text-lg text-text-primary mb-1">Click to upload</p>
-                      <p className="text-text-secondary">or drag and drop your resume</p>
-                      <p className="text-sm text-text-secondary mt-2">Supports PDF and DOCX files</p>
+                    <div className="text-6xl mb-6 text-cyan-400 animate-bounce">📁</div>
+                    <div className="text-center space-y-2">
+                      <p className={`font-bold text-xl ${isDark ? 'text-white' : 'text-gray-800'}`}>
+                        Click to upload or drag & drop
+                      </p>
+                      <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'} text-lg`}>
+                        your resume file here
+                      </p>
+                      <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'} mt-4`}>
+                        Supports PDF and DOCX files (Max 10MB)
+                      </p>
                     </div>
                     <input 
                       type="file" 
@@ -196,95 +243,123 @@ const ResumeATSScanner = () => {
                   </div>
                   
                   {selectedFile && (
-                    <div className="bg-accent-secondary/10 border border-accent-secondary/30 p-4 rounded-xl">
-                      <p className="font-medium text-text-primary">
-                        Selected file: <span className="text-accent-primary">{selectedFile.name}</span>
-                      </p>
-                      <p className="text-sm text-text-secondary">
-                        {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                      </p>
+                    <div className={`border rounded-2xl p-6 ${isDark ? 'bg-purple-900/20 border-purple-500/30' : 'bg-purple-50/50 border-purple-200/50'} animate-slide-in-right`}>
+                      <div className="flex items-center">
+                        <span className="text-3xl mr-4">✅</span>
+                        <div>
+                          <p className={`font-semibold text-lg ${isDark ? 'text-white' : 'text-gray-800'}`}>
+                            Selected: <span className="text-cyan-400">{selectedFile.name}</span>
+                          </p>
+                          <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                            {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
               ) : (
-                <textarea
-                  className="w-full p-4 bg-background-primary/50 border border-accent-neutral/30 rounded-xl text-text-primary focus:ring-2 focus:ring-accent-primary focus:border-accent-primary transition-all duration-300 backdrop-blur-sm min-h-[200px]"
-                  placeholder="Paste your resume text here..."
-                  value={resumeText}
-                  onChange={(e) => setResumeText(e.target.value)}
-                />
+                <div className="animate-slide-in-left">
+                  <textarea
+                    className={`w-full p-6 rounded-2xl border-2 focus:ring-4 transition-all duration-300 min-h-[250px] text-lg ${
+                      isDark 
+                        ? 'bg-gray-700/30 border-gray-600/50 text-white focus:ring-cyan-400/30 focus:border-cyan-400 placeholder-gray-400' 
+                        : 'bg-white/60 border-gray-300/50 text-gray-800 focus:ring-cyan-400/20 focus:border-cyan-400 placeholder-gray-500'
+                    } backdrop-blur-sm`}
+                    placeholder="Paste your resume text here..."
+                    value={resumeText}
+                    onChange={(e) => setResumeText(e.target.value)}
+                  />
+                </div>
               )}
 
-              <div className="mt-6">
-                <label className="block mb-3 text-lg font-semibold text-text-primary">
+              {/* Job Description */}
+              <div className="mt-10 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                <label className={`block mb-4 text-xl font-bold ${isDark ? 'text-white' : 'text-gray-800'}`}>
+                  <span className="text-2xl mr-2">🎯</span>
                   Job Description (Optional)
                 </label>
                 <textarea
-                  className="w-full p-4 bg-background-primary/50 border border-accent-neutral/30 rounded-xl text-text-primary focus:ring-2 focus:ring-accent-primary focus:border-accent-primary transition-all duration-300 backdrop-blur-sm min-h-[120px]"
+                  className={`w-full p-6 rounded-2xl border-2 focus:ring-4 transition-all duration-300 min-h-[150px] text-lg ${
+                    isDark 
+                      ? 'bg-gray-700/30 border-gray-600/50 text-white focus:ring-purple-400/30 focus:border-purple-400 placeholder-gray-400' 
+                      : 'bg-white/60 border-gray-300/50 text-gray-800 focus:ring-purple-400/20 focus:border-purple-400 placeholder-gray-500'
+                  } backdrop-blur-sm`}
                   placeholder="Paste the job description here for better keyword matching..."
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
                 />
               </div>
 
-              <button
-                className="w-full mt-6 px-6 py-4 bg-gradient-to-r from-accent-primary to-accent-secondary text-white font-bold rounded-xl hover:shadow-glow-purple focus:outline-none focus:ring-4 focus:ring-accent-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-[1.02]"
-                onClick={analyzeResume}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <span className="flex items-center justify-center">
-                    <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-3"></div>
-                    Analyzing...
-                  </span>
-                ) : (
-                  '🔍 Analyze Resume'
-                )}
-              </button>
+              {/* Analyze Button */}
+              <div className="mt-10 animate-slide-in-up" style={{ animationDelay: '0.2s' }}>
+                <Button
+                  className="w-full py-6 text-xl font-bold bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 text-white rounded-2xl hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 animate-pulse-glow"
+                  onClick={analyzeResume}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center justify-center">
+                      <div className="animate-spin h-6 w-6 border-3 border-white border-t-transparent rounded-full mr-4"></div>
+                      <span className="animate-pulse">Analyzing Resume...</span>
+                    </span>
+                  ) : (
+                    <span className="flex items-center justify-center">
+                      <span className="text-2xl mr-3">🔍</span>
+                      Analyze Resume
+                    </span>
+                  )}
+                </Button>
+              </div>
             </div>
-          ) : (
-            <div className="bg-gradient-card-dark backdrop-blur-lg rounded-2xl p-8 mb-8 shadow-lifted border border-accent-neutral/20 animate-fade-in-up">
-              <h2 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
-                ATS Analysis Results
+          </Card>
+        ) : (
+          /* Results Section */
+          <Card className={`mb-12 backdrop-blur-lg border ${isDark ? 'bg-gray-800/50 border-gray-700/30' : 'bg-white/70 border-gray-200/50'} animate-slide-in-up shadow-2xl`}>
+            <div className="p-8">
+              <h2 className="text-5xl font-black mb-12 text-center bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent animate-gradient-x">
+                🎯 Analysis Results
               </h2>
               
-              <div className="mb-12 text-center animate-scale-in">
+              {/* Overall Score Circle */}
+              <div className="mb-16 text-center animate-zoom-in">
                 <div className="relative inline-block">
-                  <svg className="w-48 h-48 transform -rotate-90" viewBox="0 0 100 100">
+                  <svg className="w-64 h-64 transform -rotate-90 animate-spin-slow" viewBox="0 0 100 100">
                     <circle 
                       cx="50" 
                       cy="50" 
                       r="40" 
                       fill="none" 
-                      stroke="rgba(255,255,255,0.1)" 
-                      strokeWidth="8"
+                      stroke={isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"} 
+                      strokeWidth="6"
                     />
                     <circle 
                       cx="50" 
                       cy="50" 
                       r="40" 
                       fill="none" 
-                      stroke="url(#gradient)" 
-                      strokeWidth="8"
+                      stroke="url(#scoreGradient)" 
+                      strokeWidth="6"
                       strokeDasharray={`${results.overall_score * 2.51}, 251`}
                       strokeLinecap="round"
-                      className="animate-gradient-x"
+                      className="animate-draw-circle"
                     />
                     <defs>
-                      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#3182CE" />
-                        <stop offset="100%" stopColor="#805AD5" />
+                      <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#00FFFF" />
+                        <stop offset="50%" stopColor="#3B82F6" />
+                        <stop offset="100%" stopColor="#9C27B0" />
                       </linearGradient>
                     </defs>
                   </svg>
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-                    <span className="text-5xl font-bold bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text">
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center animate-pulse">
+                    <span className="text-6xl font-black bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
                       {results.overall_score}
                     </span>
-                    <span className="text-2xl text-text-secondary">/100</span>
+                    <span className={`text-3xl ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>/100</span>
                   </div>
                 </div>
-                <p className="text-xl font-medium text-text-primary mt-6 max-w-md mx-auto">
+                <p className={`text-2xl font-bold mt-8 max-w-md mx-auto ${isDark ? 'text-white' : 'text-gray-800'} animate-fade-in-up`} style={{ animationDelay: '0.5s' }}>
                   {results.overall_score >= 70
                     ? "🎉 Excellent! Your resume is ATS-optimized"
                     : results.overall_score >= 50
@@ -293,24 +368,37 @@ const ResumeATSScanner = () => {
                 </p>
               </div>
               
-              <div className="mb-8">
-                <h3 className="text-2xl font-bold mb-6 text-text-primary">Score Breakdown</h3>
-                {Object.entries(results.detailed_scores).map(([category, score]) => (
-                  renderScoreGauge(score, `📌 ${category}`)
-                ))}
+              {/* Score Breakdown */}
+              <div className="mb-12">
+                <h3 className={`text-3xl font-bold mb-8 ${isDark ? 'text-white' : 'text-gray-800'} animate-slide-in-left`}>
+                  📊 Score Breakdown
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {Object.entries(results.detailed_scores).map(([category, score], index) => (
+                    <div key={category} className="animate-slide-in-right" style={{ animationDelay: `${index * 0.1}s` }}>
+                      {renderScoreGauge(score, `${category.charAt(0).toUpperCase() + category.slice(1)}`)}
+                    </div>
+                  ))}
+                </div>
               </div>
               
-              <div className="bg-gradient-to-r from-accent-primary/10 to-accent-secondary/10 p-6 rounded-xl mb-8 border border-accent-primary/30 animate-fade-in-up backdrop-blur-sm">
-                <h3 className="text-xl font-bold mb-4 text-accent-primary">💡 Detailed Feedback</h3>
-                <div className="space-y-6">
-                  {Object.entries(results.feedback).map(([category, feedbackList]) => (
-                    <div key={category} className="bg-background-primary/20 p-4 rounded-lg border border-accent-neutral/20">
-                      <h4 className="font-bold text-lg text-text-primary mb-3">{category}</h4>
-                      <ul className="space-y-2">
+              {/* Detailed Feedback */}
+              <div className={`p-8 rounded-2xl mb-12 border ${isDark ? 'bg-gradient-to-br from-cyan-900/20 to-purple-900/20 border-cyan-400/30' : 'bg-gradient-to-br from-cyan-50/50 to-purple-50/50 border-cyan-200/50'} backdrop-blur-sm animate-fade-in-up`} style={{ animationDelay: '0.3s' }}>
+                <h3 className="text-2xl font-bold mb-6 text-cyan-400 flex items-center">
+                  <span className="text-3xl mr-3">💡</span>
+                  Detailed Feedback
+                </h3>
+                <div className="space-y-8">
+                  {Object.entries(results.feedback).map(([category, feedbackList], index) => (
+                    <div key={category} className={`p-6 rounded-xl border ${isDark ? 'bg-gray-700/30 border-gray-600/20' : 'bg-white/40 border-gray-200/30'} backdrop-blur-sm animate-slide-in-up`} style={{ animationDelay: `${index * 0.1 + 0.4}s` }}>
+                      <h4 className={`font-bold text-xl mb-4 ${isDark ? 'text-white' : 'text-gray-800'}`}>
+                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                      </h4>
+                      <ul className="space-y-3">
                         {feedbackList.map((item, idx) => (
-                          <li key={idx} className="flex items-start">
-                            <span className="mr-2">•</span>
-                            <span className="text-text-primary">{item}</span>
+                          <li key={idx} className="flex items-start animate-fade-in" style={{ animationDelay: `${(index * 0.1 + idx * 0.05 + 0.5)}s` }}>
+                            <span className="text-cyan-400 mr-3 text-lg font-bold">•</span>
+                            <span className={`${isDark ? 'text-gray-200' : 'text-gray-700'} leading-relaxed`}>{item}</span>
                           </li>
                         ))}
                       </ul>
@@ -319,52 +407,67 @@ const ResumeATSScanner = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 bg-background-primary/20 p-4 rounded-xl border border-accent-neutral/20">
-                <div className="text-center">
-                  <p className="text-sm text-text-secondary uppercase tracking-wider">Word Count</p>
-                  <p className="text-xl font-bold text-text-primary">{results.word_count || 'N/A'}</p>
+              {/* Stats Grid */}
+              <div className={`grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 p-6 rounded-2xl ${isDark ? 'bg-gray-700/30 border-gray-600/20' : 'bg-white/40 border-gray-200/30'} border backdrop-blur-sm animate-slide-in-up`} style={{ animationDelay: '0.6s' }}>
+                <div className="text-center animate-fade-in" style={{ animationDelay: '0.7s' }}>
+                  <p className={`text-sm uppercase tracking-wider font-semibold ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Word Count</p>
+                  <p className={`text-3xl font-black mt-2 ${isDark ? 'text-white' : 'text-gray-800'}`}>{results.word_count || 'N/A'}</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-sm text-text-secondary uppercase tracking-wider">Analysis Method</p>
-                  <p className="text-xl font-bold text-text-primary">{results.analysis_method || 'N/A'}</p>
+                <div className="text-center animate-fade-in" style={{ animationDelay: '0.8s' }}>
+                  <p className={`text-sm uppercase tracking-wider font-semibold ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Method</p>
+                  <p className={`text-3xl font-black mt-2 ${isDark ? 'text-white' : 'text-gray-800'}`}>{results.analysis_method || 'N/A'}</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-sm text-text-secondary uppercase tracking-wider">Analyzed</p>
-                  <p className="text-xl font-bold text-text-primary">
-                    {new Date(results.analysis_timestamp).toLocaleString()}
+                <div className="text-center animate-fade-in" style={{ animationDelay: '0.9s' }}>
+                  <p className={`text-sm uppercase tracking-wider font-semibold ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Analyzed</p>
+                  <p className={`text-lg font-bold mt-2 ${isDark ? 'text-white' : 'text-gray-800'}`}>
+                    {new Date(results.analysis_timestamp).toLocaleDateString()}
                   </p>
                 </div>
               </div>
               
-              <div className="text-center">
-                <button
+              {/* Back Button */}
+              <div className="text-center animate-fade-in-up" style={{ animationDelay: '1s' }}>
+                <Button
                   onClick={() => setResults(null)}
-                  className="px-8 py-3 bg-gradient-to-r from-accent-neutral/20 to-accent-neutral/30 text-text-primary rounded-xl hover:from-accent-neutral/30 hover:to-accent-neutral/40 transition-all duration-300 border border-accent-neutral/30 backdrop-blur-sm"
+                  className={`px-10 py-4 text-lg font-semibold rounded-2xl transition-all duration-300 transform hover:scale-105 ${
+                    isDark 
+                      ? 'bg-gray-700/50 hover:bg-gray-600/50 text-white border border-gray-600/30' 
+                      : 'bg-white/60 hover:bg-white/80 text-gray-800 border border-gray-300/50'
+                  } backdrop-blur-sm shadow-lg hover:shadow-xl`}
                 >
                   ← Back to Analyzer
-                </button>
+                </Button>
               </div>
             </div>
-          )}
-          
-          <div className="bg-gradient-card-light backdrop-blur-lg rounded-2xl p-8 shadow-card border border-accent-neutral/20 animate-fade-in-up-delay-300">
-            <h2 className="text-2xl font-bold text-accent-primary mb-6">🚀 How It Works</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          </Card>
+        )}
+        
+        {/* How It Works Section */}
+        <Card className={`backdrop-blur-lg border ${isDark ? 'bg-gray-800/50 border-gray-700/30' : 'bg-white/70 border-gray-200/50'} animate-slide-in-up shadow-2xl`} style={{ animationDelay: '0.4s' }}>
+          <div className="p-8">
+            <h2 className="text-3xl font-bold text-cyan-400 mb-8 flex items-center animate-fade-in">
+              <span className="text-4xl mr-4">🚀</span>
+              How It Works
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {[
-                { icon: "📄", title: "Upload Resume", desc: "Upload your PDF or DOCX resume file" },
-                { icon: "🔍", title: "AI Analysis", desc: "Our AI scans for ATS optimization" },
-                { icon: "📊", title: "Get Results", desc: "Receive detailed score and feedback" },
-                { icon: "✨", title: "Improve", desc: "Optimize your resume based on insights" }
+                { icon: "📄", title: "Upload Resume", desc: "Upload your PDF or DOCX resume file securely", color: "from-cyan-400 to-blue-500" },
+                { icon: "🔍", title: "AI Analysis", desc: "Our AI scans for ATS optimization patterns", color: "from-blue-500 to-purple-500" },
+                { icon: "📊", title: "Get Results", desc: "Receive detailed score and actionable feedback", color: "from-purple-500 to-pink-500" },
+                { icon: "✨", title: "Improve", desc: "Optimize your resume based on insights", color: "from-pink-500 to-cyan-400" }
               ].map((step, idx) => (
-                <div key={idx} className={`text-center p-4 rounded-xl bg-gradient-to-br from-background-primary/50 to-background-secondary/50 border border-accent-neutral/20 animate-fade-in-up-delay-${(idx + 1) * 100}`}>
-                  <div className="text-3xl mb-3">{step.icon}</div>
-                  <h3 className="font-bold text-text-primary mb-2">{step.title}</h3>
-                  <p className="text-sm text-text-secondary">{step.desc}</p>
+                <div key={idx} className={`text-center p-6 rounded-2xl border backdrop-blur-sm transition-all duration-500 hover:scale-105 animate-slide-in-up ${
+                  isDark ? 'bg-gray-700/30 border-gray-600/20 hover:bg-gray-600/30' : 'bg-white/40 border-gray-200/30 hover:bg-white/60'
+                }`} style={{ animationDelay: `${idx * 0.1 + 0.5}s` }}>
+                  <div className="text-5xl mb-4 animate-bounce" style={{ animationDelay: `${idx * 0.2}s` }}>{step.icon}</div>
+                  <h3 className={`font-bold text-lg mb-3 ${isDark ? 'text-white' : 'text-gray-800'}`}>{step.title}</h3>
+                  <p className={`text-sm leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{step.desc}</p>
+                  <div className={`mt-4 h-1 bg-gradient-to-r ${step.color} rounded-full animate-pulse`}></div>
                 </div>
               ))}
             </div>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

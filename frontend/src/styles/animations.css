@@ -224,11 +224,11 @@
 }
 
 /* Gradient text animations */
-@keyframes gradientShift { /* Main gradient shift for text */
+@keyframes gradientShift { /* Main gradient shift for text and general use */
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
 }
-@keyframes gradientX { /* Also a horizontal gradient shift, kept for different duration needs */
+@keyframes gradientX { /* Horizontal gradient shift, different from gradientShift only in animation class duration */
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
 }
@@ -237,10 +237,6 @@
   25% { background-position: 100% 50%; }
   50% { background-position: 100% 100%; }
   75% { background-position: 0% 100%; }
-}
-@keyframes gradientSlow { /* General slow gradient, could potentially be merged with gradientShift/X */
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
 }
 @keyframes gradientRotate {
   0% { background-position: 0% 50%; }
@@ -313,7 +309,7 @@
 /* --- 4. Loading & Utility Animations --- */
 
 /* Pulse effects */
-@keyframes pulse { /* General pulse, slightly different from pulse-slow/pulseSubtle */
+@keyframes pulse { /* General pulse */
   0%, 100% { opacity: 0.5; transform: scale(0.99) translateZ(0); }
   50% { opacity: 1; transform: scale(1) translateZ(0); }
 }
@@ -321,27 +317,30 @@
   0%, 100% { transform: scale(1); opacity: 1; }
   50% { transform: scale(1.02); opacity: 0.9; }
 }
-@keyframes pulse-slow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+@keyframes pulse-slow { /* Slower pulse, specific use case */
+  0%, 100% { opacity: 1; transform: scale(1); } /* Combined from two definitions */
+  50% { opacity: 0.8; transform: scale(1.02); } /* Combined from two definitions */
 }
 @keyframes pulseGlow { /* Specific for glowing pulse effect */
   0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-    box-shadow: 0 0 10px currentColor;
+    box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
   }
   50% {
-    opacity: 0.7;
-    transform: scale(1.1);
-    box-shadow: 0 0 20px currentColor;
+    box-shadow:
+      0 0 20px rgba(0, 255, 255, 0.6),
+      0 0 40px rgba(0, 255, 255, 0.4),
+      0 0 60px rgba(0, 255, 255, 0.2); /* Enhanced glow for high scores */
   }
 }
 
 /* Spin effect */
-@keyframes spin {
+@keyframes spin { /* General spin */
   from { transform: rotate(0deg) translateZ(0); }
   to { transform: rotate(360deg) translateZ(0); }
+}
+@keyframes spin-slow { /* Slower spin for decorative elements */
+  0% { transform: rotate(0deg); } /* Adjusted from -90deg for general use */
+  100% { transform: rotate(360deg); }
 }
 
 /* Shimmer effects */
@@ -349,7 +348,7 @@
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }
-@keyframes loading { /* Also a shimmer-like effect, could be merged into shimmer if parameters allow */
+@keyframes loading { /* A shimmer-like effect for skeletons, kept separate due to `background-position` vs `transform` */
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
@@ -363,7 +362,7 @@
 /* Bounce effects */
 @keyframes bounceGentle {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  50% { transform: translateY(-5px); } /* Adjusted from -2px for more noticeable gentle bounce */
 }
 @keyframes bounce { /* Full bounce animation */
   0%, 20%, 53%, 80%, 100% { transform: translate3d(0, 0, 0); }
@@ -383,7 +382,7 @@
 }
 
 /* Floating elements */
-@keyframes floatAnim { /* Complex float from previous version */
+@keyframes floatAnim { /* Complex float for general use */
   0%, 100% { transform: translateY(0px) rotate(0deg) translateZ(0); }
   33% { transform: translateY(-10px) rotate(120deg) translateZ(0); }
   66% { transform: translateY(5px) rotate(240deg) translateZ(0); }
@@ -396,13 +395,19 @@
   0%, 100% { transform: translateY(0px) rotate(0deg) translateZ(0); }
   50% { transform: translateY(-10px) rotate(5deg) translateZ(0); }
 }
-@keyframes floatBgCircles { /* Specific float for background circles */
+@keyframes floatBgCircles { /* Specific float for background circles (AtsTracker) */
   0%, 100% { transform: translateY(0px) rotate(0deg); }
   50% { transform: translateY(-20px) rotate(2deg); }
 }
 @keyframes logoFloat { /* Small float for logos */
   0%, 100% { transform: translateY(0px) scale(1); }
   50% { transform: translateY(-5px) scale(1.02); }
+}
+@keyframes floatParticle { /* Generic floating particles */
+  0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.6; }
+  25% { transform: translateY(-10px) rotate(90deg); opacity: 1; }
+  50% { transform: translateY(-5px) rotate(180deg); opacity: 0.8; }
+  75% { transform: translateY(-15px) rotate(270deg); opacity: 0.4; }
 }
 
 /* Status Pulse */
@@ -411,7 +416,7 @@
   50% { transform: scale(1.05); opacity: 0.8; }
 }
 
-/* Counter animation */
+/* Counter animation for numbers */
 @keyframes counter {
   from { transform: scale(0.8); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
@@ -422,24 +427,67 @@
   from { width: 0%; }
   to { width: var(--progress-width); }
 }
+@keyframes loading-progress { /* Specific for loading bar, translateX based */
+  0% { width: 0%; transform: translateX(-100%); }
+  50% { width: 100%; transform: translateX(-50%); }
+  100% { width: 100%; transform: translateX(0%); }
+}
 
-/* General utility animation classes */
+
+/* Blob Animation for background */
+@keyframes blob {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+/* Glide Up Animation */
+@keyframes glide-up {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Score counting animation */
+@keyframes scoreCountUp {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Circle drawing animation */
+@keyframes draw-circle {
+  0% { stroke-dashoffset: 283; opacity: 0; }
+  20% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+/* Smooth fade transition for tip changes */
+@keyframes tip-transition {
+  0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+  20% { opacity: 1; transform: translateY(0) scale(1); }
+  80% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-20px) scale(0.95); }
+}
+
+/* Utility animation classes */
 .pulse { animation: pulse 2s infinite ease-in-out; }
 .spin { animation: spin 1.2s infinite linear; }
 
 .animate-gradient-x {
-  background-size: 200% 200%;
+  background-size: 200% 200%; /* For `gradientX` keyframe */
   animation: gradientX 3s ease infinite;
 }
 .animate-gradient-xy {
   background-size: 200% 200%;
   animation: gradientXY 8s ease infinite;
 }
-.animate-gradient-slow {
+.animate-gradient-slow { /* Uses gradientShift keyframe for consistent animation logic */
   background-size: 200% 200%;
-  animation: gradientSlow 6s ease infinite;
+  animation: gradientShift 6s ease infinite; /* Renamed from gradientSlow */
 }
-.animate-gradient-shift { /* Re-used for some gradient text */
+.animate-gradient-shift { /* Re-used for some gradient text or elements */
+  background-size: 400% 400%; /* Specific to this animation size */
   animation: gradientShift 4s ease-in-out infinite;
 }
 .animate-pulse-slow {
@@ -501,11 +549,21 @@
 
 .pulse-glow { animation: pulseGlow 2s ease-in-out infinite; }
 .animate-status-pulse { animation: statusPulse 2s ease-in-out infinite; }
-.animate-bounce-gentle { animation: bounceGentle 2s ease-in-out infinite; } /* Renamed from bounce-gentle to match general pattern */
+.animate-bounce-gentle { animation: bounceGentle 2s ease-in-out infinite; }
 
 /* Floating background circles (AtsTracker specific) */
 .animate-float-bg-circles-normal { animation: floatBgCircles 6s ease-in-out infinite; }
 .animate-float-bg-circles-reverse { animation: floatBgCircles 8s ease-in-out infinite reverse; }
+
+/* Utility Classes for various animations */
+.animate-blob { animation: blob 7s infinite; }
+.animate-glide-up { animation: glide-up 1s ease-out forwards; opacity: 0; transform: translateY(40px); }
+.animate-scoreCountUp { animation: scoreCountUp 1s ease-out; }
+.animate-draw-circle { animation: draw-circle 2s ease-out forwards; }
+.animate-spin-slow { animation: spin-slow 8s linear infinite; }
+.animate-float-particle { animation: floatParticle 3s ease-in-out infinite; }
+.animate-loading-progress { animation: loading-progress 2s ease-in-out infinite; }
+.animate-tip-cycle { animation: tip-transition 3s ease-in-out infinite; }
 
 /* --- 5. Hover and Focus Effects --- */
 
@@ -558,7 +616,7 @@
 .shadow-glow {
   box-shadow: 0 0 20px rgba(var(--color-accent-primary), 0.3);
 }
-.hover\:shadow-glow:hover { /* More specific glow for red/blue based on previous request */
+.hover\:shadow-glow:hover { /* Specific glow for red/blue based on previous request */
   box-shadow:
     0 0 20px rgba(248, 113, 113, 0.3), /* Assuming this is intended for red glow */
     0 0 40px rgba(248, 113, 113, 0.1);
@@ -608,7 +666,7 @@
   animation: successRipple 0.6s ease-out;
 }
 
-/* --- 7. Micro-interactions & General Utility Animations --- */
+/* --- 7. Micro-interactions & General Utility Animation Classes --- */
 
 @keyframes buttonClick {
   0% { transform: scale(1) translateZ(0); }
@@ -617,70 +675,7 @@
 }
 .button-click { animation: buttonClick 0.2s ease-in-out; }
 
-/* General Fade and Slide animations - consolidate to common keyframes */
-@keyframes fadeIn { /* Base fade in */
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes fadeInUp { /* Base fade in up */
-  from { opacity: 0; transform: translate3d(0, 30px, 0); }
-  to { opacity: 1; transform: translate3d(0, 0, 0); }
-}
-@keyframes fadeInDown { /* Base fade in down */
-  from { opacity: 0; transform: translateY(-30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes slideInLeft { /* Base slide in left */
-  from { opacity: 0; transform: translateX(-30px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-@keyframes slideInRight { /* Base slide in right */
-  from { opacity: 0; transform: translateX(30px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-@keyframes slideInUp { /* Base slide in up (same as fadeInUp, but kept for clarity if used differently) */
-  from { opacity: 0; transform: translateY(30px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes scaleIn { /* Base scale in */
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-/* Rotation animations */
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-@keyframes rotateY {
-  from { transform: rotateY(0deg); }
-  to { transform: rotateY(360deg); }
-}
-
-/* Flip animations */
-@keyframes flipInX {
-  from { transform: perspective(400px) rotateX(90deg); opacity: 0; }
-  40% { transform: perspective(400px) rotateX(-20deg); }
-  60% { transform: perspective(400px) rotateX(10deg); opacity: 1; }
-  80% { transform: perspective(400px) rotateX(-5deg); }
-  to { transform: perspective(400px); opacity: 1; }
-}
-@keyframes flipInY {
-  from { transform: perspective(400px) rotateY(90deg); opacity: 0; }
-  40% { transform: perspective(400px) rotateY(-20deg); }
-  60% { transform: perspective(400px) rotateY(10deg); opacity: 1; }
-  80% { transform: perspective(400px) rotateY(-5deg); }
-  to { transform: perspective(400px); opacity: 1; }
-}
-
-/* Modal specific animations */
-@keyframes modalSlideIn {
-  from { opacity: 0; transform: scale(0.9) translateY(-50px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-/* Animation utility classes */
-.fade-in { animation: fadeIn 0.6s ease-in-out; }
+/* Animation Utility Classes (direct applications using common keyframes) */
 .animate-fadeIn { animation: fadeIn 0.6s ease-out forwards; }
 .animate-fadeInUp { animation: fadeInUp 0.6s ease-out forwards; }
 .animate-fadeInDown { animation: fadeInDown 0.6s ease-out forwards; }
@@ -938,279 +933,4 @@
   }
 }
 
-/* Add these to your existing animations.css */
 
-/* Shimmer effect for progress bars */
-@keyframes shimmer {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
-
-.animate-shimmer {
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite linear;
-}
-
-.bg-size-200 {
-  background-size: 200% 100%;
-}
-
-/* Scale fade in animation for keyword tags */
-@keyframes fadeInScale {
-  0% {
-    opacity: 0;
-    transform: scale(0.8) translateY(10px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-.animate-fadeInScale {
-  animation: fadeInScale 0.6s ease-out forwards;
-}
-
-/* Enhanced slide animations */
-@keyframes slideInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideInLeft {
-  0% {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slideInRight {
-  0% {
-    opacity: 0;
-    transform: translateX(30px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.animate-slideInUp {
-  animation: slideInUp 0.8s ease-out;
-}
-
-.animate-slideInLeft {
-  animation: slideInLeft 0.6s ease-out;
-}
-
-.animate-slideInRight {
-  animation: slideInRight 0.6s ease-out;
-}
-
-/* Add these to your existing animations.css */
-
-/* Loading progress bar animation */
-@keyframes loading-progress {
-  0% {
-    width: 0%;
-    transform: translateX(-100%);
-  }
-  50% {
-    width: 100%;
-    transform: translateX(-50%);
-  }
-  100% {
-    width: 100%;
-    transform: translateX(0%);
-  }
-}
-
-.animate-loading-progress {
-  animation: loading-progress 2s ease-in-out infinite;
-}
-
-/* Floating animation for elements */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-/* Glow pulse animation */
-@keyframes glow-pulse {
-  0%, 100% {
-    box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.6), 0 0 30px rgba(156, 39, 176, 0.4);
-  }
-}
-
-.animate-glow-pulse {
-  animation: glow-pulse 2s ease-in-out infinite;
-}
-
-/* Smooth fade transition for tip changes */
-@keyframes tip-transition {
-  0% {
-    opacity: 0;
-    transform: translateY(20px) scale(0.95);
-  }
-  20% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  80% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.95);
-  }
-}
-
-.animate-tip-cycle {
-  animation: tip-transition 3s ease-in-out infinite;
-}
-
-/* Add these to your existing animations.css */
-
-/* Score counting animation */
-@keyframes scoreCountUp {
-  0% {
-    transform: scale(0.5);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.1);
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.animate-scoreCountUp {
-  animation: scoreCountUp 1s ease-out;
-}
-
-/* Circle drawing animation */
-@keyframes draw-circle {
-  0% {
-    stroke-dashoffset: 283; /* Full circumference */
-    opacity: 0;
-  }
-  20% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
-.animate-draw-circle {
-  animation: draw-circle 2s ease-out;
-}
-
-/* Slow spin for decorative elements */
-@keyframes spin-slow {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.animate-spin-slow {
-  animation: spin-slow 8s linear infinite;
-}
-
-/* Floating particles */
-@keyframes float-particle {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-    opacity: 0.6;
-  }
-  25% {
-    transform: translateY(-10px) rotate(90deg);
-    opacity: 1;
-  }
-  50% {
-    transform: translateY(-5px) rotate(180deg);
-    opacity: 0.8;
-  }
-  75% {
-    transform: translateY(-15px) rotate(270deg);
-    opacity: 0.4;
-  }
-}
-
-.animate-float-particle {
-  animation: float-particle 3s ease-in-out infinite;
-}
-
-/* Fast shimmer for buttons */
-@keyframes shimmer-fast {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-.animate-shimmer-fast {
-  animation: shimmer-fast 1.5s ease-in-out infinite;
-}
-
-/* Pulse glow for high scores */
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 5px rgba(0, 255, 255, 0.3);
-  }
-  50% {
-    box-shadow: 
-      0 0 20px rgba(0, 255, 255, 0.6),
-      0 0 40px rgba(0, 255, 255, 0.4),
-      0 0 60px rgba(0, 255, 255, 0.2);
-  }
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* Gradient text animation */
-@keyframes gradient-x {
-  0%, 100% {
-    background-size: 200% 200%;
-    background-position: left center;
-  }
-  50% {
-    background-size: 200% 200%;
-    background-position: right center;
-  }
-}
-
-.animate-gradient-x {
-  animation: gradient-x 3s ease infinite;
-}
