@@ -298,14 +298,14 @@ const Home = () => {
                       <FiPlusCircle /> New Resume
                     </Button>
                     <Button
-                      variant="secondary"
+                      variant="primary"
                       onClick={() => navigate('/portfolioHome')}
                       className="w-full flex items-center justify-center gap-2"
                     >
                       <FiEye /> View Portfolio
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="primary"
                       onClick={() => navigate('/ats')}
                       className="w-full flex items-center justify-center gap-2"
                     >
@@ -404,9 +404,9 @@ const Home = () => {
                   { name: 'Certificates', data: portfolioData.certificates?.length },
                   { name: 'Experiences', data: portfolioData.experiences?.length }
                 ].map((item, index) => (
-                  <div key={index} className={`flex items-center gap-2 ${item.data ? 'text-green-600' : 'text-red-600'}`}>
+                  <div key={index}  className={`flex items-center gap-2 ${item.data ? 'text-green-600' : 'text-red-600'}`}>
                     {item.data ? <IoCheckmarkCircle /> : <FiX />}
-                    <span>{item.name} {item.name !== 'Portfolio Details' && `(${item.data || 0} added)`}</span>
+                    <span >{item.name} {item.name !== 'Portfolio Details' && `(${item.data || 0} added)`}</span>
                   </div>
                 ))}
               </div>

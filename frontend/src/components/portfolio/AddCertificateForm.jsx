@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { FaTimes, FaUpload } from 'react-icons/fa';
 import { MdSave } from 'react-icons/md';
 import PropTypes from 'prop-types';
+import { useTheme } from '../../context/ThemeContext'; // Import your theme hook
+import Button from '../common/Button'; // Use your styled Button component
+import Modal from '../common/Modal'; // Use your Modal for overlay
+
 
 const AddCertificateForm = ({ onClose, onSubmit, initialData = {}, isEditing = false }) => {
     const [formData, setFormData] = useState({
@@ -16,6 +20,7 @@ const AddCertificateForm = ({ onClose, onSubmit, initialData = {}, isEditing = f
 
     const [previewImage, setPreviewImage] = useState(initialData?.image?.url || null);
     const [isLoading, setIsLoading] = useState(false);
+    const { theme, isDark } = useTheme();
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -63,104 +68,114 @@ const AddCertificateForm = ({ onClose, onSubmit, initialData = {}, isEditing = f
         }
     };
 
+    // Theme-based classes
+    const bgPrimary = isDark ? 'bg-[#161B22]' : 'bg-white';
+    const bgSecondary = isDark ? 'bg-[#0D1117]' : 'bg-[#F7FAFC]';
+    const textPrimary = isDark ? 'text-[#E5E5E5]' : 'text-[#1A202C]';
+    const accent = isDark ? 'text-[#00FFFF]' : 'text-[#3182CE]';
+    const highlight = isDark ? 'text-[#9C27B0]' : 'text-[#805AD5]';
+    const borderColor = isDark ? 'border-gray-700' : 'border-gray-300';
+
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
-            <div className="bg-[#161B22] rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <Modal onClose={onClose} className={`add-cert-modal ${bgPrimary} fade-in`}>
+            <div className={`rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl ${bgPrimary} glide-in`}>
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-[#00FFFF]">
+                    <h2 className={`text-2xl font-bold gradient-text`}>
                         {isEditing ? 'Edit Certificate' : 'Add New Certificate'}
                     </h2>
-                    <button
+                    <Button
+                        variant="icon"
                         onClick={onClose}
-                        className="text-gray-400 hover:text-white"
+                        className={`hover:${accent} transition-colors`}
+                        aria-label="Close"
                     >
                         <FaTimes size={24} />
-                    </button>
+                    </Button>
                 </div>
 
                 <form onSubmit={handleSubmit}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <label className="block text-gray-400 mb-2">Certificate Name*</label>
+                        <div className="fade-up">
+                            <label className={`block mb-2 ${textPrimary}`}>Certificate Name*</label>
                             <input
                                 type="text"
                                 name="name"
                                 value={formData.name}
                                 onChange={handleChange}
                                 required
-                                className="w-full px-4 py-2 bg-[#0D1117] border border-gray-700 rounded focus:border-[#00FFFF] focus:outline-none"
+                                className={`w-full px-4 py-2 ${bgSecondary} ${borderColor} border rounded focus:border-[#00FFFF] focus:outline-none ${textPrimary} transition-all`}
                             />
                         </div>
-                        <div>
-                            <label className="block text-gray-400 mb-2">Issuing Organization*</label>
+                        <div className="fade-up">
+                            <label className={`block mb-2 ${textPrimary}`}>Issuing Organization*</label>
                             <input
                                 type="text"
                                 name="issuer"
                                 value={formData.issuer}
                                 onChange={handleChange}
                                 required
-                                className="w-full px-4 py-2 bg-[#0D1117] border border-gray-700 rounded focus:border-[#00FFFF] focus:outline-none"
+                                className={`w-full px-4 py-2 ${bgSecondary} ${borderColor} border rounded focus:border-[#00FFFF] focus:outline-none ${textPrimary} transition-all`}
                             />
                         </div>
-                        <div>
-                            <label className="block text-gray-400 mb-2">Issue Date*</label>
+                        <div className="fade-up">
+                            <label className={`block mb-2 ${textPrimary}`}>Issue Date*</label>
                             <input
                                 type="date"
                                 name="issueDate"
                                 value={formData.issueDate}
                                 onChange={handleChange}
                                 required
-                                className="w-full px-4 py-2 bg-[#0D1117] border border-gray-700 rounded focus:border-[#00FFFF] focus:outline-none"
+                                className={`w-full px-4 py-2 ${bgSecondary} ${borderColor} border rounded focus:border-[#00FFFF] focus:outline-none ${textPrimary} transition-all`}
                             />
                         </div>
-                        <div>
-                            <label className="block text-gray-400 mb-2">Credential ID (if any)</label>
+                        <div className="fade-up">
+                            <label className={`block mb-2 ${textPrimary}`}>Credential ID (if any)</label>
                             <input
                                 type="text"
                                 name="credentialId"
                                 value={formData.credentialId}
                                 onChange={handleChange}
-                                className="w-full px-4 py-2 bg-[#0D1117] border border-gray-700 rounded focus:border-[#00FFFF] focus:outline-none"
+                                className={`w-full px-4 py-2 ${bgSecondary} ${borderColor} border rounded focus:border-[#00FFFF] focus:outline-none ${textPrimary} transition-all`}
                             />
                         </div>
-                        <div>
-                            <label className="block text-gray-400 mb-2">Credential URL*</label>
+                        <div className="fade-up">
+                            <label className={`block mb-2 ${textPrimary}`}>Credential URL*</label>
                             <input
                                 type="url"
                                 name="credentialUrl"
                                 value={formData.credentialUrl}
                                 onChange={handleChange}
                                 required
-                                className="w-full px-4 py-2 bg-[#0D1117] border border-gray-700 rounded focus:border-[#00FFFF] focus:outline-none"
+                                className={`w-full px-4 py-2 ${bgSecondary} ${borderColor} border rounded focus:border-[#00FFFF] focus:outline-none ${textPrimary} transition-all`}
                             />
                         </div>
-                        <div className="md:col-span-2">
-                            <label className="block text-gray-400 mb-2">Related Skills (comma separated)</label>
+                        <div className="md:col-span-2 fade-up">
+                            <label className={`block mb-2 ${textPrimary}`}>Related Skills (comma separated)</label>
                             <input
                                 type="text"
                                 name="skills"
                                 value={formData.skills}
                                 onChange={handleChange}
                                 placeholder="e.g., React, Node.js, MongoDB"
-                                className="w-full px-4 py-2 bg-[#0D1117] border border-gray-700 rounded focus:border-[#00FFFF] focus:outline-none"
+                                className={`w-full px-4 py-2 ${bgSecondary} ${borderColor} border rounded focus:border-[#00FFFF] focus:outline-none ${textPrimary} transition-all`}
                             />
                         </div>
                     </div>
 
-                    <div className="mb-6">
-                        <label className="block text-gray-400 mb-2">Certificate Image*</label>
+                    <div className="mb-6 fade-up">
+                        <label className={`block mb-2 ${textPrimary}`}>Certificate Image*</label>
                         <div className="flex flex-col md:flex-row gap-6 items-start">
-                            <div className="relative w-full md:w-1/2 h-48 bg-[#0D1117] border-2 border-dashed border-gray-700 rounded-lg flex items-center justify-center overflow-hidden">
+                            <div className={`relative w-full md:w-1/2 h-48 ${bgSecondary} border-2 border-dashed ${borderColor} rounded-lg flex items-center justify-center overflow-hidden`}>
                                 {previewImage ? (
                                     <img
                                         src={previewImage}
                                         alt="Certificate Preview"
-                                        className="w-full h-full object-contain"
+                                        className="w-full h-full object-contain animate-img-pop"
                                     />
                                 ) : (
                                     <div className="text-center p-4">
-                                        <FaUpload size={24} className="mx-auto mb-2 text-gray-400" />
-                                        <p className="text-gray-400">Upload Certificate Image</p>
+                                        <FaUpload size={24} className={`mx-auto mb-2 ${accent}`} />
+                                        <p className={textPrimary}>Upload Certificate Image</p>
                                         <p className="text-xs text-gray-500">(JPEG, PNG, max 5MB)</p>
                                     </div>
                                 )}
@@ -173,7 +188,7 @@ const AddCertificateForm = ({ onClose, onSubmit, initialData = {}, isEditing = f
                                 />
                             </div>
                             <div className="w-full md:w-1/2">
-                                <p className="text-sm text-gray-400">
+                                <p className={`text-sm ${textPrimary}`}>
                                     Upload a clear image or scan of your certificate. The image should be in JPEG or PNG format and not exceed 5MB in size.
                                 </p>
                                 {isEditing && (
@@ -185,18 +200,20 @@ const AddCertificateForm = ({ onClose, onSubmit, initialData = {}, isEditing = f
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-4">
-                        <button
+                    <div className="flex justify-end gap-4 fade-up">
+                        <Button
                             type="button"
+                            variant="secondary"
                             onClick={onClose}
-                            className="px-6 py-2 bg-[#2D333B] text-[#E5E5E5] rounded-lg hover:bg-[#444C56] transition-colors"
+                            className={`px-6 py-2 rounded-lg transition-colors ${bgSecondary} ${textPrimary} hover:${highlight}`}
                         >
                             Cancel
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="submit"
+                            variant="gradient"
                             disabled={isLoading}
-                            className="px-6 py-2 bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] text-black font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2"
+                            className="px-6 py-2 font-medium rounded-lg flex items-center gap-2 gradient-btn"
                         >
                             {isLoading ? (
                                 'Saving...'
@@ -205,11 +222,11 @@ const AddCertificateForm = ({ onClose, onSubmit, initialData = {}, isEditing = f
                                     <MdSave size={20} /> {isEditing ? 'Update Certificate' : 'Save Certificate'}
                                 </>
                             )}
-                        </button>
+                        </Button>
                     </div>
                 </form>
             </div>
-        </div>
+        </Modal>
     );
 };
 

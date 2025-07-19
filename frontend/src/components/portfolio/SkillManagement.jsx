@@ -1,17 +1,25 @@
 // components/SkillManagement.jsx
 import React, { useState, useEffect, useContext } from 'react';
-import { FaPlus, FaTrash, FaEdit, FaGripVertical, FaArrowLeft } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaEdit, FaGripVertical, FaArrowLeft, FaStar } from 'react-icons/fa';
 import { MdClose, MdCheck } from 'react-icons/md';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { AuthContext } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
+import Button from '../common/Button';
+import Card from '../common/Card';
+import Form from '../common/Form';
+import Modal from '../common/Modal';
 import SummaryApi from '../../config';
 import { useNavigate } from 'react-router-dom';
+import '../../styles/animations.css';
 
 const SkillManagement = () => {
   const { currentUser, fetchUserDetails } = useContext(AuthContext);
+  const { theme, isDark } = useTheme();
   const [skills, setSkills] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
   const [editingSkill, setEditingSkill] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(null);
   const [newSkill, setNewSkill] = useState({
     name: '',
     category: 'Other',
@@ -25,6 +33,23 @@ const SkillManagement = () => {
 
   useEffect(() => {
     fetchSkills();
+    
+    // Scroll animations
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('slide-in-up');
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    const elements = document.querySelectorAll('.animate-on-scroll');
+    elements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
   }, []);
 
   const fetchSkills = async () => {
@@ -84,9 +109,7 @@ const SkillManagement = () => {
         body: JSON.stringify(newSkill)
       });
 
-      // First check if the response is OK
       if (!response.ok) {
-        // Try to parse error as JSON, fallback to text
         let errorData;
         try {
           errorData = await response.json();
@@ -105,14 +128,6 @@ const SkillManagement = () => {
         icon: '',
         isFeatured: false
       });
-
-      console.log('Sending request to:', SummaryApi.skills.create.url);
-      console.log('Request payload:', JSON.stringify({
-        name: newSkill.name,
-        category: newSkill.category,
-        proficiency: Number(newSkill.proficiency),
-        isFeatured: newSkill.isFeatured
-      }));
     } catch (error) {
       console.error('Error adding skill:', error);
     } finally {
@@ -151,8 +166,6 @@ const SkillManagement = () => {
   };
 
   const handleDeleteSkill = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this skill?')) return;
-
     setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
@@ -168,6 +181,7 @@ const SkillManagement = () => {
       }
 
       setSkills(prev => prev.filter(skill => skill._id !== id));
+      setShowDeleteModal(null);
     } catch (error) {
       console.error('Error deleting skill:', error);
     } finally {
@@ -184,7 +198,6 @@ const SkillManagement = () => {
 
     setSkills(items);
 
-    // Update order in backend
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -198,7 +211,7 @@ const SkillManagement = () => {
         },
         body: JSON.stringify({
           skillIds: items.map(item => item._id),
-          userId: currentUser?._id // Assuming currentUser is available in context
+          userId: currentUser?._id
         })
       });
 
@@ -209,224 +222,321 @@ const SkillManagement = () => {
       await fetchSkills();
     } catch (error) {
       console.error('Error reordering skills:', error);
-      // Revert if error
       setSkills([...skills]);
       fetchSkills();
     }
   };
 
+  const getProficiencyColor = (level) => {
+    if (level >= 8) return isDark ? 'text-green-400' : 'text-green-600';
+    if (level >= 6) return isDark ? 'text-yellow-400' : 'text-yellow-600';
+    if (level >= 4) return isDark ? 'text-orange-400' : 'text-orange-600';
+    return isDark ? 'text-red-400' : 'text-red-600';
+  };
+
   return (
-    <div className="bg-[#161B22] p-6 rounded-lg shadow-md border border-gray-800 mb-8">
-      <h2 className="text-2xl font-bold text-[#00FFFF] mb-6">Manage Skills</h2>
+    <div className={`min-h-screen py-8 px-4 transition-all duration-300 ${
+      isDark ? 'bg-gradient-to-br from-[#0D1117] via-[#161B22] to-[#0D1117]' : 'bg-gradient-to-br from-slate-50 via-white to-blue-50'
+    }`}>
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="animate-on-scroll mb-8">
+          <Button
+            onClick={() => navigate('/portfolioHome')}
+            variant="ghost"
+            className={`mb-6 group ${isDark ? 'text-[#00FFFF] hover:text-[#9C27B0]' : 'text-blue-600 hover:text-purple-600'} transition-colors duration-300`}
+          >
+            <FaArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform duration-200" /> 
+            Back to Portfolio
+          </Button>
 
-      {/* Add New Skill Form */}
-      <button
-        onClick={() => navigate('/portfolioHome')}
-        className="flex items-center gap-2 mb-6 text-[#00FFFF] hover:underline"
-      >
-        <FaArrowLeft /> Back to Portfolio
-      </button>
-      <div className="mb-8">
-        <h3 className="text-lg font-semibold text-[#E5E5E5] mb-4">Add New Skill</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-          <div>
-            <label className="block text-gray-400 text-sm mb-2">Skill Name</label>
-            <input
-              type="text"
-              name="name"
-              value={newSkill.name}
-              onChange={handleInputChange}
-              className="w-full bg-[#0D1117] border border-gray-700 rounded py-2 px-3 text-white focus:outline-none focus:border-[#00FFFF]"
-              placeholder="e.g. JavaScript"
-            />
-          </div>
-          <div>
-            <label className="block text-gray-400 text-sm mb-2">Category</label>
-            <select
-              name="category"
-              value={newSkill.category}
-              onChange={handleInputChange}
-              className="w-full bg-[#0D1117] border border-gray-700 rounded py-2 px-3 text-white focus:outline-none focus:border-[#00FFFF]"
-            >
-              {categories.map(category => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-gray-400 text-sm mb-2">Proficiency (1-10)</label>
-            <input
-              type="number"
-              name="proficiency"
-              min="1"
-              max="10"
-              value={newSkill.proficiency}
-              onChange={handleInputChange}
-              className="w-full bg-[#0D1117] border border-gray-700 rounded py-2 px-3 text-white focus:outline-none focus:border-[#00FFFF]"
-            />
-          </div>
-          <div className="flex items-end">
-            <button
-              onClick={handleAddSkill}
-              disabled={isLoading || !newSkill.name}
-              className="w-full py-2 bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] text-black font-medium rounded hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-            >
-              {isLoading ? 'Adding...' : (
-                <>
-                  <FaPlus /> Add Skill
-                </>
-              )}
-            </button>
+          <div className="text-center mb-8">
+            <h1 className={`text-4xl font-bold mb-4 bg-gradient-to-r ${
+              isDark ? 'from-[#00FFFF] to-[#9C27B0]' : 'from-blue-600 to-purple-600'
+            } bg-clip-text text-transparent animate-gradient-x`}>
+              Skill Management
+            </h1>
+            <p className={`text-lg ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              Manage and showcase your technical expertise
+            </p>
           </div>
         </div>
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            id="isFeatured"
-            name="isFeatured"
-            checked={newSkill.isFeatured}
-            onChange={handleInputChange}
-            className="mr-2"
-          />
-          <label htmlFor="isFeatured" className="text-gray-400">Featured Skill</label>
-        </div>
-      </div>
 
-      {/* Skills List */}
-      <div>
-        <h3 className="text-lg font-semibold text-[#E5E5E5] mb-4">Your Skills</h3>
-
-        {isEditing ? (
-          <div className="mb-6 p-4 bg-[#0D1117] rounded-lg border border-[#00FFFF]">
-            <h4 className="text-md font-semibold text-[#E5E5E5] mb-3">Edit Skill</h4>
+        {/* Add New Skill Form */}
+        <Card className="animate-on-scroll mb-8 hover-lift">
+          <div className="p-6">
+            <h2 className={`text-2xl font-semibold mb-6 ${isDark ? 'text-[#E5E5E5]' : 'text-gray-800'}`}>
+              Add New Skill
+            </h2>
+            
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-              <div>
-                <label className="block text-gray-400 text-sm mb-2">Skill Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={editingSkill.name}
-                  onChange={handleEditInputChange}
-                  className="w-full bg-[#161B22] border border-gray-700 rounded py-2 px-3 text-white focus:outline-none focus:border-[#00FFFF]"
-                />
-              </div>
-              <div>
-                <label className="block text-gray-400 text-sm mb-2">Category</label>
-                <select
-                  name="category"
-                  value={editingSkill.category}
-                  onChange={handleEditInputChange}
-                  className="w-full bg-[#161B22] border border-gray-700 rounded py-2 px-3 text-white focus:outline-none focus:border-[#00FFFF]"
+              <Form.Input
+                label="Skill Name"
+                name="name"
+                value={newSkill.name}
+                onChange={handleInputChange}
+                placeholder="e.g. JavaScript"
+                required
+              />
+              
+              <Form.Select
+                label="Category"
+                name="category"
+                value={newSkill.category}
+                onChange={handleInputChange}
+                options={categories.map(cat => ({ value: cat, label: cat }))}
+              />
+              
+              <Form.Input
+                label="Proficiency (1-10)"
+                type="number"
+                name="proficiency"
+                min="1"
+                max="10"
+                value={newSkill.proficiency}
+                onChange={handleInputChange}
+              />
+              
+              <div className="flex items-end">
+                <Button
+                  onClick={handleAddSkill}
+                  disabled={isLoading || !newSkill.name}
+                  className="w-full bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] text-black font-medium hover:shadow-lg hover:scale-105 transition-all duration-200"
                 >
-                  {categories.map(category => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-gray-400 text-sm mb-2">Proficiency</label>
-                <input
-                  type="number"
-                  name="proficiency"
-                  min="1"
-                  max="10"
-                  value={editingSkill.proficiency}
-                  onChange={handleEditInputChange}
-                  className="w-full bg-[#161B22] border border-gray-700 rounded py-2 px-3 text-white focus:outline-none focus:border-[#00FFFF]"
-                />
-              </div>
-              <div className="flex items-end gap-2">
-                <button
-                  onClick={handleUpdateSkill}
-                  disabled={isLoading}
-                  className="flex-1 py-2 bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] text-black font-medium rounded hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-                >
-                  {isLoading ? 'Saving...' : (
+                  {isLoading ? 'Adding...' : (
                     <>
-                      <MdCheck size={18} /> Save
+                      <FaPlus className="mr-2" /> Add Skill
                     </>
                   )}
-                </button>
-                <button
-                  onClick={() => setIsEditing(false)}
-                  className="flex-1 py-2 bg-[#2D333B] text-[#E5E5E5] rounded hover:bg-[#444C56] transition-colors"
-                >
-                  Cancel
-                </button>
+                </Button>
               </div>
             </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="editIsFeatured"
+            
+            <Form.Checkbox
+              label="Featured Skill"
+              name="isFeatured"
+              checked={newSkill.isFeatured}
+              onChange={handleInputChange}
+              className="text-sm"
+            />
+          </div>
+        </Card>
+
+        {/* Edit Modal */}
+        {isEditing && (
+          <Modal
+            isOpen={isEditing}
+            onClose={() => setIsEditing(false)}
+            title="Edit Skill"
+          >
+            <div className="space-y-4">
+              <Form.Input
+                label="Skill Name"
+                name="name"
+                value={editingSkill.name}
+                onChange={handleEditInputChange}
+                required
+              />
+              
+              <Form.Select
+                label="Category"
+                name="category"
+                value={editingSkill.category}
+                onChange={handleEditInputChange}
+                options={categories.map(cat => ({ value: cat, label: cat }))}
+              />
+              
+              <Form.Input
+                label="Proficiency"
+                type="number"
+                name="proficiency"
+                min="1"
+                max="10"
+                value={editingSkill.proficiency}
+                onChange={handleEditInputChange}
+              />
+              
+              <Form.Checkbox
+                label="Featured Skill"
                 name="isFeatured"
                 checked={editingSkill.isFeatured}
                 onChange={handleEditInputChange}
-                className="mr-2"
               />
-              <label htmlFor="editIsFeatured" className="text-gray-400">Featured Skill</label>
+              
+              <div className="flex gap-3 pt-4">
+                <Button
+                  onClick={handleUpdateSkill}
+                  disabled={isLoading}
+                  className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white"
+                >
+                  {isLoading ? 'Saving...' : (
+                    <>
+                      <MdCheck className="mr-2" size={18} /> Save
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={() => setIsEditing(false)}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
-          </div>
-        ) : null}
+          </Modal>
+        )}
 
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="skills">
-            {(provided, snapshot) => (
-              <div {...provided.droppableProps} ref={provided.innerRef} className={`space-y-3 ${snapshot.isDraggingOver ? 'bg-[#0D1117]' : ''}`}>
-                {skills.length === 0 ? (
-                  <p className="text-gray-500 italic">No skills added yet. Add your first skill above.</p>
-                ) : (
-                  skills.map((skill, index) => (
-                    <Draggable key={skill._id} draggableId={skill._id} index={index}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          className={`p-4 rounded-lg border ${skill.isFeatured ? 'border-[#9C27B0] bg-[#1A1A2E]' : 'border-gray-700 bg-[#161B22]'} flex items-center justify-between ${snapshot.isDragging ? 'shadow-lg bg-[#0D1117]' : ''
-                            }`}
-                        >
-                          <div className="flex items-center gap-4">
-                            <div {...provided.dragHandleProps} className="text-gray-400 hover:text-[#00FFFF] cursor-move">
-                              <FaGripVertical size={16} />
-                            </div>
-                            <div>
-                              <h4 className="font-medium text-[#E5E5E5]">{skill.name}</h4>
-                              <div className="flex items-center gap-4 text-sm text-gray-400">
-                                <span>{skill.category}</span>
-                                <span>Proficiency: {skill.proficiency}/10</span>
-                                {skill.isFeatured && (
-                                  <span className="text-[#9C27B0]">Featured</span>
-                                )}
+        {/* Delete Confirmation Modal */}
+        {showDeleteModal && (
+          <Modal
+            isOpen={!!showDeleteModal}
+            onClose={() => setShowDeleteModal(null)}
+            title="Confirm Deletion"
+          >
+            <p className={`mb-6 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+              Are you sure you want to delete this skill? This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => handleDeleteSkill(showDeleteModal)}
+                disabled={isLoading}
+                className="flex-1 bg-gradient-to-r from-red-500 to-red-600 text-white"
+              >
+                {isLoading ? 'Deleting...' : 'Delete'}
+              </Button>
+              <Button
+                onClick={() => setShowDeleteModal(null)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+            </div>
+          </Modal>
+        )}
+
+        {/* Skills List */}
+        <Card className="animate-on-scroll">
+          <div className="p-6">
+            <h2 className={`text-2xl font-semibold mb-6 ${isDark ? 'text-[#E5E5E5]' : 'text-gray-800'}`}>
+              Your Skills ({skills.length})
+            </h2>
+
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="skills">
+                {(provided, snapshot) => (
+                  <div 
+                    {...provided.droppableProps} 
+                    ref={provided.innerRef} 
+                    className={`space-y-3 transition-colors duration-200 ${
+                      snapshot.isDraggingOver ? (isDark ? 'bg-[#0D1117]/50' : 'bg-blue-50/50') : ''
+                    } p-2 rounded-lg`}
+                  >
+                    {skills.length === 0 ? (
+                      <div className="text-center py-12">
+                        <div className={`text-6xl mb-4 ${isDark ? 'text-gray-600' : 'text-gray-400'}`}>
+                          🎯
+                        </div>
+                        <p className={`text-lg ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                          No skills added yet. Add your first skill above!
+                        </p>
+                      </div>
+                    ) : (
+                      skills.map((skill, index) => (
+                        <Draggable key={skill._id} draggableId={skill._id} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              className={`group p-4 rounded-xl border-2 transition-all duration-300 ${
+                                skill.isFeatured 
+                                  ? `border-[#9C27B0] ${isDark ? 'bg-gradient-to-r from-purple-900/20 to-cyan-900/20' : 'bg-gradient-to-r from-purple-50 to-cyan-50'} shadow-lg shadow-purple-500/20`
+                                  : `${isDark ? 'border-gray-700 bg-[#161B22]' : 'border-gray-200 bg-white'} hover:border-[#00FFFF]`
+                              } ${
+                                snapshot.isDragging 
+                                  ? `shadow-2xl ${isDark ? 'shadow-cyan-500/30' : 'shadow-blue-500/30'} scale-105 rotate-1` 
+                                  : 'hover:shadow-lg hover:scale-[1.02]'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4 flex-1">
+                                  <div 
+                                    {...provided.dragHandleProps} 
+                                    className={`${isDark ? 'text-gray-400 hover:text-[#00FFFF]' : 'text-gray-500 hover:text-blue-600'} cursor-move transition-colors duration-200 p-1 rounded`}
+                                  >
+                                    <FaGripVertical size={16} />
+                                  </div>
+                                  
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <h4 className={`font-semibold text-lg ${isDark ? 'text-[#E5E5E5]' : 'text-gray-800'}`}>
+                                        {skill.name}
+                                      </h4>
+                                      {skill.isFeatured && (
+                                        <FaStar className="text-[#9C27B0] animate-pulse" size={16} />
+                                      )}
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-4 text-sm">
+                                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                        isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'
+                                      }`}>
+                                        {skill.category}
+                                      </span>
+                                      
+                                      <div className="flex items-center gap-2">
+                                        <span className={isDark ? 'text-gray-400' : 'text-gray-600'}>
+                                          Proficiency:
+                                        </span>
+                                        <span className={`font-bold ${getProficiencyColor(skill.proficiency)}`}>
+                                          {skill.proficiency}/10
+                                        </span>
+                                        <div className={`w-16 h-1 rounded-full ${isDark ? 'bg-gray-700' : 'bg-gray-200'}`}>
+                                          <div 
+                                            className="h-full rounded-full bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] transition-all duration-500"
+                                            style={{ width: `${skill.proficiency * 10}%` }}
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                  <Button
+                                    onClick={() => {
+                                      setEditingSkill(skill);
+                                      setIsEditing(true);
+                                    }}
+                                    variant="ghost"
+                                    size="sm"
+                                    className={`${isDark ? 'text-[#00FFFF] hover:bg-cyan-900/20' : 'text-blue-600 hover:bg-blue-50'} transition-colors duration-200`}
+                                  >
+                                    <FaEdit size={16} />
+                                  </Button>
+                                  <Button
+                                    onClick={() => setShowDeleteModal(skill._id)}
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-red-500 hover:bg-red-900/20 transition-colors duration-200"
+                                  >
+                                    <FaTrash size={16} />
+                                  </Button>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => {
-                                setEditingSkill(skill);
-                                setIsEditing(true);
-                              }}
-                              className="p-2 text-[#00FFFF] hover:bg-[#0D1117] rounded"
-                            >
-                              <FaEdit size={16} />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteSkill(skill._id)}
-                              className="p-2 text-red-500 hover:bg-[#0D1117] rounded"
-                            >
-                              <FaTrash size={16} />
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))
+                          )}
+                        </Draggable>
+                      ))
+                    )}
+                    {provided.placeholder}
+                  </div>
                 )}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+              </Droppable>
+            </DragDropContext>
+          </div>
+        </Card>
       </div>
     </div>
   );

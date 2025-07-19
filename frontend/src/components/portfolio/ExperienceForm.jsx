@@ -3,8 +3,13 @@ import { MdClose } from 'react-icons/md';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import SummaryApi from '../../config';
+import { useTheme } from '../../context/ThemeContext';
+import Modal from '../common/Modal';
+import Button from '../common/Button';
 
 const ExperienceForm = ({ onClose, onSubmit, initialData }) => {
+  const { isDark } = useTheme();
+  
   const [formData, setFormData] = useState({
     company: '',
     position: '',
@@ -122,195 +127,295 @@ const ExperienceForm = ({ onClose, onSubmit, initialData }) => {
     }
   };
 
+  const inputClasses = `w-full px-4 py-3 rounded-lg border-2 transition-all duration-300 focus:outline-none focus:ring-2 transform hover:scale-[1.02] ${
+    isDark 
+      ? 'bg-gray-800/50 border-gray-600 text-white placeholder-gray-400 focus:border-cyan-400 focus:ring-cyan-400/20 backdrop-blur-sm'
+      : 'bg-white/80 border-gray-300 text-gray-900 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500/20 backdrop-blur-sm'
+  }`;
+
+  const labelClasses = `block font-semibold mb-2 transition-colors duration-300 ${
+    isDark ? 'text-gray-200' : 'text-gray-700'
+  }`;
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
-      <div className="bg-[#161B22] rounded-lg p-6 w-full max-w-2xl relative">
+    <Modal onClose={onClose} className="max-w-4xl animate-modalSlideIn">
+      <div className="relative">
+        {/* Animated background gradient */}
+        <div className={`absolute inset-0 rounded-lg opacity-10 ${
+          isDark 
+            ? 'bg-gradient-to-br from-cyan-400 via-purple-500 to-cyan-400' 
+            : 'bg-gradient-to-br from-blue-400 via-purple-500 to-blue-400'
+        } animate-gradient-slow`} />
+        
+        {/* Close button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white"
+          className={`absolute top-4 right-4 z-20 p-2 rounded-full transition-all duration-300 transform hover:scale-110 hover:rotate-90 ${
+            isDark 
+              ? 'text-gray-400 hover:text-white hover:bg-gray-700/50' 
+              : 'text-gray-500 hover:text-gray-900 hover:bg-gray-200/50'
+          }`}
         >
           <MdClose size={24} />
         </button>
 
-        <h2 className="text-2xl font-bold text-[#00FFFF] mb-6">
-          {initialData ? 'Edit Experience' : 'Add New Experience'}
-        </h2>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-500/10 text-red-500 rounded-lg">
-            {error}
+        <div className="relative z-10 p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h2 className={`text-3xl font-bold mb-2 transition-all duration-300 ${
+              isDark 
+                ? 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400'
+                : 'text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600'
+            }`}>
+              {initialData ? '✏️ Edit Experience' : '✨ Add New Experience'}
+            </h2>
+            <p className={`transition-colors duration-300 ${
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            }`}>
+              {initialData ? 'Update your professional experience' : 'Share your professional journey'}
+            </p>
           </div>
-        )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-gray-400 mb-2">Company*</label>
-              <input
-                type="text"
-                name="company"
-                value={formData.company}
-                onChange={handleChange}
-                required
-                className="w-full bg-[#0D1117] border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-[#00FFFF] focus:outline-none"
-              />
+          {/* Error message */}
+          {error && (
+            <div className="mb-6 p-4 rounded-lg border-l-4 border-red-500 bg-red-500/10 backdrop-blur-sm animate-slideInDown">
+              <p className="text-red-500 font-medium">⚠️ {error}</p>
             </div>
+          )}
 
-            <div>
-              <label className="block text-gray-400 mb-2">Position*</label>
-              <input
-                type="text"
-                name="position"
-                value={formData.position}
-                onChange={handleChange}
-                required
-                className="w-full bg-[#0D1117] border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-[#00FFFF] focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-400 mb-2">Start Date*</label>
-              <input
-                type="date"
-                name="startDate"
-                value={formData.startDate}
-                onChange={handleChange}
-                required
-                className="w-full bg-[#0D1117] border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-[#00FFFF] focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-400 mb-2">End Date</label>
-              <input
-                type="date"
-                name="endDate"
-                value={formData.endDate}
-                onChange={handleChange}
-                disabled={formData.isCurrent}
-                className="w-full bg-[#0D1117] border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-[#00FFFF] focus:outline-none disabled:opacity-50"
-              />
-              <div className="mt-2 flex items-center">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Company and Position Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
+              <div className="group">
+                <label className={labelClasses}>
+                  🏢 Company <span className="text-red-500">*</span>
+                </label>
                 <input
-                  type="checkbox"
-                  id="isCurrent"
-                  name="isCurrent"
-                  checked={formData.isCurrent}
+                  type="text"
+                  name="company"
+                  value={formData.company}
                   onChange={handleChange}
-                  className="mr-2"
+                  required
+                  placeholder="Enter company name"
+                  className={inputClasses}
                 />
-                <label htmlFor="isCurrent" className="text-gray-400">I currently work here</label>
+              </div>
+
+              <div className="group">
+                <label className={labelClasses}>
+                  💼 Position <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="position"
+                  value={formData.position}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter your role"
+                  className={inputClasses}
+                />
               </div>
             </div>
 
-            <div>
-              <label className="block text-gray-400 mb-2">Employment Type</label>
-              <select
-                name="employmentType"
-                value={formData.employmentType}
-                onChange={handleChange}
-                className="w-full bg-[#0D1117] border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-[#00FFFF] focus:outline-none"
-              >
-                <option value="Full-time">Full-time</option>
-                <option value="Part-time">Part-time</option>
-                <option value="Contract">Contract</option>
-                <option value="Internship">Internship</option>
-                <option value="Freelance">Freelance</option>
-              </select>
+            {/* Date and Employment Type Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
+              <div className="group">
+                <label className={labelClasses}>
+                  📅 Start Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  name="startDate"
+                  value={formData.startDate}
+                  onChange={handleChange}
+                  required
+                  className={inputClasses}
+                />
+              </div>
+
+              <div className="group">
+                <label className={labelClasses}>📅 End Date</label>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={formData.endDate}
+                  onChange={handleChange}
+                  disabled={formData.isCurrent}
+                  className={`${inputClasses} ${formData.isCurrent ? 'opacity-50 cursor-not-allowed' : ''}`}
+                />
+                <div className="mt-3 flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="isCurrent"
+                    name="isCurrent"
+                    checked={formData.isCurrent}
+                    onChange={handleChange}
+                    className={`w-4 h-4 rounded transition-colors duration-300 ${
+                      isDark 
+                        ? 'text-cyan-400 bg-gray-700 border-gray-600 focus:ring-cyan-400'
+                        : 'text-blue-600 bg-white border-gray-300 focus:ring-blue-500'
+                    }`}
+                  />
+                  <label htmlFor="isCurrent" className={`text-sm transition-colors duration-300 ${
+                    isDark ? 'text-gray-300' : 'text-gray-600'
+                  }`}>
+                    📍 I currently work here
+                  </label>
+                </div>
+              </div>
+
+              <div className="group">
+                <label className={labelClasses}>🎯 Employment Type</label>
+                <select
+                  name="employmentType"
+                  value={formData.employmentType}
+                  onChange={handleChange}
+                  className={inputClasses}
+                >
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                  <option value="Contract">Contract</option>
+                  <option value="Internship">Internship</option>
+                  <option value="Freelance">Freelance</option>
+                </select>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-gray-400 mb-2">Location</label>
+            {/* Location */}
+            <div className="animate-fadeInUp" style={{ animationDelay: '0.3s' }}>
+              <label className={labelClasses}>📍 Location</label>
               <input
                 type="text"
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
-                className="w-full bg-[#0D1117] border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-[#00FFFF] focus:outline-none"
+                placeholder="City, State/Country"
+                className={inputClasses}
               />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-gray-400 mb-2">Description*</label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              required
-              rows="4"
-              className="w-full bg-[#0D1117] border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-[#00FFFF] focus:outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-400 mb-2">Skills (comma separated)</label>
-            <input
-              type="text"
-              name="skills"
-              value={formData.skills}
-              onChange={handleChange}
-              placeholder="React, Node.js, MongoDB"
-              className="w-full bg-[#0D1117] border border-gray-700 rounded-lg px-4 py-2 text-white focus:border-[#00FFFF] focus:outline-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-400 mb-2">Company Logo</label>
-            <div className="flex items-center gap-4">
-              {previewLogo && (
-                <img 
-                  src={previewLogo} 
-                  alt="Company logo preview" 
-                  className="w-16 h-16 rounded-full object-cover border border-gray-600"
-                />
-              )}
-              <label className="cursor-pointer">
-                <span className="px-4 py-2 bg-[#2D333B] text-[#E5E5E5] rounded-lg hover:bg-[#444C56] transition-colors">
-                  {previewLogo ? 'Change Logo' : 'Upload Logo'}
-                </span>
-                <input
-                  type="file"
-                  onChange={handleFileChange}
-                  accept="image/*"
-                  className="hidden"
-                />
+            {/* Description */}
+            <div className="animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
+              <label className={labelClasses}>
+                📝 Description <span className="text-red-500">*</span>
               </label>
-              {previewLogo && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPreviewLogo(null);
-                    setFormData(prev => ({ ...prev, companyLogo: null }));
-                  }}
-                  className="px-4 py-2 text-red-500 hover:text-red-400"
-                >
-                  Remove
-                </button>
-              )}
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                required
+                rows="5"
+                placeholder="Describe your role, responsibilities, and achievements..."
+                className={`${inputClasses} resize-none`}
+              />
             </div>
-            <p className="text-gray-500 text-sm mt-1">Max 2MB. Recommended: 200x200px</p>
-          </div>
 
-          <div className="flex justify-end gap-4 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-2 bg-[#2D333B] text-[#E5E5E5] rounded-lg hover:bg-[#444C56] transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="px-6 py-2 bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] text-black font-medium rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-            >
-              {isLoading ? 'Saving...' : (initialData ? 'Update Experience' : 'Add Experience')}
-            </button>
-          </div>
-        </form>
+            {/* Skills */}
+            <div className="animate-fadeInUp" style={{ animationDelay: '0.5s' }}>
+              <label className={labelClasses}>🛠️ Skills</label>
+              <input
+                type="text"
+                name="skills"
+                value={formData.skills}
+                onChange={handleChange}
+                placeholder="React, Node.js, MongoDB, etc."
+                className={inputClasses}
+              />
+              <p className={`text-sm mt-2 transition-colors duration-300 ${
+                isDark ? 'text-gray-400' : 'text-gray-500'
+              }`}>
+                💡 Separate skills with commas
+              </p>
+            </div>
+
+            {/* Company Logo */}
+            <div className="animate-fadeInUp" style={{ animationDelay: '0.6s' }}>
+              <label className={labelClasses}>🖼️ Company Logo</label>
+              <div className="flex items-center gap-6 p-4 rounded-lg border-2 border-dashed transition-all duration-300 hover:border-solid bg-opacity-20 backdrop-blur-sm border-gray-400">
+                {previewLogo && (
+                  <div className="relative group">
+                    <img 
+                      src={previewLogo} 
+                      alt="Company logo preview" 
+                      className="w-20 h-20 rounded-full object-cover border-4 transition-all duration-300 transform group-hover:scale-110 shadow-lg border-cyan-400"
+                    />
+                    <div className="absolute inset-0 rounded-full bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </div>
+                )}
+                
+                <div className="flex-1 space-y-3">
+                  <label className="cursor-pointer group">
+                    <div className={`inline-flex items-center px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 ${
+                      isDark 
+                        ? 'bg-gradient-to-r from-gray-700 to-gray-600 text-white hover:from-gray-600 hover:to-gray-500'
+                        : 'bg-gradient-to-r from-gray-200 to-gray-100 text-gray-800 hover:from-gray-300 hover:to-gray-200'
+                    }`}>
+                      📁 {previewLogo ? 'Change Logo' : 'Upload Logo'}
+                    </div>
+                    <input
+                      type="file"
+                      onChange={handleFileChange}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                  </label>
+                  
+                  {previewLogo && (
+                    <Button
+                      type="button"
+                      variant="danger"
+                      size="sm"
+                      onClick={() => {
+                        setPreviewLogo(null);
+                        setFormData(prev => ({ ...prev, companyLogo: null }));
+                      }}
+                      className="ml-4"
+                    >
+                      🗑️ Remove
+                    </Button>
+                  )}
+                </div>
+              </div>
+              <p className={`text-xs mt-2 transition-colors duration-300 ${
+                isDark ? 'text-gray-500' : 'text-gray-400'
+              }`}>
+                📏 Max 2MB. Recommended: 200x200px
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-4 pt-6 animate-fadeInUp" style={{ animationDelay: '0.7s' }}>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={onClose}
+                className="px-8 py-3"
+              >
+                ❌ Cancel
+              </Button>
+              
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={isLoading}
+                className="px-8 py-3 relative overflow-hidden"
+              >
+                {isLoading ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Saving...
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-2">
+                    {initialData ? '💾 Update Experience' : '✨ Add Experience'}
+                  </span>
+                )}
+              </Button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
+    </Modal>
   );
 };
 
