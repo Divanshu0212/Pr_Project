@@ -3,6 +3,7 @@ import { FaGithub } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import Card from '../common/Card';
+import PropTypes from 'prop-types'; // Import PropTypes
 
 const ProjectCard = ({ project }) => {
   const { isDark } = useTheme();
@@ -155,6 +156,22 @@ const ProjectCard = ({ project }) => {
       </div>
     </Card>
   );
+};
+
+// Add PropTypes for validation
+ProjectCard.propTypes = {
+  project: PropTypes.shape({
+    _id: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    description: PropTypes.string.isRequired,
+    status: PropTypes.oneOf(['completed', 'in-progress', 'planned']).isRequired,
+    image: PropTypes.shape({
+      url: PropTypes.string.isRequired,
+    }).isRequired,
+    technologies: PropTypes.arrayOf(PropTypes.string).isRequired,
+    progress: PropTypes.number.isRequired,
+    link: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default ProjectCard;
