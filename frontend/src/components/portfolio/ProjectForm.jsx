@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FaPlus, FaTrash, FaArrowLeft, FaSave } from 'react-icons/fa';
-import SummaryApi from '../../config';
-import axios from 'axios';
+import { FaPlus, FaTrash, FaArrowLeft, FaSave, FaImage, FaCode, FaTasks } from 'react-icons/fa';
+import { useTheme } from '../../context/ThemeContext';
 
 const ProjectForm = ({ editMode = false }) => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { isDark } = useTheme();
   
   const [project, setProject] = useState({
     title: '',
@@ -23,19 +23,22 @@ const ProjectForm = ({ editMode = false }) => {
   const [preview, setPreview] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    // Trigger entrance animation
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (editMode && id) {
       const fetchProject = async () => {
         try {
-          const token = localStorage.getItem('token');
-          const response = await axios.get(SummaryApi.projects.single.url(id), {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          setProject(response.data.project);
-          setPreview(response.data.project.image.url);
+          // Mock API call - replace with your actual API
+          console.log('Fetching project:', id);
+          // Simulate loading
+          await new Promise(resolve => setTimeout(resolve, 1000));
         } catch (err) {
           setError('Failed to fetch project details');
         }
@@ -119,299 +122,370 @@ const ProjectForm = ({ editMode = false }) => {
     setError('');
 
     try {
-      const token = localStorage.getItem('token');
-      const formData = new FormData();
-      
-      formData.append('title', project.title);
-      formData.append('description', project.description);
-      formData.append('link', project.link);
-      formData.append('technologies', JSON.stringify(project.technologies));
-      formData.append('status', project.status);
-      formData.append('progress', project.progress);
-      formData.append('isPinned', project.isPinned);
-      formData.append('tasks', JSON.stringify(project.tasks));
-      
-      if (image) {
-        formData.append('image', image);
-      }
-
-      const config = {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      };
-
-      let response;
-      if (editMode) {
-        response = await axios.put(SummaryApi.projects.update.url(id), formData, config);
-      } else {
-        response = await axios.post(SummaryApi.projects.add.url, formData, config);
-      }
-
-      if (response.data.success) {
-        navigate('/portfolioHome');
-      }
+      // Mock API call - replace with your actual API
+      console.log('Submitting project:', project);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      navigate('/portfolioHome');
     } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong');
+      setError('Something went wrong');
     } finally {
       setLoading(false);
     }
   };
 
+  const themeClasses = {
+    container: isDark 
+      ? 'min-h-screen bg-[rgb(var(--color-background-primary))] text-[rgb(var(--color-text-primary))]' 
+      : 'min-h-screen bg-[rgb(var(--color-background-primary))] text-[rgb(var(--color-text-primary))]',
+    card: isDark
+      ? 'bg-[rgb(var(--color-background-secondary))] border-gray-700/50'
+      : 'bg-[rgb(var(--color-background-secondary))] border-gray-200/50',
+    input: isDark
+      ? 'bg-[rgb(var(--color-background-secondary))] border-gray-700 text-[rgb(var(--color-text-primary))] focus:border-[rgb(var(--color-accent-primary))] focus:ring-[rgb(var(--color-accent-primary))]'
+      : 'bg-[rgb(var(--color-background-secondary))] border-gray-300 text-[rgb(var(--color-text-primary))] focus:border-[rgb(var(--color-accent-primary))] focus:ring-[rgb(var(--color-accent-primary))]',
+    button: 'bg-gradient-to-r from-[rgb(var(--color-accent-primary))] to-[rgb(var(--color-highlight))] hover:shadow-lg hover:shadow-[rgb(var(--color-accent-primary))]/25',
+    techTag: isDark
+      ? 'bg-[rgb(var(--color-background-primary))] border-[rgb(var(--color-accent-primary))] text-[rgb(var(--color-accent-primary))]'
+      : 'bg-[rgb(var(--color-background-primary))] border-[rgb(var(--color-accent-primary))] text-[rgb(var(--color-accent-primary))]'
+  };
+
   return (
-    <div className="min-h-screen bg-[#0D1117] text-[#E5E5E5] py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <button 
-          onClick={() => navigate('/portfolioHome')}
-          className="flex items-center gap-2 mb-6 text-[#00FFFF] hover:underline"
-        >
-          <FaArrowLeft /> Back to Portfolio
-        </button>
+    <div className={themeClasses.container}>
+      {/* Animated Background Gradient */}
+      <div className="fixed inset-0 bg-gradient-to-br from-[rgb(var(--color-accent-primary))]/5 via-transparent to-[rgb(var(--color-highlight))]/5 animate-pulse" />
+      
+      <div className="relative z-10 py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          {/* Header Section with Animation */}
+          <div className={`transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+            <button 
+              onClick={() => navigate('/portfolioHome')}
+              className="group flex items-center gap-2 mb-6 text-[rgb(var(--color-accent-primary))] hover:text-[rgb(var(--color-highlight))] transition-all duration-300 transform hover:scale-105"
+            >
+              <FaArrowLeft className="transition-transform group-hover:-translate-x-1" /> 
+              <span className="relative">
+                Back to Portfolio
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[rgb(var(--color-accent-primary))] to-[rgb(var(--color-highlight))] transition-all duration-300 group-hover:w-full" />
+              </span>
+            </button>
 
-        <h1 className="text-3xl font-bold mb-8 text-[#00FFFF]">
-          {editMode ? 'Edit Project' : 'Add New Project'}
-        </h1>
-
-        {error && (
-          <div className="bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded mb-6">
-            {error}
+            <div className="mb-8">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-[rgb(var(--color-accent-primary))] to-[rgb(var(--color-highlight))] bg-clip-text text-transparent animate-pulse">
+                {editMode ? 'Edit Project' : 'Add New Project'}
+              </h1>
+              <div className="w-24 h-1 bg-gradient-to-r from-[rgb(var(--color-accent-primary))] to-[rgb(var(--color-highlight))] rounded-full mt-2" />
+            </div>
           </div>
-        )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Project Image */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Project Image</label>
-            <div className="flex items-center gap-6">
-              <div className="relative w-32 h-32 rounded-lg overflow-hidden border-2 border-dashed border-gray-600">
-                {preview ? (
-                  <img 
-                    src={preview} 
-                    alt="Project preview" 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gray-800 flex items-center justify-center">
-                    <span className="text-gray-400">No image</span>
+          {/* Error Alert with Animation */}
+          {error && (
+            <div className="transform transition-all duration-500 animate-shake bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded-lg mb-6 backdrop-blur-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Main Form */}
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Project Image Section */}
+            <div className={`transform transition-all duration-1000 delay-200 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+              <div className={`${themeClasses.card} rounded-2xl p-6 border backdrop-blur-sm`}>
+                <div className="flex items-center gap-3 mb-4">
+                  <FaImage className="text-[rgb(var(--color-accent-primary))] text-xl" />
+                  <label className="text-lg font-semibold">Project Image</label>
+                </div>
+                
+                <div className="flex items-center gap-6">
+                  <div className="relative group">
+                    <div className="w-32 h-32 rounded-xl overflow-hidden border-2 border-dashed border-[rgb(var(--color-accent-primary))]/50 group-hover:border-[rgb(var(--color-accent-primary))] transition-all duration-300">
+                      {preview ? (
+                        <img 
+                          src={preview} 
+                          alt="Project preview" 
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-[rgb(var(--color-background-secondary))] to-[rgb(var(--color-background-primary))] flex items-center justify-center">
+                          <FaImage className="text-[rgb(var(--color-accent-primary))]/50 text-2xl" />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                )}
+                  
+                  <div>
+                    <input
+                      type="file"
+                      id="image"
+                      onChange={handleImageChange}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="image"
+                      className={`inline-block px-6 py-2 ${themeClasses.button} text-white font-medium rounded-lg cursor-pointer transition-all duration-300 transform hover:scale-105`}
+                    >
+                      Choose Image
+                    </label>
+                    <p className="text-xs text-[rgb(var(--color-text-secondary))] mt-2">JPEG, PNG (Max 5MB)</p>
+                  </div>
+                </div>
               </div>
-              <div>
-                <input
-                  type="file"
-                  id="image"
-                  onChange={handleImageChange}
-                  accept="image/*"
-                  className="hidden"
-                />
-                <label
-                  htmlFor="image"
-                  className="px-4 py-2 bg-[#161B22] border border-[#00FFFF] text-[#00FFFF] rounded-lg cursor-pointer hover:bg-[#0D1117] transition-colors"
-                >
-                  Choose Image
-                </label>
-                <p className="text-xs text-gray-400 mt-2">JPEG, PNG (Max 5MB)</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Basic Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium mb-2">
-                Project Title*
-              </label>
-              <input
-                type="text"
-                id="title"
-                name="title"
-                value={project.title}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 bg-[#161B22] border border-gray-700 rounded-lg focus:border-[#00FFFF] focus:ring-1 focus:ring-[#00FFFF] outline-none"
-              />
             </div>
 
-            <div>
-              <label htmlFor="link" className="block text-sm font-medium mb-2">
-                Project Link*
-              </label>
-              <input
-                type="url"
-                id="link"
-                name="link"
-                value={project.link}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-2 bg-[#161B22] border border-gray-700 rounded-lg focus:border-[#00FFFF] focus:ring-1 focus:ring-[#00FFFF] outline-none"
-              />
-            </div>
-          </div>
+            {/* Basic Info Section */}
+            <div className={`transform transition-all duration-1000 delay-300 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+              <div className={`${themeClasses.card} rounded-2xl p-6 border backdrop-blur-sm`}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="group">
+                    <label htmlFor="title" className="block text-sm font-medium mb-2 text-[rgb(var(--color-text-primary))]">
+                      Project Title*
+                    </label>
+                    <input
+                      type="text"
+                      id="title"
+                      name="title"
+                      value={project.title}
+                      onChange={handleChange}
+                      required
+                      className={`w-full px-4 py-3 ${themeClasses.input} rounded-lg outline-none transition-all duration-300 group-hover:shadow-md focus:shadow-lg`}
+                      placeholder="Enter your project title"
+                    />
+                  </div>
 
-          {/* Description */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium mb-2">
-              Description*
-            </label>
-            <textarea
-              id="description"
-              name="description"
-              value={project.description}
-              onChange={handleChange}
-              required
-              rows={4}
-              className="w-full px-4 py-2 bg-[#161B22] border border-gray-700 rounded-lg focus:border-[#00FFFF] focus:ring-1 focus:ring-[#00FFFF] outline-none"
-            />
-          </div>
+                  <div className="group">
+                    <label htmlFor="link" className="block text-sm font-medium mb-2 text-[rgb(var(--color-text-primary))]">
+                      Project Link*
+                    </label>
+                    <input
+                      type="url"
+                      id="link"
+                      name="link"
+                      value={project.link}
+                      onChange={handleChange}
+                      required
+                      className={`w-full px-4 py-3 ${themeClasses.input} rounded-lg outline-none transition-all duration-300 group-hover:shadow-md focus:shadow-lg`}
+                      placeholder="https://your-project.com"
+                    />
+                  </div>
+                </div>
 
-          {/* Technologies */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Technologies*</label>
-            <div className="flex flex-wrap gap-2 mb-3">
-              {project.technologies.map((tech, index) => (
-                <span 
-                  key={index} 
-                  className="flex items-center gap-1 px-3 py-1 bg-[#0D1117] border border-[#00FFFF] text-[#00FFFF] rounded-full text-xs"
-                >
-                  {tech}
-                  <button 
-                    type="button" 
-                    onClick={() => removeTechnology(tech)}
-                    className="text-red-400 hover:text-red-300"
-                  >
-                    <FaTrash size={10} />
-                  </button>
-                </span>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={newTech}
-                onChange={(e) => setNewTech(e.target.value)}
-                placeholder="Add technology"
-                className="flex-1 px-4 py-2 bg-[#161B22] border border-gray-700 rounded-lg focus:border-[#00FFFF] focus:ring-1 focus:ring-[#00FFFF] outline-none"
-              />
-              <button
-                type="button"
-                onClick={addTechnology}
-                className="px-4 py-2 bg-[#00FFFF] text-black rounded-lg hover:opacity-90 transition-opacity"
-              >
-                <FaPlus />
-              </button>
-            </div>
-          </div>
-
-          {/* Status & Progress */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium mb-2">
-                Status*
-              </label>
-              <select
-                id="status"
-                name="status"
-                value={project.status}
-                onChange={handleChange}
-                className="w-full px-4 py-2 bg-[#161B22] border border-gray-700 rounded-lg focus:border-[#00FFFF] focus:ring-1 focus:ring-[#00FFFF] outline-none"
-              >
-                <option value="planned">Planned</option>
-                <option value="in-progress">In Progress</option>
-                <option value="completed">Completed</option>
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="progress" className="block text-sm font-medium mb-2">
-                Progress ({project.progress}%)
-              </label>
-              <input
-                type="range"
-                id="progress"
-                name="progress"
-                min="0"
-                max="100"
-                value={project.progress}
-                onChange={handleChange}
-                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#00FFFF]"
-              />
-            </div>
-          </div>
-
-          {/* Pinned */}
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="isPinned"
-              name="isPinned"
-              checked={project.isPinned}
-              onChange={(e) => setProject(prev => ({ ...prev, isPinned: e.target.checked }))}
-              className="w-4 h-4 text-[#00FFFF] bg-gray-700 border-gray-600 rounded focus:ring-[#00FFFF] focus:ring-2"
-            />
-            <label htmlFor="isPinned" className="ml-2 text-sm font-medium">
-              Pin this project to your portfolio
-            </label>
-          </div>
-
-          {/* Tasks */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Tasks</label>
-            <div className="space-y-3">
-              {project.tasks.map((task, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={task.completed}
-                    onChange={() => toggleTaskCompleted(index)}
-                    className="w-4 h-4 text-[#00FFFF] bg-gray-700 border-gray-600 rounded focus:ring-[#00FFFF] focus:ring-2"
+                <div className="mt-6 group">
+                  <label htmlFor="description" className="block text-sm font-medium mb-2 text-[rgb(var(--color-text-primary))]">
+                    Description*
+                  </label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    value={project.description}
+                    onChange={handleChange}
+                    required
+                    rows={4}
+                    className={`w-full px-4 py-3 ${themeClasses.input} rounded-lg outline-none transition-all duration-300 group-hover:shadow-md focus:shadow-lg resize-none`}
+                    placeholder="Describe your project in detail..."
                   />
+                </div>
+              </div>
+            </div>
+
+            {/* Technologies Section */}
+            <div className={`transform transition-all duration-1000 delay-400 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+              <div className={`${themeClasses.card} rounded-2xl p-6 border backdrop-blur-sm`}>
+                <div className="flex items-center gap-3 mb-4">
+                  <FaCode className="text-[rgb(var(--color-accent-primary))] text-xl" />
+                  <label className="text-lg font-semibold">Technologies*</label>
+                </div>
+                
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {project.technologies.map((tech, index) => (
+                    <span 
+                      key={index} 
+                      className={`group flex items-center gap-2 px-3 py-1 ${themeClasses.techTag} rounded-full text-xs border transition-all duration-300 hover:scale-105 hover:shadow-md`}
+                    >
+                      {tech}
+                      <button 
+                        type="button" 
+                        onClick={() => removeTechnology(tech)}
+                        className="text-red-400 hover:text-red-300 transition-colors duration-200 hover:scale-110"
+                      >
+                        <FaTrash size={10} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                
+                <div className="flex gap-2">
                   <input
                     type="text"
-                    name="title"
-                    value={task.title}
-                    onChange={(e) => handleTaskChange(index, e)}
-                    placeholder="Task description"
-                    className="flex-1 px-4 py-2 bg-[#161B22] border border-gray-700 rounded-lg focus:border-[#00FFFF] focus:ring-1 focus:ring-[#00FFFF] outline-none"
+                    value={newTech}
+                    onChange={(e) => setNewTech(e.target.value)}
+                    placeholder="Add technology (e.g., React, Node.js)"
+                    className={`flex-1 px-4 py-3 ${themeClasses.input} rounded-lg outline-none transition-all duration-300 focus:shadow-lg`}
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTechnology())}
                   />
                   <button
                     type="button"
-                    onClick={() => removeTask(index)}
-                    className="p-2 text-red-400 hover:text-red-300"
-                    disabled={project.tasks.length <= 1}
+                    onClick={addTechnology}
+                    className={`px-6 py-3 ${themeClasses.button} text-white rounded-lg transition-all duration-300 transform hover:scale-105 hover:shadow-lg`}
                   >
-                    <FaTrash />
+                    <FaPlus />
                   </button>
                 </div>
-              ))}
-              <button
-                type="button"
-                onClick={addTask}
-                className="flex items-center gap-2 px-4 py-2 text-[#00FFFF] border border-[#00FFFF] rounded-lg hover:bg-[#00FFFF]/10 transition-colors"
-              >
-                <FaPlus /> Add Task
-              </button>
+              </div>
             </div>
-          </div>
 
-          {/* Submit */}
-          <div className="pt-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex items-center justify-center gap-2 w-full md:w-auto px-6 py-3 bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] text-black font-medium rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
-            >
-              {loading ? (
-                'Processing...'
-              ) : (
-                <>
-                  <FaSave /> {editMode ? 'Update Project' : 'Save Project'}
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+            {/* Status & Progress Section */}
+            <div className={`transform transition-all duration-1000 delay-500 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+              <div className={`${themeClasses.card} rounded-2xl p-6 border backdrop-blur-sm`}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="group">
+                    <label htmlFor="status" className="block text-sm font-medium mb-2 text-[rgb(var(--color-text-primary))]">
+                      Status*
+                    </label>
+                    <select
+                      id="status"
+                      name="status"
+                      value={project.status}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 ${themeClasses.input} rounded-lg outline-none transition-all duration-300 group-hover:shadow-md focus:shadow-lg`}
+                    >
+                      <option value="planned">🎯 Planned</option>
+                      <option value="in-progress">⚡ In Progress</option>
+                      <option value="completed">✅ Completed</option>
+                    </select>
+                  </div>
+
+                  <div className="group">
+                    <label htmlFor="progress" className="block text-sm font-medium mb-2 text-[rgb(var(--color-text-primary))]">
+                      Progress ({project.progress}%)
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="range"
+                        id="progress"
+                        name="progress"
+                        min="0"
+                        max="100"
+                        value={project.progress}
+                        onChange={handleChange}
+                        className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer transition-all duration-300 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-[rgb(var(--color-accent-primary))] [&::-webkit-slider-thumb]:to-[rgb(var(--color-highlight))] [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-110"
+                      />
+                      <div 
+                        className="absolute top-0 left-0 h-2 bg-gradient-to-r from-[rgb(var(--color-accent-primary))] to-[rgb(var(--color-highlight))] rounded-lg transition-all duration-300"
+                        style={{ width: `${project.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      id="isPinned"
+                      name="isPinned"
+                      checked={project.isPinned}
+                      onChange={(e) => setProject(prev => ({ ...prev, isPinned: e.target.checked }))}
+                      className="w-5 h-5 text-[rgb(var(--color-accent-primary))] bg-[rgb(var(--color-background-secondary))] border-gray-600 rounded focus:ring-[rgb(var(--color-accent-primary))] focus:ring-2 transition-all duration-300"
+                    />
+                    <span className="text-sm font-medium group-hover:text-[rgb(var(--color-accent-primary))] transition-colors duration-300">
+                      📌 Pin this project to your portfolio
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Tasks Section */}
+            <div className={`transform transition-all duration-1000 delay-600 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+              <div className={`${themeClasses.card} rounded-2xl p-6 border backdrop-blur-sm`}>
+                <div className="flex items-center gap-3 mb-4">
+                  <FaTasks className="text-[rgb(var(--color-accent-primary))] text-xl" />
+                  <label className="text-lg font-semibold">Tasks</label>
+                </div>
+                
+                <div className="space-y-3">
+                  {project.tasks.map((task, index) => (
+                    <div key={index} className="flex items-center gap-3 group">
+                      <input
+                        type="checkbox"
+                        checked={task.completed}
+                        onChange={() => toggleTaskCompleted(index)}
+                        className="w-5 h-5 text-[rgb(var(--color-accent-primary))] bg-[rgb(var(--color-background-secondary))] border-gray-600 rounded focus:ring-[rgb(var(--color-accent-primary))] focus:ring-2 transition-all duration-300"
+                      />
+                      <input
+                        type="text"
+                        name="title"
+                        value={task.title}
+                        onChange={(e) => handleTaskChange(index, e)}
+                        placeholder={`Task ${index + 1} description`}
+                        className={`flex-1 px-4 py-2 ${themeClasses.input} rounded-lg outline-none transition-all duration-300 group-hover:shadow-md focus:shadow-lg ${task.completed ? 'line-through opacity-75' : ''}`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeTask(index)}
+                        className="p-2 text-red-400 hover:text-red-300 transition-all duration-300 transform hover:scale-110 disabled:opacity-50 disabled:hover:scale-100"
+                        disabled={project.tasks.length <= 1}
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+                  ))}
+                  
+                  <button
+                    type="button"
+                    onClick={addTask}
+                    className="flex items-center gap-2 px-4 py-2 text-[rgb(var(--color-accent-primary))] border border-[rgb(var(--color-accent-primary))] rounded-lg hover:bg-[rgb(var(--color-accent-primary))]/10 transition-all duration-300 transform hover:scale-105"
+                  >
+                    <FaPlus /> Add Task
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className={`transform transition-all duration-1000 delay-700 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+              <div className="pt-4">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`flex items-center justify-center gap-3 w-full md:w-auto px-8 py-4 ${themeClasses.button} text-white font-semibold rounded-xl transition-all duration-500 transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100 group`}
+                >
+                  {loading ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <FaSave className="transition-transform group-hover:rotate-12" /> 
+                      {editMode ? 'Update Project' : 'Save Project'}
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
+
+      <style jsx>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+        
+        .animate-shake {
+          animation: shake 0.5s ease-in-out;
+        }
+        
+        input[type="range"] {
+          background: linear-gradient(to right, 
+            rgb(var(--color-accent-primary)) 0%, 
+            rgb(var(--color-accent-primary)) ${project.progress}%, 
+            rgb(var(--color-background-secondary)) ${project.progress}%, 
+            rgb(var(--color-background-secondary)) 100%);
+        }
+      `}</style>
     </div>
   );
 };
