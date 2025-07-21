@@ -1,10 +1,11 @@
 import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { useTheme } from '../context/AuthContext'; // Adjust path as needed
+import { useTheme } from '../../context/ThemeContext'; // Adjust path as needed
+import PropTypes from 'prop-types'; // Import PropTypes
 
 const ResumeUploader = ({ onUpload }) => {
   const { isDark } = useTheme();
-  
+
   const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles.length > 0) {
       onUpload(acceptedFiles[0]);
@@ -25,9 +26,9 @@ const ResumeUploader = ({ onUpload }) => {
     <div
       {...getRootProps()}
       className={`
-        relative overflow-hidden border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer 
+        relative overflow-hidden border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer
         transition-all duration-500 ease-out group animate-fade-in-up hover:scale-[1.02]
-        ${isDragActive 
+        ${isDragActive
           ? `border-cyan-400 shadow-2xl shadow-cyan-400/25 scale-[1.02]
              ${isDark ? 'bg-gradient-to-br from-cyan-400/10 via-purple-600/10 to-cyan-400/5' : 'bg-gradient-to-br from-cyan-100/50 via-purple-100/50 to-cyan-50/30'}`
           : `${isDark ? 'border-gray-600 bg-gradient-to-br from-gray-800/50 to-gray-900/30' : 'border-gray-300 bg-gradient-to-br from-white/80 to-gray-50/60'}
@@ -43,21 +44,21 @@ const ResumeUploader = ({ onUpload }) => {
       </div>
 
       <input {...getInputProps()} />
-      
+
       <div className="relative z-10 space-y-6">
         {/* Upload Icon */}
         <div className="relative flex justify-center">
           <div className={`
             relative p-4 rounded-2xl transition-all duration-500 group-hover:scale-110
-            ${isDragActive 
+            ${isDragActive
               ? `${isDark ? 'bg-gradient-to-r from-cyan-400/20 to-purple-500/20' : 'bg-gradient-to-r from-cyan-100/60 to-purple-100/60'} animate-pulse-gentle`
               : `${isDark ? 'bg-gradient-to-r from-gray-700/50 to-gray-600/30' : 'bg-gradient-to-r from-gray-100/60 to-white/80'} group-hover:from-cyan-400/10 group-hover:to-purple-500/10`
             }
           `}>
             <svg
               className={`h-12 w-12 transition-all duration-500 ${
-                isDragActive 
-                  ? 'text-cyan-400 scale-110 animate-bounce-gentle' 
+                isDragActive
+                  ? 'text-cyan-400 scale-110 animate-bounce-gentle'
                   : `${isDark ? 'text-gray-300' : 'text-gray-600'} group-hover:text-cyan-400 group-hover:scale-105`
               }`}
               stroke="currentColor"
@@ -79,13 +80,13 @@ const ResumeUploader = ({ onUpload }) => {
               />
             </svg>
           </div>
-          
+
           {/* Glow effect */}
           {isDragActive && (
             <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-cyan-400/30 to-purple-500/30 blur-xl animate-pulse-slow"></div>
           )}
         </div>
-        
+
         {/* Text Content */}
         <div className="space-y-3">
           {isDragActive ? (
@@ -102,7 +103,7 @@ const ResumeUploader = ({ onUpload }) => {
               <p className={`text-xl font-semibold ${isDark ? 'text-gray-100' : 'text-gray-800'} group-hover:scale-105 transition-transform duration-300`}>
                 <span className="bg-gradient-to-r from-cyan-400 via-purple-400 to-cyan-300 bg-clip-text text-transparent font-bold animate-gradient-flow-slow">
                   Click to upload
-                </span> 
+                </span>
                 <span className={`${isDark ? 'text-gray-200' : 'text-gray-700'} ml-2`}>
                   or drag and drop
                 </span>
@@ -113,12 +114,12 @@ const ResumeUploader = ({ onUpload }) => {
             </div>
           )}
         </div>
-        
+
         {/* File Type Badges */}
         <div className="flex items-center justify-center space-x-3">
           <span className={`
             px-4 py-2 rounded-full text-xs font-semibold border transition-all duration-300 group-hover:scale-105
-            ${isDark 
+            ${isDark
               ? 'bg-gradient-to-r from-cyan-400/10 to-purple-500/10 text-cyan-400 border-cyan-400/30 hover:border-cyan-400/60'
               : 'bg-gradient-to-r from-cyan-50/80 to-purple-50/80 text-cyan-600 border-cyan-300/50 hover:border-cyan-400/70'
             }
@@ -127,7 +128,7 @@ const ResumeUploader = ({ onUpload }) => {
           </span>
           <span className={`
             px-4 py-2 rounded-full text-xs font-semibold border transition-all duration-300 group-hover:scale-105
-            ${isDark 
+            ${isDark
               ? 'bg-gradient-to-r from-purple-500/10 to-cyan-400/10 text-purple-400 border-purple-400/30 hover:border-purple-400/60'
               : 'bg-gradient-to-r from-purple-50/80 to-cyan-50/80 text-purple-600 border-purple-300/50 hover:border-purple-400/70'
             }
@@ -136,7 +137,7 @@ const ResumeUploader = ({ onUpload }) => {
           </span>
           <span className={`
             text-xs font-medium px-3 py-1 rounded-lg transition-all duration-300
-            ${isDark 
+            ${isDark
               ? 'text-gray-400 bg-gray-800/50 group-hover:text-gray-300'
               : 'text-gray-500 bg-gray-100/60 group-hover:text-gray-600'
             }
@@ -156,6 +157,15 @@ const ResumeUploader = ({ onUpload }) => {
       </div>
     </div>
   );
+};
+
+// Add propTypes validation
+ResumeUploader.propTypes = {
+  /**
+   * Callback function that is called when a file is successfully uploaded.
+   * It receives the uploaded File object as its argument.
+   */
+  onUpload: PropTypes.func.isRequired,
 };
 
 export default ResumeUploader;

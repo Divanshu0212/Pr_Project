@@ -706,3 +706,206 @@ body {
     border-bottom: 2px solid currentColor;
     /* ... other styles ... */
 }
+
+/* ===== SIDEBAR LAYOUT STABILIZATION ===== */
+/* Add this to your global.css to prevent layout shifts */
+
+/* SOLUTION 1: Reserve Fixed Space for Sidebar (Recommended) */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar-container {
+  /* Fixed width that matches your sidebar */
+  width: 280px; /* Adjust to match your sidebar width */
+  flex-shrink: 0; /* Prevent shrinking */
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* When sidebar is hidden, keep the space but hide visually */
+.sidebar-container.hidden {
+  transform: translateX(-100%);
+  /* Alternative: use visibility instead of transform */
+  /* visibility: hidden; */
+}
+
+.main-content-area {
+  flex: 1;
+  min-width: 0; /* Prevents flex item from overflowing */
+  transition: margin-left 0.3s ease; /* Smooth transition if needed */
+}
+
+/* ===== ALTERNATIVE SOLUTIONS ===== */
+
+/* SOLUTION 2: Overlay Sidebar (No Layout Shift) */
+.app-layout-overlay {
+  position: relative;
+  min-height: 100vh;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 280px; /* Match your sidebar width */
+  z-index: 1000;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--sidebar-bg, #ffffff);
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-overlay.open {
+  transform: translateX(0);
+}
+
+.main-content-overlay {
+  width: 100%;
+  min-height: 100vh;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Optional: Push content when sidebar opens */
+.main-content-overlay.sidebar-open {
+  transform: translateX(280px); /* Match sidebar width */
+}
+
+/* SOLUTION 3: CSS Grid Layout */
+.app-grid-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr; /* Sidebar width, remaining space */
+  min-height: 100vh;
+  transition: grid-template-columns 0.3s ease;
+}
+
+.app-grid-layout.sidebar-hidden {
+  grid-template-columns: 0 1fr; /* Collapse sidebar column */
+}
+
+.sidebar-grid {
+  overflow: hidden;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-hidden .sidebar-grid {
+  opacity: 0;
+}
+
+/* ===== SCROLLBAR COMPENSATION ===== */
+/* Prevents layout shift when scrollbar appears/disappears */
+html {
+  overflow-y: scroll; /* Always show vertical scrollbar */
+}
+
+/* Alternative: Use margin to compensate for scrollbar */
+body {
+  margin-right: calc(100vw - 100%); /* Compensates for scrollbar width */
+}
+
+/* ===== RESPONSIVE HANDLING ===== */
+@media (max-width: 768px) {
+  /* On mobile, always use overlay approach */
+  .sidebar-container, .sidebar-grid {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1000;
+    transform: translateX(-100%);
+  }
+  
+  .sidebar-container.open, .sidebar-grid.open {
+    transform: translateX(0);
+  }
+  
+  .main-content-area, .main-content-overlay {
+    width: 100%;
+    margin-left: 0;
+  }
+  
+  /* Backdrop for mobile sidebar */
+  .sidebar-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+  
+  .sidebar-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+/* ===== ANIMATION PERFORMANCE ===== */
+/* Improve animation performance */
+.sidebar-container, .sidebar-overlay, .sidebar-grid {
+  will-change: transform;
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* ===== LAYOUT SPECIFIC FIXES ===== */
+/* If you're using specific layout classes, update them: */
+
+/* For pages with sidebar */
+.page-with-sidebar {
+  margin-left: 280px; /* Reserve space for sidebar */
+  transition: margin-left 0.3s ease;
+}
+
+.sidebar-hidden .page-with-sidebar {
+  margin-left: 0;
+}
+
+/* Prevent content jumping during transitions */
+.layout-container {
+  position: relative;
+  overflow-x: hidden; /* Prevent horizontal scroll during transitions */
+}
+
+/* ===== EXAMPLE USAGE CLASSES ===== */
+/* Use these classes in your React components */
+
+/* Main app container */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Sidebar wrapper */
+.sidebar-wrapper {
+  width: 280px;
+  flex-shrink: 0;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-wrapper.collapsed {
+  width: 0;
+  overflow: hidden;
+}
+
+/* Content wrapper */
+.content-wrapper {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+/* ===== DEBUGGING HELPERS ===== */
+/* Uncomment these to debug layout issues */
+
+/*
+.app-container { border: 2px solid red !important; }
+.sidebar-wrapper { border: 2px solid blue !important; }
+.content-wrapper { border: 2px solid green !important; }
+*/
