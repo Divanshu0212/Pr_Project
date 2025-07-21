@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FaGithub, FaEdit, FaTrash, FaArrowLeft, FaCheck } from 'react-icons/fa';
 import { MdWork, MdLocationOn } from 'react-icons/md';
@@ -9,11 +9,11 @@ import { useTheme } from '../../context/ThemeContext';
 const ProjectDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { theme, isDark } = useTheme(); // Add this line
+    const { theme, isDark } = useTheme();
     const [project, setProject] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const observerRef = useRef(null); // Add this line
+    const observerRef = useRef(null);
 
     // Add scroll animation observer
     useEffect(() => {
@@ -42,8 +42,7 @@ const ProjectDetails = () => {
                 observerRef.current.disconnect();
             }
         };
-    }, [project]);
-
+    }, [project]); // Re-observe when project data changes
 
     useEffect(() => {
         const fetchProject = async () => {
@@ -69,7 +68,7 @@ const ProjectDetails = () => {
             }
         };
         fetchProject();
-    }, [id]);
+    }, [id]); // Depend on ID from URL params
 
     const handleDelete = async () => {
         if (window.confirm('Are you sure you want to delete this project?')) {
@@ -80,7 +79,7 @@ const ProjectDetails = () => {
                         'Authorization': `Bearer ${token}`
                     }
                 });
-                navigate('/portfolioHome');
+                navigate('/portfolio'); // Corrected navigation path
             } catch (err) {
                 setError('Failed to delete project');
             }
@@ -101,7 +100,7 @@ const ProjectDetails = () => {
                 <div className="text-center">
                     <p className="text-red-500 mb-4">{error}</p>
                     <button
-                        onClick={() => navigate('/portfolioHome')}
+                        onClick={() => navigate('/portfolio')} // Corrected navigation path
                         className="px-4 py-2 bg-[#00FFFF] text-black rounded-lg hover:opacity-90"
                     >
                         Back to Portfolio
@@ -117,7 +116,7 @@ const ProjectDetails = () => {
                 <div className="text-center">
                     <p className="mb-4">Project not found</p>
                     <button
-                        onClick={() => navigate('/portfolioHome')}
+                        onClick={() => navigate('/portfolio')} // Corrected navigation path
                         className="px-4 py-2 bg-[#00FFFF] text-black rounded-lg hover:opacity-90"
                     >
                         Back to Portfolio
@@ -151,7 +150,7 @@ const ProjectDetails = () => {
             <div className="max-w-4xl mx-auto">
                 <div className="flex justify-between items-start mb-6">
                     <button
-                        onClick={() => navigate('/portfolioHome')}
+                        onClick={() => navigate('/portfolio')} // Corrected navigation path
                         className="flex items-center gap-2 text-[#00FFFF] hover:underline"
                     >
                         <FaArrowLeft /> Back to Portfolio
@@ -159,7 +158,7 @@ const ProjectDetails = () => {
 
                     <div className="flex gap-3">
                         <Link
-                            to={`/portfolio/edit/${project._id}`}
+                            to={`/portfolio/projects/edit/${project._id}`} // Corrected navigation path
                             className="flex items-center gap-2 px-4 py-2 bg-[#00FFFF] text-black rounded-lg hover:opacity-90"
                         >
                             <FaEdit /> Edit
@@ -295,6 +294,13 @@ const ProjectDetails = () => {
             </div>
         </div>
     );
+};
+
+ProjectDetails.propTypes = {
+    // Project object is fetched internally, no prop validation needed for 'project' if this is a route component
+    // If it were a reusable component, then PropTypes.shape({ ... }) would be used here.
+    // However, the component relies on useParams() for 'id' to fetch its own data.
+    // No direct props are passed down from a parent.
 };
 
 export default ProjectDetails;

@@ -23,7 +23,7 @@ const ResumeBuilderHome = () => {
                             Choose from premium templates and customize to your needs.
                         </p>
                         <button
-                            onClick={() => navigate("/resume-builder")}
+                            onClick={() => navigate("/resume/build")}
                             className="inline-block py-3 px-6 bg-[#9C27B0] text-white font-medium rounded-md hover:bg-opacity-80 transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-[#9C27B0] focus:ring-offset-1"
                         >
                             Start Building

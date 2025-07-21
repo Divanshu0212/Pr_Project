@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { FaPlus, FaTrash, FaArrowLeft, FaSave, FaImage, FaCode, FaTasks } from 'react-icons/fa';
+import { FaPlus, FaTrash, FaArrowLeft, FaSave, FaImage, FaCode, FaTasks, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa'; // Added FaCheckCircle, FaExclamationCircle
 import { useTheme } from '../../context/ThemeContext';
+import '../../styles/animations.css';
 
 const ProjectForm = ({ editMode = false }) => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { isDark } = useTheme();
-  
+
   const [project, setProject] = useState({
     title: '',
     description: '',
@@ -24,6 +25,8 @@ const ProjectForm = ({ editMode = false }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isVisible, setIsVisible] = useState(false);
+  const [submissionMessage, setSubmissionMessage] = useState(''); // NEW: State for submission messages
+  const [showSubmissionStatus, setShowSubmissionStatus] = useState(false); // NEW: State to control status visibility
 
   useEffect(() => {
     // Trigger entrance animation
@@ -34,13 +37,22 @@ const ProjectForm = ({ editMode = false }) => {
   useEffect(() => {
     if (editMode && id) {
       const fetchProject = async () => {
+        setLoading(true);
+        setError('');
         try {
           // Mock API call - replace with your actual API
           console.log('Fetching project:', id);
           // Simulate loading
           await new Promise(resolve => setTimeout(resolve, 1000));
+          // In a real app, you'd set the fetched project data here:
+          // setProject(fetchedProjectData);
+          // if (fetchedProjectData.imageUrl) {
+          //   setPreview(fetchedProjectData.imageUrl);
+          // }
         } catch (err) {
           setError('Failed to fetch project details');
+        } finally {
+          setLoading(false);
         }
       };
       fetchProject();
@@ -120,22 +132,45 @@ const ProjectForm = ({ editMode = false }) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSubmissionMessage('Saving project...'); // Initial submission message
+    setShowSubmissionStatus(true);
 
     try {
+      // Validate required fields
+      if (!project.title || !project.description || !project.link || project.technologies.length === 0) {
+        throw new Error('Please fill in all required fields (title, description, link, and at least one technology).');
+      }
+
       // Mock API call - replace with your actual API
       console.log('Submitting project:', project);
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      navigate('/portfolioHome');
+      // Simulate network delay and processing
+      await new Promise(resolve => setTimeout(resolve, 2500)); // Increased delay for effect
+
+      // Simulate a successful response
+      setSubmissionMessage('Project saved successfully! Redirecting...');
+      // In a real app, you would handle the actual API call here, e.g.:
+      // const response = await fetch('/api/projects', { method: 'POST', body: JSON.stringify(project), headers: { 'Content-Type': 'application/json' } });
+      // if (!response.ok) throw new Error('API submission failed.');
+      // const result = await response.json();
+
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Give time for user to read success message
+      navigate('/portfolio/projects'); // Navigate to the projects list
     } catch (err) {
-      setError('Something went wrong');
+      setError(err.message || 'Something went wrong while saving the project.');
+      setSubmissionMessage('Error: ' + (err.message || 'Failed to save project.'));
     } finally {
       setLoading(false);
+      // Keep success/error message visible briefly before hiding
+      setTimeout(() => {
+        setShowSubmissionStatus(false);
+        setSubmissionMessage('');
+      }, error ? 4000 : 2000); // Keep error message longer
     }
   };
 
   const themeClasses = {
-    container: isDark 
-      ? 'min-h-screen bg-[rgb(var(--color-background-primary))] text-[rgb(var(--color-text-primary))]' 
+    container: isDark
+      ? 'min-h-screen bg-[rgb(var(--color-background-primary))] text-[rgb(var(--color-text-primary))]'
       : 'min-h-screen bg-[rgb(var(--color-background-primary))] text-[rgb(var(--color-text-primary))]',
     card: isDark
       ? 'bg-[rgb(var(--color-background-secondary))] border-gray-700/50'
@@ -151,23 +186,24 @@ const ProjectForm = ({ editMode = false }) => {
 
   return (
     <div className={themeClasses.container}>
-      {/* Animated Background Gradient */}
-      <div className="fixed inset-0 bg-gradient-to-br from-[rgb(var(--color-accent-primary))]/5 via-transparent to-[rgb(var(--color-highlight))]/5 animate-pulse" />
-      
-      <div className="relative z-10 py-8 px-4">
-        <div className="max-w-4xl mx-auto">
-          {/* Header Section with Animation */}
-          <div className={`transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-            <button 
-              onClick={() => navigate('/portfolioHome')}
-              className="group flex items-center gap-2 mb-6 text-[rgb(var(--color-accent-primary))] hover:text-[rgb(var(--color-highlight))] transition-all duration-300 transform hover:scale-105"
-            >
-              <FaArrowLeft className="transition-transform group-hover:-translate-x-1" /> 
-              <span className="relative">
-                Back to Portfolio
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[rgb(var(--color-accent-primary))] to-[rgb(var(--color-highlight))] transition-all duration-300 group-hover:w-full" />
-              </span>
-            </button>
+       {/* Animated Background Gradient */}
+    <div className="fixed inset-0 bg-gradient-to-br from-[rgb(var(--color-accent-primary))]/5 via-transparent to-[rgb(var(--color-highlight))]/5 animate-pulse" />
+
+    <div className="relative z-10 py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header Section with Animation */}
+        <div className={`transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+          {/* Changed to /portfolio/projects - Move the comment here */}
+          <button
+            onClick={() => navigate('/portfolio/projects')}
+            className="group flex items-center gap-2 mb-6 text-[rgb(var(--color-accent-primary))] hover:text-[rgb(var(--color-highlight))] transition-all duration-300 transform hover:scale-105"
+          >
+            <FaArrowLeft className="transition-transform group-hover:-translate-x-1" />
+            <span className="relative">
+              Back to Portfolio
+              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[rgb(var(--color-accent-primary))] to-[rgb(var(--color-highlight))] transition-all duration-300 group-hover:w-full" />
+            </span>
+          </button>
 
             <div className="mb-8">
               <h1 className="text-4xl font-bold bg-gradient-to-r from-[rgb(var(--color-accent-primary))] to-[rgb(var(--color-highlight))] bg-clip-text text-transparent animate-pulse">
@@ -184,6 +220,18 @@ const ProjectForm = ({ editMode = false }) => {
             </div>
           )}
 
+          {/* Submission Status Message (NEW) */}
+          {showSubmissionStatus && submissionMessage && (
+            <div className={`
+              fixed top-20 left-1/2 -translate-x-1/2 p-4 rounded-lg shadow-xl text-white z-50
+              flex items-center gap-3 transition-all duration-500 animate-fade-in-down
+              ${error ? 'bg-red-600' : 'bg-green-600'}
+            `}>
+              {error ? <FaExclamationCircle className="text-xl" /> : <FaCheckCircle className="text-xl" />}
+              <span>{submissionMessage}</span>
+            </div>
+          )}
+
           {/* Main Form */}
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Project Image Section */}
@@ -193,14 +241,14 @@ const ProjectForm = ({ editMode = false }) => {
                   <FaImage className="text-[rgb(var(--color-accent-primary))] text-xl" />
                   <label className="text-lg font-semibold">Project Image</label>
                 </div>
-                
+
                 <div className="flex items-center gap-6">
                   <div className="relative group">
                     <div className="w-32 h-32 rounded-xl overflow-hidden border-2 border-dashed border-[rgb(var(--color-accent-primary))]/50 group-hover:border-[rgb(var(--color-accent-primary))] transition-all duration-300">
                       {preview ? (
-                        <img 
-                          src={preview} 
-                          alt="Project preview" 
+                        <img
+                          src={preview}
+                          alt="Project preview"
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                       ) : (
@@ -210,7 +258,7 @@ const ProjectForm = ({ editMode = false }) => {
                       )}
                     </div>
                   </div>
-                  
+
                   <div>
                     <input
                       type="file"
@@ -293,16 +341,16 @@ const ProjectForm = ({ editMode = false }) => {
                   <FaCode className="text-[rgb(var(--color-accent-primary))] text-xl" />
                   <label className="text-lg font-semibold">Technologies*</label>
                 </div>
-                
+
                 <div className="flex flex-wrap gap-2 mb-4">
                   {project.technologies.map((tech, index) => (
-                    <span 
-                      key={index} 
+                    <span
+                      key={index}
                       className={`group flex items-center gap-2 px-3 py-1 ${themeClasses.techTag} rounded-full text-xs border transition-all duration-300 hover:scale-105 hover:shadow-md`}
                     >
                       {tech}
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => removeTechnology(tech)}
                         className="text-red-400 hover:text-red-300 transition-colors duration-200 hover:scale-110"
                       >
@@ -311,7 +359,7 @@ const ProjectForm = ({ editMode = false }) => {
                     </span>
                   ))}
                 </div>
-                
+
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -368,7 +416,7 @@ const ProjectForm = ({ editMode = false }) => {
                         onChange={handleChange}
                         className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer transition-all duration-300 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-[rgb(var(--color-accent-primary))] [&::-webkit-slider-thumb]:to-[rgb(var(--color-highlight))] [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-110"
                       />
-                      <div 
+                      <div
                         className="absolute top-0 left-0 h-2 bg-gradient-to-r from-[rgb(var(--color-accent-primary))] to-[rgb(var(--color-highlight))] rounded-lg transition-all duration-300"
                         style={{ width: `${project.progress}%` }}
                       />
@@ -401,7 +449,7 @@ const ProjectForm = ({ editMode = false }) => {
                   <FaTasks className="text-[rgb(var(--color-accent-primary))] text-xl" />
                   <label className="text-lg font-semibold">Tasks</label>
                 </div>
-                
+
                 <div className="space-y-3">
                   {project.tasks.map((task, index) => (
                     <div key={index} className="flex items-center gap-3 group">
@@ -429,7 +477,7 @@ const ProjectForm = ({ editMode = false }) => {
                       </button>
                     </div>
                   ))}
-                  
+
                   <button
                     type="button"
                     onClick={addTask}
@@ -452,11 +500,11 @@ const ProjectForm = ({ editMode = false }) => {
                   {loading ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                      Processing...
+                      {submissionMessage || 'Processing...'} {/* Display dynamic message */}
                     </>
                   ) : (
                     <>
-                      <FaSave className="transition-transform group-hover:rotate-12" /> 
+                      <FaSave className="transition-transform group-hover:rotate-12" />
                       {editMode ? 'Update Project' : 'Save Project'}
                     </>
                   )}
@@ -467,25 +515,6 @@ const ProjectForm = ({ editMode = false }) => {
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
-        }
-        
-        .animate-shake {
-          animation: shake 0.5s ease-in-out;
-        }
-        
-        input[type="range"] {
-          background: linear-gradient(to right, 
-            rgb(var(--color-accent-primary)) 0%, 
-            rgb(var(--color-accent-primary)) ${project.progress}%, 
-            rgb(var(--color-background-secondary)) ${project.progress}%, 
-            rgb(var(--color-background-secondary)) 100%);
-        }
-      `}</style>
     </div>
   );
 };

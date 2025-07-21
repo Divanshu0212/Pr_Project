@@ -1,12 +1,21 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { FaGithub, FaLinkedin, FaTwitter, FaInstagram, FaFacebook, FaGlobe, FaEnvelope } from 'react-icons/fa';
+import PropTypes from 'prop-types'; // Import PropTypes
+import { FaGithub, FaLinkedin, FaTwitter, FaInstagram, FaFacebook, FaGlobe, FaEnvelope, FaSave } from 'react-icons/fa';
 import { AuthContext } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 
 const PortfolioDetailsForm = ({ onClose }) => {
     const { fetchPortfolioDetails, updatePortfolioDetails, portfolioDetails } = useContext(AuthContext);
+    const { isDark } = useTheme();
     const [localFormData, setLocalFormData] = useState({ ...portfolioDetails });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     useEffect(() => {
-        setLocalFormData({ ...portfolioDetails });
+        // Ensure portfolioDetails is not null/undefined before spreading
+        setLocalFormData(prev => ({ 
+            ...prev, // Keep previous state if portfolioDetails is null on initial render
+            ...portfolioDetails 
+        }));
     }, [portfolioDetails]);
 
     const handleChange = (e) => {
@@ -19,7 +28,7 @@ const PortfolioDetailsForm = ({ onClose }) => {
         setLocalFormData(prev => ({
             ...prev,
             socialLinks: {
-                ...prev.socialLinks,
+                ...prev.socialLinks, // Ensure existing social links are preserved
                 [name]: value
             }
         }));
@@ -27,175 +36,242 @@ const PortfolioDetailsForm = ({ onClose }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsSubmitting(true);
         try {
             await updatePortfolioDetails(localFormData);
-            await fetchPortfolioDetails(); // Refresh data
-            onClose(); // Close the modal
+            // Assuming fetchPortfolioDetails updates the context correctly
+            await fetchPortfolioDetails(); 
+            onClose();
         } catch (error) {
             console.error('Error updating portfolio details:', error);
-            alert('Failed to update portfolio details');
+            alert('Failed to update portfolio details'); // Provide user feedback
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
+    // Define common input and label classes for reusability and theming
+    const inputClasses = `w-full p-4 rounded-xl transition-all duration-300 focus:scale-[1.02]
+        ${isDark
+            ? 'bg-[rgb(var(--color-background-secondary))] border-[rgb(var(--color-accent-neutral))] text-[rgb(var(--color-text-primary))] focus:border-[rgb(var(--color-accent-primary))] focus:shadow-[0_0_20px_rgba(0,255,255,0.3)]'
+            : 'bg-[rgb(var(--color-background-primary))] border-[rgb(var(--color-accent-neutral))] text-[rgb(var(--color-text-primary))] focus:border-[rgb(var(--color-accent-primary))] focus:shadow-[0_0_20px_rgba(49,130,206,0.3)]'
+        } border-2 focus:outline-none placeholder-[rgb(var(--color-text-placeholder))]`;
+
+    const labelClasses = `block mb-3 font-semibold tracking-wide ${isDark ? 'text-[rgb(var(--color-text-primary))]' : 'text-[rgb(var(--color-text-primary))]'}`;
+
     return (
-        <div className="max-w-4xl mx-auto p-6 bg-gray-800 rounded-lg shadow-lg">
-            <h2 className="text-2xl font-bold text-cyan-400 mb-6">Portfolio Details</h2>
+        <div className="portfolio-form-container slide-in-up">
+            <div className={`max-w-4xl mx-auto p-8 rounded-2xl shadow-2xl backdrop-blur-sm relative overflow-hidden
+                ${isDark
+                    ? 'bg-gradient-to-br from-[rgba(13,17,23,0.9)] via-[rgba(22,27,34,0.95)] to-[rgba(13,17,23,0.9)]'
+                    : 'bg-gradient-to-br from-[rgba(255,255,255,0.9)] via-[rgba(247,250,252,0.95)] to-[rgba(255,255,255,0.9)]'
+                }`}>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Basic Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label className="block text-gray-300 mb-2">Job Title</label>
-                        <input
-                            type="text"
-                            name="jobTitle"
-                            value={localFormData.jobTitle}
-                            onChange={handleChange}
-                            className="w-full p-3 bg-gray-700 border border-gray-600 rounded focus:border-cyan-400 focus:outline-none"
-                        />
+                {/* Animated background gradient */}
+                <div className="gradient-mesh-bg"></div>
+
+                {/* Header */}
+                <div className="relative z-10 text-center mb-8 fade-in">
+                    <h2 className={`text-4xl font-bold mb-2 gradient-text-primary`}>
+                        Portfolio Details
+                    </h2>
+                    {/* Dynamic border color based on theme accent primary */}
+                    <div className={`w-24 h-1 mx-auto rounded-full ${isDark ? 'bg-[rgb(var(--color-accent-primary))]' : 'bg-[rgb(var(--color-accent-primary))]'}`}></div>
+                </div>
+
+                <form onSubmit={handleSubmit} className="relative z-10 space-y-8">
+                    {/* Basic Info Section */}
+                    <div className="form-section slide-in-left">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="input-group">
+                                <label className={labelClasses}>Job Title</label>
+                                <input
+                                    type="text"
+                                    name="jobTitle"
+                                    value={localFormData.jobTitle || ''} // Ensure default empty string for control
+                                    onChange={handleChange}
+                                    className={inputClasses}
+                                    placeholder="e.g., Full Stack Developer"
+                                />
+                            </div>
+
+                            <div className="input-group">
+                                <label className={labelClasses}>Location</label>
+                                <input
+                                    type="text"
+                                    name="location"
+                                    value={localFormData.location || ''} // Ensure default empty string
+                                    onChange={handleChange}
+                                    className={inputClasses}
+                                    placeholder="e.g., New York, USA"
+                                />
+                            </div>
+
+                            <div className="input-group">
+                                <label className={labelClasses}>Years of Experience</label>
+                                <input
+                                    type="number"
+                                    name="yearsOfExperience"
+                                    value={localFormData.yearsOfExperience || 0} // Ensure default 0 for number input
+                                    onChange={handleChange}
+                                    min="0"
+                                    className={inputClasses}
+                                    placeholder="0"
+                                />
+                            </div>
+
+                            <div className="input-group">
+                                <label className={labelClasses}>Availability</label>
+                                <select
+                                    name="availability"
+                                    value={localFormData.availability || 'available'} // Default value
+                                    onChange={handleChange}
+                                    className={inputClasses}
+                                >
+                                    <option value="available">Available for work</option>
+                                    <option value="not-available">Not available</option>
+                                    <option value="freelance">Freelance/Contract</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
-                    <div>
-                        <label className="block text-gray-300 mb-2">Location</label>
-                        <input
-                            type="text"
-                            name="location"
-                            value={localFormData.location}
-                            onChange={handleChange}
-                            className="w-full p-3 bg-gray-700 border border-gray-600 rounded focus:border-cyan-400 focus:outline-none"
-                        />
+                    {/* Bio Section */}
+                    <div className="form-section slide-in-right">
+                        <div className="input-group">
+                            <label className={labelClasses}>Bio</label>
+                            <textarea
+                                name="bio"
+                                value={localFormData.bio || ''} // Ensure default empty string
+                                onChange={handleChange}
+                                rows="5"
+                                className={inputClasses}
+                                placeholder="Tell us about yourself, your passions, and what drives you..."
+                            />
+                        </div>
                     </div>
 
-                    <div>
-                        <label className="block text-gray-300 mb-2">Years of Experience</label>
-                        <input
-                            type="number"
-                            name="yearsOfExperience"
-                            value={localFormData.yearsOfExperience}
-                            onChange={handleChange}
-                            min="0"
-                            className="w-full p-3 bg-gray-700 border border-gray-600 rounded focus:border-cyan-400 focus:outline-none"
-                        />
+                    {/* Social Links Section */}
+                    <div className="form-section slide-in-up">
+                        <h3 className={`text-2xl font-bold mb-6 gradient-text-secondary`}>
+                            Social Links
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="social-input-group">
+                                <div className="flex items-center space-x-3">
+                                    <FaGithub className={`text-2xl ${isDark ? 'text-[rgb(var(--color-text-primary))]' : 'text-[rgb(var(--color-text-primary))]'}`} />
+                                    <input
+                                        type="url"
+                                        name="github"
+                                        value={localFormData.socialLinks?.github || ''} // Handle nested optional chaining
+                                        onChange={handleSocialLinkChange}
+                                        placeholder="GitHub Profile URL"
+                                        className={inputClasses}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="social-input-group">
+                                <div className="flex items-center space-x-3">
+                                    <FaLinkedin className={`text-2xl ${isDark ? 'text-[rgb(var(--color-accent-primary))]' : 'text-[rgb(var(--color-accent-primary))]'}`} />
+                                    <input
+                                        type="url"
+                                        name="linkedin"
+                                        value={localFormData.socialLinks?.linkedin || ''}
+                                        onChange={handleSocialLinkChange}
+                                        placeholder="LinkedIn Profile URL"
+                                        className={inputClasses}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="social-input-group">
+                                <div className="flex items-center space-x-3">
+                                    <FaTwitter className={`text-2xl ${isDark ? 'text-[rgb(var(--color-accent-primary))]' : 'text-[rgb(var(--color-accent-primary))]'}`} />
+                                    <input
+                                        type="url"
+                                        name="twitter"
+                                        value={localFormData.socialLinks?.twitter || ''}
+                                        onChange={handleSocialLinkChange}
+                                        placeholder="Twitter Profile URL"
+                                        className={inputClasses}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="social-input-group">
+                                <div className="flex items-center space-x-3">
+                                    {/* Using a general accent color for social icons, adjust if specific branding needed */}
+                                    <FaInstagram className={`text-2xl ${isDark ? 'text-[rgb(var(--color-highlight))]' : 'text-[rgb(var(--color-highlight))]'}`} />
+                                    <input
+                                        type="url"
+                                        name="instagram"
+                                        value={localFormData.socialLinks?.instagram || ''}
+                                        onChange={handleSocialLinkChange}
+                                        placeholder="Instagram Profile URL"
+                                        className={inputClasses}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="social-input-group">
+                                <div className="flex items-center space-x-3">
+                                    <FaFacebook className={`text-2xl ${isDark ? 'text-[rgb(var(--color-accent-primary))]' : 'text-[rgb(var(--color-accent-primary))]'}`} />
+                                    <input
+                                        type="url"
+                                        name="facebook"
+                                        value={localFormData.socialLinks?.facebook || ''}
+                                        onChange={handleSocialLinkChange}
+                                        placeholder="Facebook Profile URL"
+                                        className={inputClasses}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="social-input-group">
+                                <div className="flex items-center space-x-3">
+                                    <FaGlobe className={`text-2xl ${isDark ? 'text-[rgb(var(--color-text-primary))]' : 'text-[rgb(var(--color-text-primary))]'}`} />
+                                    <input
+                                        type="url"
+                                        name="website"
+                                        value={localFormData.socialLinks?.website || ''}
+                                        onChange={handleSocialLinkChange}
+                                        placeholder="Personal Website URL"
+                                        className={inputClasses}
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div>
-                        <label className="block text-gray-300 mb-2">Availability</label>
-                        <select
-                            name="availability"
-                            value={localFormData.availability}
-                            onChange={handleChange}
-                            className="w-full p-3 bg-gray-700 border border-gray-600 rounded focus:border-cyan-400 focus:outline-none"
+                    {/* Submit Button */}
+                    <div className="pt-6 slide-in-up">
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className={`w-full py-4 px-8 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden
+                                ${isDark
+                                    ? 'bg-gradient-to-r from-[rgb(var(--color-accent-primary))] to-[rgb(var(--color-highlight))] text-[rgb(var(--color-background-primary))] hover:shadow-[0_10px_30px_rgba(0,255,255,0.4)]'
+                                    : 'bg-gradient-to-r from-[rgb(var(--color-accent-primary))] to-[rgb(var(--color-highlight))] text-white hover:shadow-[0_10px_30px_rgba(49,130,206,0.4)]'
+                                }`}
                         >
-                            <option value="available">Available for work</option>
-                            <option value="not-available">Not available</option>
-                            <option value="freelance">Freelance/Contract</option>
-                        </select>
+                            <span className="flex items-center justify-center space-x-3">
+                                <FaSave className="text-xl" />
+                                <span>{isSubmitting ? 'Saving...' : 'Save Portfolio Details'}</span>
+                            </span>
+                            {!isSubmitting && <div className="button-shine"></div>}
+                        </button>
                     </div>
-                </div>
-
-                {/* Bio */}
-                <div>
-                    <label className="block text-gray-300 mb-2">Bio</label>
-                    <textarea
-                        name="bio"
-                        value={localFormData.bio}
-                        onChange={handleChange}
-                        rows="4"
-                        className="w-full p-3 bg-gray-700 border border-gray-600 rounded focus:border-cyan-400 focus:outline-none"
-                    />
-                </div>
-
-                {/* Social Links */}
-                <div className="space-y-4">
-                    <h3 className="text-xl font-semibold text-gray-300">Social Links</h3>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex items-center">
-                            <FaGithub className="text-gray-300 mr-2" size={20} />
-                            <input
-                                type="url"
-                                name="github"
-                                value={localFormData.socialLinks.github}
-                                onChange={handleSocialLinkChange}
-                                placeholder="GitHub URL"
-                                className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded focus:border-cyan-400 focus:outline-none"
-                            />
-                        </div>
-
-                        <div className="flex items-center">
-                            <FaLinkedin className="text-gray-300 mr-2" size={20} />
-                            <input
-                                type="url"
-                                name="linkedin"
-                                value={localFormData.socialLinks.linkedin}
-                                onChange={handleSocialLinkChange}
-                                placeholder="LinkedIn URL"
-                                className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded focus:border-cyan-400 focus:outline-none"
-                            />
-                        </div>
-
-                        <div className="flex items-center">
-                            <FaTwitter className="text-gray-300 mr-2" size={20} />
-                            <input
-                                type="url"
-                                name="twitter"
-                                value={localFormData.socialLinks.twitter}
-                                onChange={handleSocialLinkChange}
-                                placeholder="Twitter URL"
-                                className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded focus:border-cyan-400 focus:outline-none"
-                            />
-                        </div>
-
-                        <div className="flex items-center">
-                            <FaInstagram className="text-gray-300 mr-2" size={20} />
-                            <input
-                                type="url"
-                                name="instagram"
-                                value={localFormData.socialLinks.instagram}
-                                onChange={handleSocialLinkChange}
-                                placeholder="Instagram URL"
-                                className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded focus:border-cyan-400 focus:outline-none"
-                            />
-                        </div>
-
-                        <div className="flex items-center">
-                            <FaFacebook className="text-gray-300 mr-2" size={20} />
-                            <input
-                                type="url"
-                                name="facebook"
-                                value={localFormData.socialLinks.facebook}
-                                onChange={handleSocialLinkChange}
-                                placeholder="Facebook URL"
-                                className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded focus:border-cyan-400 focus:outline-none"
-                            />
-                        </div>
-
-                        {/* <div className="flex items-center">
-                            <FaEnvelope className="text-gray-300 mr-2" size={20} />
-                            <input
-                                type="url"
-                                name="website"
-                                value={localFormData.socialLinks.website}
-                                onChange={handleSocialLinkChange}
-                                placeholder="Personal Website"
-                                className="flex-1 p-3 bg-gray-700 border border-gray-600 rounded focus:border-cyan-400 focus:outline-none"
-                            />
-                        </div> */}
-                    </div>
-                </div>
-
-                {/* Submit Button */}
-                <div className="pt-4">
-                    <button
-                        type="submit"
-                        className="w-full py-3 bg-gradient-to-r from-cyan-500 to-purple-600 hover:opacity-90 rounded-lg font-medium transition-opacity"
-                    >
-                        Save Portfolio Details
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     );
+};
+
+// --- PropTypes for PortfolioDetailsForm ---
+PortfolioDetailsForm.propTypes = {
+    onClose: PropTypes.func.isRequired, // Define onClose as a required function
 };
 
 export default PortfolioDetailsForm;

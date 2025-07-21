@@ -1,102 +1,157 @@
-/* src/components/Footer.css - Redesigned for a Clean & Integrated Look */
+/* SOLUTION 1: Flexbox Sticky Footer (Recommended) */
+/* Add this to your main layout/body styles */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
 
+/* Your main container (usually wraps your entire app/page content) */
+.app-container, #root, .main-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Your main content area (everything above footer) */
+.main-content {
+  flex: 1; /* This makes the content take up available space */
+}
+
+/* Your existing footer styles with one small addition */
 .footer {
   position: relative;
   overflow: hidden;
-  padding-top: 3rem; /* Reduced padding-top for a more compact footer */
+  padding-top: 3rem;
   z-index: 10;
   color: rgb(var(--color-text-secondary));
-  
-  /* Clean solid background, no complex animations */
   background-color: rgb(var(--color-background-primary));
-  border-top: 1px solid rgba(var(--color-accent-neutral), 0.3); /* Subtle top border for definition */
+  border-top: 1px solid rgba(var(--color-accent-neutral), 0.3);
+  
+  /* Add this to ensure footer takes only needed space */
+  flex-shrink: 0;
+  margin-top: auto; /* This pushes footer to bottom when content is short */
 }
 
-/* Removed complex ::before and ::after background animations */
-/* .footer::before { ... } */
-/* .footer::after { ... } */
-/* @keyframes pan-grid { ... } */
-/* @keyframes float { ... } */
+/* ============================================ */
+/* SOLUTION 2: CSS Grid Alternative */
+/* If you prefer CSS Grid, use this instead */
+.app-container-grid {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: 1fr auto; /* Content takes available space, footer takes what it needs */
+}
+
+.main-content-grid {
+  /* Content area - will expand to fill available space */
+}
+
+.footer-grid {
+  /* Footer will only take the space it needs */
+  /* Use your existing .footer styles here */
+}
+
+/* ============================================ */
+/* SOLUTION 3: If you're using React/Next.js */
+/* Structure your layout like this in JSX: */
+/*
+<div className="app-container">
+  <main className="main-content">
+    <!-- Your page content here -->
+  </main>
+  <footer className="footer">
+    <!-- Your footer content -->
+  </footer>
+</div>
+*/
+
+/* ============================================ */
+/* SOLUTION 4: Absolute positioning (less flexible) */
+/* Only use if other solutions don't work */
+.footer-absolute {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  /* Your existing footer styles */
+}
+
+/* Make sure your body has enough padding-bottom to prevent content overlap */
+body.with-absolute-footer {
+  padding-bottom: 300px; /* Adjust based on your footer height */
+}
+
+/* ============================================ */
+/* Keep all your existing footer styles below */
 
 .footer-container {
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr 1fr;
-  gap: 2rem; /* Reduced gap for a tighter layout */
+  gap: 2rem;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 1.5rem; /* Consistent padding */
+  padding: 0 1.5rem;
 }
 
-/* Enhanced logo with gradient and subtle effects */
 .footer-logo {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 2.2rem; /* Slightly smaller for elegance */
+  font-size: 2.2rem;
   font-weight: 900;
-  margin-bottom: 0.8rem; /* Reduced margin */
+  margin-bottom: 0.8rem;
   background: linear-gradient(135deg, rgb(var(--color-accent-primary)), rgb(var(--color-accent-secondary)));
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  /* Ensure logo is block-level and centered */
-  display: block; /* Changed from inline-block to block */
-  margin-left: auto; /* Center horizontally */
-  margin-right: auto; /* Center horizontally */
-  text-align: center; /* Fallback for text within logo, though it's clipped */
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
   cursor: pointer;
   letter-spacing: -0.02em;
   line-height: 1.1;
-  transition: all 0.3s ease; /* Added transition for hover effects */
+  transition: all 0.3s ease;
 }
-
-/* Removed shimmer effect on logo for a cleaner look */
-/* .footer-logo::after { ... } */
-/* @keyframes shimmer { ... } */
 
 .footer-logo:hover {
-  transform: translateY(-2px); /* Subtle lift on hover */
-  filter: brightness(1.1); /* Slight brightness increase on hover */
-  /* text-shadow handled by motion.h2 in JSX */
+  transform: translateY(-2px);
+  filter: brightness(1.1);
 }
 
-/* Ensure footer-brand itself centers its content */
 .footer-brand {
-  /* Add display flex and justify-content center to center its children */
   display: flex;
-  flex-direction: column; /* Stack children vertically */
-  align-items: center; /* Center items horizontally in a column */
-  text-align: center; /* Fallback for older browsers or non-flex items */
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
-
 
 .footer-description {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 0.95rem; /* Slightly smaller */
-  line-height: 1.5; /* Adjusted line height */
-  max-width: 300px; /* Adjusted max-width */
+  font-size: 0.95rem;
+  line-height: 1.5;
+  max-width: 300px;
   color: rgb(var(--color-text-secondary));
   opacity: 0.9;
   font-weight: 400;
   letter-spacing: 0.01em;
-  text-align: center; /* Ensure description is centered */
+  text-align: center;
 }
 
 .footer-heading {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  color: rgb(var(--color-text-primary)); /* Changed to primary text color for better contrast */
-  font-size: 1.1rem; /* Slightly smaller */
+  color: rgb(var(--color-text-primary));
+  font-size: 1.1rem;
   font-weight: 700;
-  margin-bottom: 1.2rem; /* Reduced margin */
+  margin-bottom: 1.2rem;
   letter-spacing: -0.01em;
   position: relative;
   cursor: pointer;
   text-transform: uppercase;
-  /* Removed accent color and opacity from heading for cleaner look */
 }
 
 .footer-heading::after {
   content: '';
   position: absolute;
-  bottom: -4px; /* Adjusted position */
+  bottom: -4px;
   left: 0;
   width: 0;
   height: 2px;
@@ -114,14 +169,14 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem; /* Reduced gap */
+  gap: 0.75rem;
 }
 
 .footer-links a {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   color: rgb(var(--color-text-secondary));
   text-decoration: none;
-  font-size: 0.95rem; /* Slightly smaller */
+  font-size: 0.95rem;
   font-weight: 500;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
@@ -133,7 +188,7 @@
   content: '';
   position: absolute;
   top: 50%;
-  left: -8px; /* Adjusted position */
+  left: -8px;
   width: 0;
   height: 1px;
   background: rgb(var(--color-accent-primary));
@@ -143,34 +198,32 @@
 
 .footer-links a:hover {
   color: rgb(var(--color-accent-primary));
-  transform: translateX(6px); /* Slightly less aggressive slide */
-  text-shadow: none; /* Removed text-shadow for cleaner look */
+  transform: translateX(6px);
 }
 
 .footer-links a:hover::before {
-  width: 5px; /* Slightly smaller indicator */
+  width: 5px;
 }
 
-/* Enhanced social icons */
 .social-links {
   display: flex;
-  gap: 0.8rem; /* Reduced gap */
-  margin-top: 1.2rem; /* Reduced margin */
-  justify-content: center; /* Explicitly center social icons */
+  gap: 0.8rem;
+  margin-top: 1.2rem;
+  justify-content: center;
 }
 
 .social-icon {
   color: rgb(var(--color-text-secondary));
-  font-size: 1.1rem; /* Slightly smaller */
+  font-size: 1.1rem;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  padding: 6px; /* Reduced padding */
+  padding: 6px;
   border-radius: 50%;
-  background: rgba(var(--color-background-secondary), 0.5); /* Use theme variable, more opaque */
-  backdrop-filter: blur(8px); /* Slightly less blur */
-  border: 1px solid rgba(var(--color-accent-neutral), 0.3); /* Stronger neutral border */
+  background: rgba(var(--color-background-secondary), 0.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(var(--color-accent-neutral), 0.3);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .social-icon::before {
@@ -180,8 +233,8 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent); /* Softer shine */
-  transition: left 0.4s ease; /* Faster shine */
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  transition: left 0.4s ease;
 }
 
 .social-icon:hover::before {
@@ -190,22 +243,21 @@
 
 .social-icon:hover {
   color: rgb(var(--color-accent-primary));
-  background: rgba(var(--color-accent-primary), 0.1); /* Use theme variable for hover background */
-  border-color: rgb(var(--color-accent-primary)); /* Direct accent color for border */
-  box-shadow: 0 5px 15px rgba(var(--color-accent-primary), 0.2); /* Softer shadow */
+  background: rgba(var(--color-accent-primary), 0.1);
+  border-color: rgb(var(--color-accent-primary));
+  box-shadow: 0 5px 15px rgba(var(--color-accent-primary), 0.2);
 }
 
-/* Enhanced footer bottom */
 .footer-bottom {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.2rem 1.5rem; /* Reduced padding */
-  background: rgb(var(--color-background-secondary)); /* Solid background for clarity */
-  border-top: 1px solid rgba(var(--color-accent-neutral), 0.3); /* Stronger border */
-  margin-top: 3rem; /* Reduced margin */
+  padding: 1.2rem 1.5rem;
+  background: rgb(var(--color-background-secondary));
+  border-top: 1px solid rgba(var(--color-accent-neutral), 0.3);
+  margin-top: 3rem;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 0.85rem; /* Slightly smaller */
+  font-size: 0.85rem;
   font-weight: 400;
   color: rgb(var(--color-text-secondary));
   letter-spacing: 0.01em;
@@ -214,20 +266,20 @@
 .scroll-top-button {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem; /* Reduced gap */
+  gap: 0.4rem;
   background: linear-gradient(135deg, rgb(var(--color-accent-primary)), rgb(var(--color-accent-secondary)));
   background-size: 200% auto;
   color: white;
   border: none;
   cursor: pointer;
-  padding: 0.6rem 1rem; /* Reduced padding */
-  border-radius: 30px; /* More rounded */
+  padding: 0.6rem 1rem;
+  border-radius: 30px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 600;
-  font-size: 0.8rem; /* Slightly smaller */
+  font-size: 0.8rem;
   letter-spacing: 0.01em;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 3px 10px rgba(var(--color-accent-primary), 0.25); /* Softer shadow */
+  box-shadow: 0 3px 10px rgba(var(--color-accent-primary), 0.25);
   position: relative;
   overflow: hidden;
 }
@@ -239,7 +291,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent); /* Softer shine */
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
   transition: left 0.5s ease;
 }
 
@@ -249,12 +301,12 @@
 
 .scroll-top-button:hover {
   background-position: right center;
-  box-shadow: 0 6px 20px rgba(var(--color-accent-primary), 0.35); /* More subtle hover shadow */
-  transform: translateY(-1px); /* Subtle lift */
+  box-shadow: 0 6px 20px rgba(var(--color-accent-primary), 0.35);
+  transform: translateY(-1px);
 }
 
 .scroll-top-icon {
-  font-size: 1rem; /* Slightly smaller */
+  font-size: 1rem;
 }
 
 /* Responsive Design */
@@ -265,17 +317,17 @@
   }
   .footer-brand {
     grid-column: span 2;
-    text-align: center; /* Ensure text is centered */
-    align-items: center; /* Center flex items for mobile */
-  }
-  .footer-section { /* Ensure sections are centered on mobile */
     text-align: center;
-  }
-  .footer-links { /* Center links in columns on mobile */
     align-items: center;
   }
-  .footer-links a::before { /* Adjust position for centered links */
-    left: -18px; /* Move indicator further left */
+  .footer-section {
+    text-align: center;
+  }
+  .footer-links {
+    align-items: center;
+  }
+  .footer-links a::before {
+    left: -18px;
   }
 }
 
@@ -289,12 +341,12 @@
   }
   .footer-bottom {
     flex-direction: column-reverse;
-    gap: 1rem; /* Reduced gap */
+    gap: 1rem;
     text-align: center;
   }
   
   .footer-logo {
-    font-size: 2rem; /* Adjusted for mobile */
+    font-size: 2rem;
     letter-spacing: -0.01em;
   }
   

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { FaGithub, FaLinkedin, FaTwitter, FaFacebook, FaInstagram } from 'react-icons/fa';
 import { FiArrowUp } from 'react-icons/fi';
 import { motion } from 'framer-motion';
-import './Footer.css'; // Ensure this path is correct
+import './Footer.css';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -97,15 +97,14 @@ const Footer = () => {
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
     >
-      {/* Removed footer-glow-effect as it's part of the old background animation */}
-
-      <div className="footer-content footer-container">
+      {/* Fixed: Changed from footer-content footer-container to just footer-container */}
+      <div className="footer-container">
         <motion.div className="footer-brand" variants={logoVariants}>
           <motion.h2 
             className="footer-logo"
             whileHover={{
               scale: 1.05,
-              textShadow: "0 0 15px rgba(var(--color-accent-primary), 0.5)" // Adjusted shadow
+              filter: "brightness(1.1) drop-shadow(0 0 15px rgba(99, 102, 241, 0.5))"
             }}
             transition={{ duration: 0.3 }}
           >
@@ -170,7 +169,7 @@ const Footer = () => {
                 key={to}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6 + index * 0.05, duration: 0.4 }} // Adjusted delay
+                transition={{ delay: 0.6 + index * 0.05, duration: 0.4 }}
               >
                 <Link to={to}>{text}</Link>
               </motion.li>
@@ -196,7 +195,7 @@ const Footer = () => {
                 key={to}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.7 + index * 0.05, duration: 0.4 }} // Adjusted delay
+                transition={{ delay: 0.7 + index * 0.05, duration: 0.4 }}
               >
                 <Link to={to}>{text}</Link>
               </motion.li>
@@ -221,7 +220,7 @@ const Footer = () => {
                 key={to}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.8 + index * 0.05, duration: 0.4 }} // Adjusted delay
+                transition={{ delay: 0.8 + index * 0.05, duration: 0.4 }}
               >
                 <Link to={to}>{text}</Link>
               </motion.li>
@@ -249,7 +248,7 @@ const Footer = () => {
           aria-label="Back to top"
           whileHover={{ 
             scale: 1.05,
-            boxShadow: "0 8px 20px rgba(var(--color-accent-primary), 0.3)" // Adjusted shadow
+            boxShadow: "0 8px 20px rgba(99, 102, 241, 0.3)"
           }}
           whileTap={{ scale: 0.95 }}
           initial={{ opacity: 0, scale: 0.8 }}
