@@ -1,16 +1,20 @@
-const { MongoClient, ObjectId } = require('mongodb');
+// backend/db/mongoClient.js
+const mongoose = require('mongoose');
 
-const uri = `mongodb+srv://androhacker1234:2doo1FGYAkJGoVKz@cluster0.sxykn.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
-const client = new MongoClient(uri);
+const connectDB = async () => {
+  try {
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI is not defined in the .env file');
+    }
 
-let db;
+    await mongoose.connect(process.env.MONGODB_URI);
 
-async function connectDB() {
-  if (!db) {
-    await client.connect();
-    db = client.db('passportAuthDB');
+    console.log('✅ Successfully connected to MongoDB');
+
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error.message);
+    process.exit(1);
   }
-  return db;
-}
+};
 
-module.exports = { connectDB, ObjectId };
+module.exports = connectDB; // This export is correct for the import change above
