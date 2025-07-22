@@ -1,188 +1,198 @@
-const backendDomain = "http://localhost:5000";
+
+const BACKEND_DOMAIN = import.meta.env.VITE_REACT_APP_API_BASE_URL || "http://localhost:5000";
 
 const SummaryApi = {
     signUp: {
-        url: `${backendDomain}/api/auth/signup`,
+        url: `${BACKEND_DOMAIN}/api/auth/signup`,
         method: "post"
     },
     signIn: {
-        url: `${backendDomain}/api/auth/login`,
+        url: `${BACKEND_DOMAIN}/api/auth/login`,
         method: "post"
     },
     current_user: {
-        url: `${backendDomain}/api/user-details`,
+        url: `${BACKEND_DOMAIN}/api/user-details`,
         method: "get"
     },
     logout_user: {
-        url: `${backendDomain}/api/auth/logout`,
+        url: `${BACKEND_DOMAIN}/api/auth/logout`,
         method: "get"
     },
     googleAuth: {
-        url: `${backendDomain}/api/auth/google`
+        url: `${BACKEND_DOMAIN}/api/auth/google`
     },
     githubAuth: {
-        url: `${backendDomain}/api/auth/github`
+        url: `${BACKEND_DOMAIN}/api/auth/github`
     },
     profileImage: {
-        url: `${backendDomain}/api/profile-image`,
+        url: `${BACKEND_DOMAIN}/api/profile-image`,
         method: "post"
     },
     deleteProfileImage: {
-        url: `${backendDomain}/api/profile-image`,
+        url: `${BACKEND_DOMAIN}/api/profile-image`,
         method: "delete"
     },
     portfolioDetails: {
         get: {
-            url: `${backendDomain}/api/portfolio/portfolio-details`,
+            url: `${BACKEND_DOMAIN}/api/portfolio/portfolio-details`,
             method: "get"
         },
         update: {
-            url: `${backendDomain}/api/portfolio/portfolio-details`,
+            url: `${BACKEND_DOMAIN}/api/portfolio/portfolio-details`,
             method: "put"
         }
     },
     portfolio: {
         public: {
-            url: (username) => `${backendDomain}/api/portfolio/public/${username}`,
-            method: "get"
+            url: (username) => `${BACKEND_DOMAIN}/api/portfolio/public/${username}`,
+            method: "GET" // Changed to GET as per standard practice for public views
+        },
+        // ... (other private portfolio endpoints if they were in a SummaryApi here, e.g.)
+        details: { // Example for private portfolio details
+            url: `${BACKEND_DOMAIN}/api/portfolio-details`,
+            method: "GET"
+        },
+        updateDetails: {
+            url: `${BACKEND_DOMAIN}/api/portfolio-details`,
+            method: "PUT"
         }
     },
     skills: {
         get: {
-            url: `${backendDomain}/api/skills/manage`,
+            url: `${BACKEND_DOMAIN}/api/skills/manage`,
             method: "get"
         },
         create: {
-            url: `${backendDomain}/api/skills/manage`,
+            url: `${BACKEND_DOMAIN}/api/skills/manage`,
             method: "post"
         },
         update: {
-            url: `${backendDomain}/api/skills/manage/:id`,
+            url: (id) => `${BACKEND_DOMAIN}/api/skills/manage/${id}`, // Added ID parameter
             method: "put"
         },
         delete: {
-            url: `${backendDomain}/api/skills/manage/:id`,
+            url: (id) => `${BACKEND_DOMAIN}/api/skills/manage/${id}`, // Added ID parameter
             method: "delete"
         },
         reorder: {
-            url: `${backendDomain}/api/skills/reorder`,
+            url: `${BACKEND_DOMAIN}/api/skills/reorder`,
             method: "put"
         }
     },
     projects: {
         get: {
-            url: `${backendDomain}/api/projects`,
+            url: `${BACKEND_DOMAIN}/api/projects`,
             method: 'GET'
         },
         counts: {
-            url: `${backendDomain}/api/projects/counts`,
+            url: `${BACKEND_DOMAIN}/api/projects/counts`,
             method: 'GET'
         },
         add: {
-            url: `${backendDomain}/api/projects`,
+            url: `${BACKEND_DOMAIN}/api/projects`,
             method: 'POST'
         },
         single: {
-            url: (id) => `${backendDomain}/api/projects/${id}`,
+            url: (id) => `${BACKEND_DOMAIN}/api/projects/${id}`,
             method: 'GET'
         },
         update: {
-            url: (id) => `${backendDomain}/api/projects/${id}`,
+            url: (id) => `${BACKEND_DOMAIN}/api/projects/${id}`,
             method: 'PUT'
         },
         delete: {
-            url: (id) => `${backendDomain}/api/projects/${id}`,
+            url: (id) => `${BACKEND_DOMAIN}/api/projects/${id}`,
             method: 'DELETE'
         }
     },
     certificates: {
         get: {
-            url: `${backendDomain}/api/certificates`,
+            url: `${BACKEND_DOMAIN}/api/certificates`,
             method: 'GET'
         },
         add: {
-            url: `${backendDomain}/api/certificates`,
+            url: `${BACKEND_DOMAIN}/api/certificates`,
             method: 'POST'
         },
         update: {
-            url: `${backendDomain}/api/certificates`,
+            url: (id) => `${BACKEND_DOMAIN}/api/certificates/${id}`, // Base URL, ID will be appended
             method: 'PUT'
         },
         delete: {
-            url: `${backendDomain}/api/certificates`,
+            url: (id) => `${BACKEND_DOMAIN}/api/certificates/${id}`, // Base URL, ID will be appended
             method: 'DELETE'
         },
         count: {
-            url: `${backendDomain}/api/certificates/count`,
+            url: `${BACKEND_DOMAIN}/api/certificates/count`,
             method: 'GET'
         }
     },
     experiences: {
         get: {
-            url: `${backendDomain}/api/experiences`,
+            url: `${BACKEND_DOMAIN}/api/experiences`,
             method: 'GET'
         },
         add: {
-            url: `${backendDomain}/api/experiences`,
+            url: `${BACKEND_DOMAIN}/api/experiences`,
             method: 'POST'
         },
         update: {
-            url: `${backendDomain}/api/experiences`, // Base URL, ID will be appended
+            url: (id) => `${BACKEND_DOMAIN}/api/experiences/${id}`, // Base URL, ID will be appended
             method: 'PUT'
         },
         delete: {
-            url: `${backendDomain}/api/experiences`, // Base URL, ID will be appended
+            url: (id) => `${BACKEND_DOMAIN}/api/experiences/${id}`, // Base URL, ID will be appended
             method: 'DELETE'
         },
         total: {
-            url: `${backendDomain}/api/experiences/total`,
+            url: `${BACKEND_DOMAIN}/api/experiences/total`,
             method: 'GET'
         }
     },
     // ATS Module endpoints
     ats: {
         analyze: {
-            url: `${backendDomain}/api/ats/analyze`,
+            url: `${BACKEND_DOMAIN}/api/ats/analyze`,
             method: "POST"
         },
         getAnalysis: {
-            url: (id) => `${backendDomain}/api/ats/analysis/${id}`,
+            url: (id) => `${BACKEND_DOMAIN}/api/ats/analysis/${id}`,
             method: "GET"
         },
         getAllAnalyses: {
-            url: `${backendDomain}/api/ats/analyses`,
+            url: `${BACKEND_DOMAIN}/api/ats/analyses`,
             method: "GET"
         },
         deleteAnalysis: {
-            url: (id) => `${backendDomain}/api/ats/analysis/${id}`,
+            url: (id) => `${BACKEND_DOMAIN}/api/ats/analysis/${id}`,
             method: "DELETE"
         },
         updateAnalysis: {
-            url: (id) => `${backendDomain}/api/ats/analysis/${id}`,
+            url: (id) => `${BACKEND_DOMAIN}/api/ats/analysis/${id}`,
             method: "PUT"
         }
     },
     // Added resumes module
     resumes: {
         create: {
-            url: `${backendDomain}/api/resumes`,
+            url: `${BACKEND_DOMAIN}/api/resumes`,
             method: "POST"
         },
         single: {
-            url: (id) => `${backendDomain}/api/resumes/${id}`,
+            url: (id) => `${BACKEND_DOMAIN}/api/resumes/${id}`,
             method: "GET"
         },
         update: {
-            url: (id) => `${backendDomain}/api/resumes/${id}`,
+            url: (id) => `${BACKEND_DOMAIN}/api/resumes/${id}`,
             method: "PUT"
         },
         // Optionally, you might want a get all and delete endpoint for resumes too:
         getAll: {
-            url: `${backendDomain}/api/resumes`,
+            url: `${BACKEND_DOMAIN}/api/resumes`,
             method: "GET"
         },
         delete: {
-            url: (id) => `${backendDomain}/api/resumes/${id}`,
+            url: (id) => `${BACKEND_DOMAIN}/api/resumes/${id}`,
             method: "DELETE"
         }
     }
