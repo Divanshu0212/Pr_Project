@@ -688,8 +688,20 @@ The component should:
 - `src/components/common/Loader.jsx`
 - `src/services/resumeService.jsx` (for `generateResume`, `saveResume`, `downloadResume`)
 - `src/styles/pages/ResumeOptimizer.css` (for specific styling)
-***************************************************************************************************
+**************************************************************************************************Add proper routing support: Uses useParams() to detect edit mode via resumeId
+Handle both create and edit modes: Fetches existing data for edit mode, uses default data for create mode
+Update API calls appropriately: Calls create endpoint for new resumes, update endpoint for existing ones
+Improve user experience: Updates button text and hero section based on mode
+Add proper navigation: Redirects to my-resumes page after successful operation
+Maintain data integrity: Ensures all arrays are properly initialized in both modes
 
+Make sure your SummaryApi.resumes object in src/config/index.js has these endpoints:
+
+create.url
+single.url(id)
+update.url(id)
+
+The component will now properly handle both creating new resumes and editing existing ones from the MyResumesPage.RetryClaude can make mistakes. Please double-check responses.
 ---------------------------------------------------------------------------------------------------
 
 
