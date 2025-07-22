@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, FileText, Target, Zap, CheckCircle, AlertCircle, TrendingUp, Shield, Star } from 'lucide-react';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
-import ResumeUploader from './ResumeUploader'; // Corrected import
-import Button from '../../components/common/Button';
+import ResumeUploader from './ResumeUploader';
+import Button from '../../components/common/Button'; // Ensure this is the Button you're using
 import Card from '../../components/common/Card';
 import LoadingState from './LoadingState';
 import ErrorMessage from './ErrorMessage';
@@ -16,7 +16,8 @@ const analyzeResumeOnBackend = async (file, jobDescription) => {
     formData.append('jobDescription', jobDescription);
 
     // Adjust this URL to your backend's ATS analyze endpoint
-    const response = await fetch('http://localhost:8000/api/ats/analyze', { // Example URL, adjust port/path as needed
+    // IMPORTANT: Ensure this URL matches your backend's actual running port (e.g., 5000 from server.js)
+    const response = await fetch('http://localhost:5000/api/ats/analyze', { // Changed to port 5000
         method: 'POST',
         body: formData,
     });
@@ -283,7 +284,7 @@ const AtsTracker = () => {
                                                 isDark
                                                     ? 'bg-gray-800/50 border-2 border-gray-700/50 text-gray-200 placeholder-gray-500 focus:border-cyan-500 focus:bg-gray-800/70'
                                                     : 'bg-white/50 border-2 border-gray-300/50 text-gray-800 placeholder-gray-400 focus:border-blue-500 focus:bg-white/80'
-                                            } focus:outline-none focus:ring-4 focus:ring-cyan-500/20`}
+                                                } focus:outline-none focus:ring-4 focus:ring-cyan-500/20`}
                                             placeholder="Paste the complete job description here including requirements, qualifications, and responsibilities..."
                                             value={jobDescription}
                                             onChange={handleJobDescriptionChange}
@@ -303,12 +304,6 @@ const AtsTracker = () => {
 
                                 <div className="mt-10 flex justify-center">
                                     <Button
-                                        text={
-                                            <span className="flex items-center text-lg font-semibold">
-                                                <Zap className="w-6 h-6 mr-3" />
-                                                Analyze Resume
-                                            </span>
-                                        }
                                         onClick={handleSubmit}
                                         disabled={isLoading || !resumeFile || !jobDescription.trim()}
                                         className={`px-10 py-4 rounded-2xl text-white font-semibold shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
@@ -316,7 +311,12 @@ const AtsTracker = () => {
                                                 ? 'bg-gray-400'
                                                 : 'bg-gradient-to-r from-cyan-500 to-purple-500 hover:shadow-2xl hover:shadow-cyan-500/25 hover:scale-105 active:scale-95'
                                         }`}
-                                    />
+                                    > {/* Moved content inside <Button> tags */}
+                                        <span className="flex items-center text-lg font-semibold">
+                                            <Zap className="w-6 h-6 mr-3" />
+                                            Analyze Resume
+                                        </span>
+                                    </Button>
                                 </div>
                             </div>
                         </Card>
@@ -348,10 +348,10 @@ const AtsTracker = () => {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                                     {[
-                                        { icon: "📄", title: "Upload Resume", desc: "Upload your PDF or DOCX resume file securely", color: "from-cyan-400 to-blue-500" },
+                                        { icon: "📄", title: "Upload Resume", desc: "PDF recommended for best parsing", color: "from-cyan-400 to-blue-500" },
                                         { icon: "🔍", title: "AI Analysis", desc: "Our AI scans for ATS optimization patterns", color: "from-blue-500 to-purple-500" },
-                                        { icon: "📊", title: "Get Results", desc: "Receive detailed score and actionable feedback", color: "from-purple-500 to-pink-500" },
-                                        { icon: "✨", title: "Improve", desc: "Optimize your resume based on insights", color: "from-pink-500 to-cyan-400" }
+                                        { icon: "📊", title: "Get Results", desc: "Compatibility score & insights", color: "from-purple-500 to-pink-500" },
+                                        { icon: "✨", title: "Improve", desc: "Actionable improvement tips", color: "from-pink-500 to-cyan-400" }
                                     ].map((step, idx) => (
                                         <div
                                             key={idx}

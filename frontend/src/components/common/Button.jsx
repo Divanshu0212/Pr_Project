@@ -171,7 +171,7 @@ const Button = ({
               {icon}
             </motion.span>
           )}
-          <span className="button-text">{children}</span>
+          <span className="button-text">{children}</span> {/* This is where children are rendered */}
         </motion.span>
       )}
       
@@ -182,7 +182,7 @@ const Button = ({
 };
 
 Button.propTypes = {
-  children: PropTypes.node.isRequired,
+  children: PropTypes.node.isRequired, // This prop type is correct for how the button renders children
   variant: PropTypes.oneOf(['primary', 'secondary', 'ghost']),
   size: PropTypes.oneOf(['small', 'medium', 'large']),
   onClick: PropTypes.func,

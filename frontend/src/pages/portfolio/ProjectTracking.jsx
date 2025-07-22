@@ -3,7 +3,7 @@ import { FaCheck, FaHourglass, FaClock, FaPlus, FaArrowLeft } from 'react-icons/
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import SummaryApi from '../../config/index';
-import ProjectCard from '../../components/portfolio/ProjectCard'; // Ensure this path is correct
+import ProjectCard from '../../components/portfolio/ProjectCard';
 
 const ProjectTracking = () => {
     const navigate = useNavigate();
@@ -61,7 +61,7 @@ const ProjectTracking = () => {
     };
 
     const addNewProject = () => {
-        navigate('/portfolio/projects/add'); // Corrected navigation path
+        navigate('/portfolio/projects/add');
     };
 
     return (
@@ -69,7 +69,7 @@ const ProjectTracking = () => {
             <div className="max-w-6xl mx-auto">
                 <div className="flex justify-between items-center mb-8">
                     <button
-                        onClick={() => navigate('/portfolio')} // Corrected navigation path
+                        onClick={() => navigate('/portfolio')}
                         className="flex items-center gap-2 text-[#00FFFF] hover:underline"
                     >
                         <FaArrowLeft /> Back to Portfolio

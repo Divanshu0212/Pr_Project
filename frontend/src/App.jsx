@@ -162,7 +162,7 @@ const AnimatedRoutes = () => {
 
           {/* ATS Optimizer Module */}
           <Route path="/ats" element={<ProtectedRoute><DashboardLayout user={currentUser}><AtsHome /></DashboardLayout></ProtectedRoute>} /> {/* ATS Home */}
-          <Route path="/ats/tracker" element={<ProtectedRoute><AtsTracker/></ProtectedRoute>} /> {/* ATS Home */}
+
           <Route path="/ats/scan" element={<ProtectedRoute><AtsTracker /></ProtectedRoute>} /> {/* Main scan input */}
           <Route path="/ats/analysis/:analysisId" element={<ProtectedRoute><DashboardLayout user={currentUser}><AnalysisView /></DashboardLayout></ProtectedRoute>} /> {/* Detailed report (fetches by ID) */}
           <Route path="/ats/history" element={<ProtectedRoute><AtsHistoryPage /></ProtectedRoute>} /> {/* New page */}

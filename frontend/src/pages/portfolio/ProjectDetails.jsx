@@ -79,7 +79,7 @@ const ProjectDetails = () => {
                         'Authorization': `Bearer ${token}`
                     }
                 });
-                navigate('/portfolio'); // Corrected navigation path
+                navigate('/portfolio'); // Navigate back to portfolio page
             } catch (err) {
                 setError('Failed to delete project');
             }
@@ -100,7 +100,7 @@ const ProjectDetails = () => {
                 <div className="text-center">
                     <p className="text-red-500 mb-4">{error}</p>
                     <button
-                        onClick={() => navigate('/portfolio')} // Corrected navigation path
+                        onClick={() => navigate('/portfolio')} // Navigate back to portfolio page
                         className="px-4 py-2 bg-[#00FFFF] text-black rounded-lg hover:opacity-90"
                     >
                         Back to Portfolio
@@ -116,7 +116,7 @@ const ProjectDetails = () => {
                 <div className="text-center">
                     <p className="mb-4">Project not found</p>
                     <button
-                        onClick={() => navigate('/portfolio')} // Corrected navigation path
+                        onClick={() => navigate('/portfolio')} // Navigate back to portfolio page
                         className="px-4 py-2 bg-[#00FFFF] text-black rounded-lg hover:opacity-90"
                     >
                         Back to Portfolio
@@ -150,7 +150,7 @@ const ProjectDetails = () => {
             <div className="max-w-4xl mx-auto">
                 <div className="flex justify-between items-start mb-6">
                     <button
-                        onClick={() => navigate('/portfolio')} // Corrected navigation path
+                        onClick={() => navigate('/portfolio')} // Navigate back to portfolio page
                         className="flex items-center gap-2 text-[#00FFFF] hover:underline"
                     >
                         <FaArrowLeft /> Back to Portfolio
@@ -158,7 +158,7 @@ const ProjectDetails = () => {
 
                     <div className="flex gap-3">
                         <Link
-                            to={`/portfolio/projects/edit/${project._id}`} // Corrected navigation path
+                            to={`/portfolio/projects/edit/${project._id}`} // Corrected edit route path
                             className="flex items-center gap-2 px-4 py-2 bg-[#00FFFF] text-black rounded-lg hover:opacity-90"
                         >
                             <FaEdit /> Edit

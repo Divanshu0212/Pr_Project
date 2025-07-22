@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react'; // Removed unused useEffect and useRef
+import React, { useState, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { FaPlus, FaTrash, FaEdit, FaGripVertical, FaArrowLeft, FaStar } from 'react-icons/fa';
 import { MdClose, MdCheck } from 'react-icons/md';
@@ -10,7 +10,7 @@ import Button from '../common/Button';
 import Card from '../common/Card';
 import Form from '../common/Form';
 import Modal from '../common/Modal';
-import Loader from '../common/Loader'; // <-- FIXED: Added missing import
+import Loader from '../common/Loader';
 import SummaryApi from '../../config';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/animations.css';
@@ -86,7 +86,9 @@ const SkillManagement = () => {
         {
             onMutate: () => { setAddSkillLoading(true); },
             onSuccess: () => {
+                // Invalidate both skills queries to ensure immediate updates everywhere
                 queryClient.invalidateQueries(['skills']);
+                queryClient.refetchQueries(['skills']);
                 setNewSkill({ name: '', category: 'Other', proficiency: 5, icon: '', isFeatured: false });
                 alert('Skill added successfully!');
             },
@@ -115,7 +117,9 @@ const SkillManagement = () => {
         {
             onMutate: () => { setAddSkillLoading(true); },
             onSuccess: () => {
+                // Invalidate both skills queries to ensure immediate updates everywhere
                 queryClient.invalidateQueries(['skills']);
+                queryClient.refetchQueries(['skills']);
                 setIsEditing(false);
                 setEditingSkill(null);
                 alert('Skill updated successfully!');
@@ -141,7 +145,9 @@ const SkillManagement = () => {
         {
             onMutate: () => { setAddSkillLoading(true); },
             onSuccess: () => {
+                // Invalidate both skills queries to ensure immediate updates everywhere
                 queryClient.invalidateQueries(['skills']);
+                queryClient.refetchQueries(['skills']);
                 setShowDeleteModal(null);
                 alert('Skill deleted successfully!');
             },
@@ -168,7 +174,10 @@ const SkillManagement = () => {
             return response.json();
         },
         {
-            onSuccess: () => { queryClient.invalidateQueries(['skills']); },
+            onSuccess: () => { 
+                queryClient.invalidateQueries(['skills']);
+                queryClient.refetchQueries(['skills']);
+            },
             onError: (err) => { console.error('Error reordering skills:', err); alert(`Failed to reorder: ${err.message}`); },
         }
     );
@@ -212,6 +221,11 @@ const SkillManagement = () => {
             skillIds: items.map(item => item._id),
             userId: currentUser?._id
         });
+    };
+
+    const handleEditClick = (skill) => {
+        setEditingSkill({ ...skill }); // Create a copy to avoid direct mutation
+        setIsEditing(true);
     };
 
     const getProficiencyColor = (level) => {
@@ -409,9 +423,9 @@ const SkillManagement = () => {
                                                                                 <span className={clsx(isDark ? 'text-gray-400' : 'text-gray-600')}>
                                                                                     Proficiency:
                                                                                 </span>
-                                                                             <span className={clsx("font-bold", getProficiencyColor(skill.proficiency))}>
-    {skill.proficiency}/10
-</span>
+                                                                                <span className={clsx("font-bold", getProficiencyColor(skill.proficiency))}>
+                                                                                    {skill.proficiency}/10
+                                                                                </span>
                                                                                 <div className={clsx("w-16 h-1 rounded-full", isDark ? 'bg-gray-700' : 'bg-gray-200')}>
                                                                                     <div
                                                                                         className="h-full rounded-full bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] transition-all duration-500"
@@ -425,10 +439,7 @@ const SkillManagement = () => {
 
                                                                 <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                                                     <Button
-                                                                        onClick={() => {
-                                                                            setEditingSkill(skill);
-                                                                            setIsEditing(true);
-                                                                        }}
+                                                                        onClick={() => handleEditClick(skill)}
                                                                         variant="ghost"
                                                                         size="sm"
                                                                         className={clsx(
@@ -462,17 +473,20 @@ const SkillManagement = () => {
                 </Card>
 
                 {/* Edit Modal */}
-                {isEditing && (
+                {isEditing && editingSkill && (
                     <Modal
                         isOpen={isEditing}
-                        onClose={() => setIsEditing(false)}
+                        onClose={() => {
+                            setIsEditing(false);
+                            setEditingSkill(null);
+                        }}
                         title="Edit Skill"
                     >
                         <div className="space-y-4">
                             <Form.Input
                                 label="Skill Name"
                                 name="name"
-                                value={editingSkill?.name || ''}
+                                value={editingSkill.name || ''}
                                 onChange={handleEditInputChange}
                                 placeholder="e.g. JavaScript"
                                 required
@@ -481,7 +495,7 @@ const SkillManagement = () => {
                             <Form.Select
                                 label="Category"
                                 name="category"
-                                value={editingSkill?.category || 'Other'}
+                                value={editingSkill.category || 'Other'}
                                 onChange={handleEditInputChange}
                                 options={categories.map(cat => ({ value: cat, label: cat }))}
                             />
@@ -492,21 +506,21 @@ const SkillManagement = () => {
                                 name="proficiency"
                                 min="1"
                                 max="10"
-                                value={editingSkill?.proficiency || 5}
+                                value={editingSkill.proficiency || 5}
                                 onChange={handleEditInputChange}
                             />
 
                             <Form.Checkbox
                                 label="Featured Skill"
                                 name="isFeatured"
-                                checked={editingSkill?.isFeatured || false}
+                                checked={editingSkill.isFeatured || false}
                                 onChange={handleEditInputChange}
                             />
 
                             <div className="flex gap-3 pt-4">
                                 <Button
                                     onClick={onSubmitUpdateSkill}
-                                    disabled={addSkillLoading || !editingSkill?.name.trim()}
+                                    disabled={addSkillLoading || !editingSkill.name?.trim()}
                                     className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white"
                                 >
                                     {addSkillLoading ? 'Saving...' : (
@@ -516,7 +530,10 @@ const SkillManagement = () => {
                                     )}
                                 </Button>
                                 <Button
-                                    onClick={() => setIsEditing(false)}
+                                    onClick={() => {
+                                        setIsEditing(false);
+                                        setEditingSkill(null);
+                                    }}
                                     variant="outline"
                                     className="flex-1"
                                 >

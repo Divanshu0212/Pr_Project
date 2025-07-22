@@ -44,6 +44,53 @@ The component should:
 - `src/components/portfolio/CertificateCard.jsx` (for preview display)
 - `src/components/portfolio/AddCertificateForm.jsx` (for modal)
 - `src/components/portfolio/ExperienceTab.jsx` (for preview display)
+**********************************************************************
+Navigation Route Updates:
+
+Removed all Maps() calls (these don't exist in React Router)
+Changed /portfolioHome references to /portfolio
+Changed /portfolio/add to /portfolio/projects/add
+Changed /portfolio/tracking to /portfolio/projects
+"Complete Profile" button now navigates to /portfolio/settings
+
+Navigation Tabs:
+
+Overview: Sets activeSection('overview') to stay on current page
+Projects: Navigates to /portfolio/projects
+Skills: Navigates to /portfolio/skills
+Certificates: Navigates to /portfolio/certificates
+Experience: Navigates to /portfolio/experience
+
+Content Sections:
+
+Removed all content blocks for projects, skills, certificates, and experience sections
+Only the overview-section remains in main-content
+These sections are now handled by separate dedicated pages
+
+Profile Actions:
+
+Share action correctly points to /portfolio/public/${username} for public portfolio URL
+Preview opens public portfolio in new tab
+All other functionalities preserved
+
+Cleaned Up Imports:
+
+Removed unused imports: ProjectCard, CertificateCard, AddCertificateForm, ExperienceTab
+Removed certificate-related state and handlers since they're now on a separate page
+Added missing FaGlobe import for website social links
+
+Preserved Features:
+
+Profile picture upload/delete functionality
+Stats display
+Portfolio completion tracking
+Social links display
+Bio section
+All existing styling and theming
+
+The component is now streamlined to focus only on the overview functionality while properly routing to dedicated pages for detailed portfolio sections.
+
+-------------------------------------------------------------------------------------
 📋 STEP 2: Update pages/portfolio/ProjectDetails.jsx
 Goal: Ensure project details are correctly fetched/displayed and navigation paths are accurate.
 Files to Update: src/pages/portfolio/ProjectDetails.jsx
@@ -63,6 +110,11 @@ The component should:
 **Reference files needed (context):**
 - `src/config/index.js` (for `SummaryApi.projects` endpoints)
 - `src/context/ThemeContext.jsx` (for `useTheme`)
+
+
+**********************************************************************
+The component should now properly navigate between routes and maintain consistency with your routing structure. If the "project details are not being stored" issue persists, it would likely be related to the backend GET /api/projects/:id endpoint or the data structure being returned from the API.
+--------------------------------------------------------------------
 📋 STEP 3: Update pages/portfolio/ProjectTracking.jsx
 Goal: Ensure the full project list correctly navigates to other project-related pages.
 Files to Update: src/pages/portfolio/ProjectTracking.jsx
@@ -82,6 +134,36 @@ The component should:
 **Reference files needed (context):**
 - `src/config/index.js` (for `SummaryApi.projects` endpoints)
 - `src/components/portfolio/ProjectCard.jsx`
+***********************************************************************************
+Looking at your code, I can see there's a navigation issue in the ProjectCard component. The ProjectCard is linking to /portfolio/${project._id} but based on your request, it should link to /portfolio/projects/${project._id}.
+Let me provide the corrected ProjectTracking.jsx component and then update the ProjectCard component to fix the navigation:ProjectTracking.jsx - Corrected NavigationCode import React, { useState } from 'react';
+import { FaCheck, FaHourglass, FaClock, FaPlus, FaArrowLeft } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { useQuery } from 'react-query';
+import SummaryApi from '../../configNow I need to update the ProjectCard component to fix the navigation path from /portfolio/${project._id} to /portfolio/projects/${project._id}:ProjectCard.jsx - Corrected NavigationCode import React from 'react';
+import { FaGithub } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { useTheme } from '../../context/ThemeContext';
+import Card from '../common/Card';
+import PropTypes from 'prop-types';
+
+const ProjecSummary of Changes
+I've provided the corrected versions of both components:
+ProjectTracking.jsx
+
+✅ "Back to Portfolio" button navigates to /portfolio
+✅ "Add Project" button navigates to /portfolio/projects/add
+✅ All existing data fetching, filtering, loading, error, and empty state logic remains intact
+✅ All existing styling remains intact
+
+ProjectCard.jsx
+
+🔧 Fixed navigation issue: Changed the Details link from /portfolio/${project._id} to /portfolio/projects/${project._id}
+✅ All other functionality and styling remains intact
+
+The key fix was in the ProjectCard component where the Details link was pointing to the wrong route. Now it correctly navigates to /portfolio/projects/${project._id} which should match your routing structure.
+-------------------------------------------------------------------------------
+
 📋 STEP 4: Update components/portfolio/SkillManagement.jsx
 Goal: Fix the issue where skills updates/adds aren't immediately reflected and ensure edit button works.
 Files to Update: src/components/portfolio/SkillManagement.jsx
@@ -110,6 +192,32 @@ The component should:
 - `src/components/common/Modal.jsx`
 - `src/components/common/Loader.jsx`
 - `clsx` library.
+***********************************************************************************
+Fixed Issues:
+
+Removed duplicate "Back to Portfolio" button - The one outside the container was removed
+Enhanced query cache invalidation - Added queryClient.refetchQueries(['skills']) in addition to invalidateQueries for immediate updates
+Fixed edit modal functionality - Created a proper handleEditClick function that creates a copy of the skill data
+Improved edit modal state management - Added proper cleanup when closing the modal
+
+Key Improvements:
+
+Immediate Updates: All mutations now use both invalidateQueries and refetchQueries to ensure skills are updated immediately across all pages
+Proper Edit Button: The edit button now correctly sets both isEditing(true) and editingSkill state with a copy of the skill data
+Safe Modal Handling: Added null checks and proper state cleanup for the edit modal
+Enhanced Navigation: Single "Back to Portfolio" button that navigates to /portfolio
+
+What This Fixes:
+
+✅ Edit button now works correctly and displays skill data in the modal
+✅ Adding skills updates the list immediately on both /skills and portfolio pages
+✅ Updating skills reflects changes immediately everywhere
+✅ Deleting skills updates the list immediately
+✅ Clean navigation back to portfolio
+✅ All existing drag-and-drop and other functionality preserved
+
+The component now properly
+------------------------------------------------------------------------------------
 📋 STEP 5: Update components/portfolio/AddCertificateForm.jsx
 Goal: Fix the issue where the "Add Certificate" button isn't working/modal not opening correctly.
 Files to Update: src/components/portfolio/AddCertificateForm.jsx
@@ -125,6 +233,53 @@ Ensure its styling and functionality for adding/editing certificates remains as 
 - `src/context/ThemeContext.jsx`
 - `src/components/common/Button.jsx`
 - `src/components/common/Modal.jsx`
+****************************************************************************
+1. Enhanced Error Handling & Validation
+
+Added comprehensive form validation with real-time feedback
+Clear error messages for each field
+Visual indicators for validation errors
+
+2. Improved State Management
+
+Better handling of image preview URLs with proper cleanup
+More robust form data handling for skills (supports both string and array)
+Added loading states and error states
+
+3. Enhanced User Experience
+
+Better visual feedback during form submission
+Improved styling with hover effects and transitions
+Loading spinner during form submission
+Clear visual hierarchy and spacing
+
+4. Fixed Potential Issues
+
+Proper URL validation for credential URLs
+Memory leak prevention with URL.revokeObjectURL
+Better file type and size validation
+Consistent prop validation and default props
+
+5. Better Integration
+
+Improved compatibility with the Modal and Button components
+Consistent theming throughout the component
+Better responsive design for mobile devices
+
+6. Form Submission Improvements
+
+Skills are properly formatted as JSON array for backend
+FormData is constructed more reliably
+Better error handling during submission
+
+Common Issues This Fixes:
+
+Modal not opening: Ensure your Modal component is properly implemented and the onClose handler is working
+Form submission failing: Better validation and error handling prevent silent failures
+Image upload issues: Enhanced file validation and preview handling
+Styling inconsistencies: Updated to use consistent theme-based styling
+Memory leaks: Proper cleanup of blob URLs
+--------------------------------------------------------------------------------
 📋 STEP 6: Update components/portfolio/ExperienceTab.jsx
 Goal: Fix the issue where experience page buttons aren't working (specifically, add/edit/delete from ExperienceTab).
 Files to Update: src/components/portfolio/ExperienceTab.jsx
@@ -144,6 +299,86 @@ Confirm all button actions (Add, Edit, Delete) correctly trigger their respectiv
 - `src/components/common/Button.jsx`
 - `src/components/common/Loader.jsx`
 - `src/context/ThemeContext.jsx`
+**********************************************************************************
+Looking at your code, I can see the issue with the experience page buttons. The main problems are:
+
+API endpoint mismatch - Your SummaryApi.experiences.delete.url doesn't include the ID parameter
+Inconsistent API structure - The delete and update endpoints need ID parameters
+Theme context property mismatch - Using isDark instead of theme
+
+Let me provide the corrected ExperienceTab.jsx with proper integration:Fixed ExperienceTab.jsxCode import React, { useState, useEffect } from 'react';
+import { FaPlus, FaBriefcase } from 'react-icons/fa';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
+import axios from 'axios';
+import SummaryApi from '../../config';
+import ExNow you also need to update your SummaryApi configuration to properly handle the ID parameters for delete and update operations. Here's the corrected version:Updated SummaryApi ConfigCode const backendDomain = "http://localhost:5000";
+
+const SummaryApi = {
+    signUp: {
+        url: `${backendDomain}/api/auth/signup`,
+        method: "post"
+    },
+    signIn: {
+        url: `${backendDomain}/api/auth/login`,
+        method: "post"
+   Key Changes Made:
+1. Fixed API Integration:
+
+Added proper error handling for missing tokens
+Implemented react-query mutations for delete operations
+Fixed API endpoint construction for delete operations (appending ID)
+
+2. Enhanced State Management:
+
+Added queryClient for cache invalidation
+Proper loading and error states
+Added mutation state tracking
+
+3. Improved Error Handling:
+
+Better error messages and user feedback
+Confirmation dialogs for destructive actions
+Graceful fallbacks for API failures
+
+4. UI/UX Improvements:
+
+Loading overlay during delete operations
+Disabled buttons during operations to prevent double-clicks
+Better visual feedback for user actions
+
+5. Fixed Theme Integration:
+
+Corrected isDark to theme property usage
+Consistent theme-based styling
+
+6. Button Action Fixes:
+
+Add Button: Now properly opens the form modal
+Edit Button: Correctly passes experience data to the form
+Delete Button: Properly constructs API URL and handles deletion
+
+7. Form Integration:
+
+Proper form submission handling
+Cache invalidation after successful operations
+Modal state management
+
+The main issues were:
+
+API URL construction for delete/update operations
+Missing react-query mutations for proper state management
+Theme context property mismatch
+Incomplete error handling
+
+Now all buttons should work correctly:
+
+✅ Add Experience - Opens the form modal
+✅ Edit Experience - Opens form with existing data
+✅ Delete Experience - Shows confirmation and deletes
+
+Make sure your backend API endpoints match the expected URL structure (/api/experiences/:id for delete/update operations).
+
+------------------------------------------------------------------------------
 📋 STEP 7: Update components/portfolio/ProjectCard.jsx and components/portfolio/CertificateCard.jsx
 Goal: Ensure these cards disable edit/delete actions when viewed on the public portfolio.
 Files to Update:
@@ -170,12 +405,355 @@ For both components:
 - `src/components/common/Card.jsx`
 - `react-icons/fa` for icons.
 - `prop-types` for validation.
+***************************************************************************************************
+'ll help you update both components to support public view mode where edit/delete actions are hidden. Let me create the complete corrected content for both files.Updated ProjectCard.jsxCode import React from 'react';
+import { FaGithub } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { useTheme } from '../../context/ThemeContext';
+import Card from '../common/Card';
+import PropTypes from 'prop-types';
+
+const ProjecUpdated CertificateCard.jsxCode import React from 'react';
+import { FaExternalLinkAlt, FaEdit, FaTrash } from 'react-icons/fa';
+import PropTypes from 'prop-types';
+import { useTheme } from '../../context/ThemeContext';
+import '../../styles/animations.css';
+
+const CertificateCard = I've updated both components to support public view mode. Here are the key changes made:
+ProjectCard.jsx Updates:
+
+Added isPublicView prop (defaults to false) with PropTypes validation
+Conditional edit/delete buttons: Only shows when !isPublicView and when project.onEdit and project.onDelete functions exist
+Layout adjustments: The main action buttons (View Code and Details) remain visible in both modes
+Added edit/delete functionality: Created a separate section with border separator for admin actions
+
+CertificateCard.jsx Updates:
+
+Added isPublicView prop (defaults to false) with PropTypes validation
+Conditional edit/delete buttons: Only shows when !isPublicView and when onEdit and onDelete functions are provided
+Layout adjustments: When in public view, the "Verify Certificate" button is centered; in admin view, it's left-aligned with edit/delete buttons on the right
+Made onEdit/onDelete optional: Updated PropTypes to make these functions optional since they won't be needed in public view
+
+Key Features:
+
+✅ Public view safety: Edit/delete buttons are completely hidden in public mode
+✅ Backward compatibility: Existing functionality remains intact when isPublicView=false
+✅ Clean UI: Proper layout adjustments based on view mode
+✅ PropTypes validation: Added proper validation for the new prop
+✅ Graceful degradation: Functions gracefully handle missing edit/delete callbacks
+
+Usage:
+javascript// In public portfolio view
+<ProjectCard project={project} isPublicView={true} />
+<CertificateCard certificate={cert} isPublicView={true} />
+
+// In admin/dashboard view
+<ProjectCard project={project} />
+<CertificateCard certificate={cert} onEdit={handleEdit} onDelete={handleDelete} />
+The components now properly hide administrative controls when viewed publicly while maintaining all existing styling and functionality.
+---------------------------------------------------------------------------------------------------
 📋 STEP 8: Address "Share" Button & Public Portfolio Link
 Goal: Ensure the "Share" button correctly points to the public portfolio.
 Files to Update: src/pages/portfolio/PortfolioHome.jsx
 Issue Addressed: "the share button also not working..i think there should be a proper portfolio page right...the portfolio home we have now is where user is managing stuff..but wt we share to hiring manageres should be a different link right??? whichis public or with permisssions type?"
 Action: This has already been addressed in Step 2.1 (PortfolioHome.jsx Update), where the profileActions for "Share" were changed to generate a link to /portfolio/public/:username.
 Confirmation: The new PublicPortfolio.jsx component you will generate in Phase 1 (Step 3.6) is precisely that public, non-authenticated page.
+***************************************************************************************************
+Key Changes Made:
+1. SummaryApi Update
+
+Added the missing portfolio.public endpoint configuration that your PublicPortfolio component was trying to use
+
+2. PublicPortfolio Component Fixes
+
+Removed unnecessary imports: Removed MainLayout, Loader, ProjectCard, CertificateCard, ExperienceTab, and Card components that weren't being used properly
+Fixed data structure: Updated to match your actual backend response structure with user, portfolioDetails, skills, etc.
+Simplified UI: Created a cleaner, self-contained public portfolio without external component dependencies
+Fixed skills organization: Updated to match your skills structure (skill.name instead of assuming array format)
+Added proper error handling: Better error states and loading states
+Improved responsive design: Used CSS classes that you can style later
+Added project, certificate, and experience displays: Created inline card components for each section
+
+3. Key Features
+
+Public access: No authentication required
+Professional layout: Clean, portfolio-focused design
+Social media links: All social platforms supported
+Skills categorization: Organized by skill categories
+Project showcase: With links to live demos and source code
+Certificate display: With credential verification links
+Experience timeline: Professional work history
+Responsive design: Mobile-friendly structure
+
+4. CSS Import
+
+Added import for PublicPortfolio.css which you can create later for styling
+
+---------------------------------------------------------------------------------------------------
+
+
+
+*********************************************************************************************************************************************************************************************************************************************************************************************************
+Phase 1: ATS Optimizer Frontend Integration (Your Action)
+This section details the updates needed for your ATS module components.
+
+📋 STEP 9: Update pages/ats/AtsTracker.jsx
+Goal: Ensure this is the definitive input page for ATS scans, correctly using the ResumeUploader component and navigating to the AnalysisView.
+Files to Update: src/pages/ats/AtsTracker.jsx
+Issues Addressed: "the details of project are not being stored" (from a previous generic complaint, ensuring this component initiates storage on backend), and explicit integration of ResumeUploader.
+Prompt for AI:
+
+Plaintext
+
+Please provide the complete, corrected content for `src/pages/ats/AtsTracker.jsx`.
+
+The component should:
+- Use `components/ats/ResumeUploader.jsx` for the resume file upload section (replacing any previous inline file input or `UploadForm` usage).
+- The `handleResumeUpload` function should receive the file from `ResumeUploader`.
+- The `analyzeResumeOnBackend` function should be called on form submission, ensuring it sends the `resumeFile` and `jobDescription` to the backend.
+- After a successful analysis, it must navigate directly to the detailed analysis report: `Maps(`/ats/analysis/${analysisId}`);`.
+- All existing loading, error, empty states, and visual styles should be maintained.
+
+**Reference files needed (context):**
+- `src/components/layouts/DashboardLayout.jsx`
+- `src/components/ats/ResumeUploader.jsx`
+- `src/components/common/Button.jsx`
+- `src/components/common/Card.jsx`
+- `src/components/ats/LoadingState.jsx`
+- `src/components/ats/ErrorMessage.jsx`
+- `src/context/ThemeContext.jsx`
+- `src/config/index.js` (for `SummaryApi.ats.analyze.url`)
+***************************************************************************************************
+
+----------------------------------------------------------------------------------------------------
+📋 STEP 10: Update pages/ats/AnalysisView.jsx
+Goal: Make this the definitive, routable page for displaying detailed ATS analysis reports fetched by ID.
+Files to Update: src/pages/ats/AnalysisView.jsx
+Issues Addressed: "clash of /analysis and /analysis/:id" (by making this the canonical page for :analysisId), and explicit component usage.
+Prompt for AI:
+
+Plaintext
+
+Please provide the complete, corrected content for `src/pages/ats/AnalysisView.jsx`.
+
+The component should:
+- Obtain `analysisId` from `useParams()`.
+- Fetch the full analysis report data from the backend using `react-query` and the `analysisId`.
+- Display a prominent page title, indicating it's an "ATS Analysis Report for [Job Title]".
+- Use `components/ats/ScoreVisualization.jsx` for displaying overall and category scores.
+- Use `components/ats/KeywordMatch.jsx` for displaying matched and missing keywords.
+- Use `src/components/ats/SuggestionsList.jsx` for displaying improvement suggestions.
+- Implement tab navigation (`Overview`, `Keywords`, `Suggestions`) to switch between these sections.
+- Include a "New Analysis" button that navigates to `/ats/scan`.
+- Handle loading states (show a spinner from `Loader.jsx` or `LoadingState.jsx`).
+- Handle error states (display a friendly error message using `ErrorMessage.jsx`, especially for "Analysis not found").
+- All existing styling, animations, and data preparation logic (like `renderScoreGauge`) should be maintained.
+
+**Reference files needed (context):**
+- `src/components/layouts/DashboardLayout.jsx`
+- `src/components/ats/ScoreVisualization.jsx`
+- `src/components/ats/KeywordMatch.jsx`
+- `src/components/ats/SuggestionsList.jsx`
+- `src/components/ats/LoadingState.jsx`
+- `src/components/ats/ErrorMessage.jsx`
+- `src/components/common/Button.jsx`
+- `src/components/common/Card.jsx`
+- `src/context/ThemeContext.jsx`
+- `src/services/atsService.js` (for `getAnalysisById`)
+- `src/styles/animations.css`
+Phase 2: Resume Builder Frontend Integration (Your Action)
+This section outlines the updates needed for your Resume Builder module components.
+***************************************************************************************************
+
+---------------------------------------------------------------------------------------------------
+
+📋 STEP 11: Update pages/resumeBuilder/Resume.jsx
+Goal: Confirm this is the canonical Resume Builder/Optimizer page, handling both creation and editing of resumes.
+Files to Update: src/pages/resumeBuilder/Resume.jsx
+Issues Addressed: "the details of project are not being stored" (from your project details example, now addressing for resumes), and ensuring seamless integration with MyResumesPage.
+Prompt for AI:
+
+Plaintext
+
+Please provide the complete, corrected content for `src/pages/resumeBuilder/Resume.jsx`.
+
+The component should:
+- Obtain a `resumeId` from `useParams()` if it's in "edit mode" (`/resume/edit/:resumeId`). If `resumeId` is present, fetch the existing resume data from the backend to pre-fill the form.
+- If `resumeId` is NOT present (new resume creation, `/resume/build`), it should initialize with default empty data.
+- The "Optimize Resume & Generate PDF" button should trigger submission:
+    - If `resumeId` is present, it should call the backend's **update** resume API.
+    - If `resumeId` is NOT present, it should call the backend's **create** resume API.
+- After successful optimization/generation, it should trigger the preview modal, and if the resume is saved, navigate to `/resume/my-resumes`.
+- Ensure all other existing functionalities (multi-step form, input handling, custom sections, layout options, saving, downloading, error handling) are intact.
+
+**Reference files needed (context):**
+- `src/config/index.js` (for `SummaryApi.resumes` endpoints)
+- `src/context/ThemeContext.jsx`
+- `src/components/common/Button.jsx`
+- `src/components/common/Card.jsx`
+- `src/components/common/Form.jsx` (with all its sub-components)
+- `src/components/common/Modal.jsx`
+- `src/components/common/Loader.jsx`
+- `src/services/resumeService.jsx` (for `generateResume`, `saveResume`, `downloadResume`)
+- `src/styles/pages/ResumeOptimizer.css` (for specific styling)
+***************************************************************************************************
+
+---------------------------------------------------------------------------------------------------
+
+
+********************************************************************************************************************************************************************************
+Phase 3: Final Backend API Confirmations (Your Action - Backend Dev Prompt)
+Now that the frontend strategy is solidified, here's the final, precise prompt structure to provide to your backend developer. This incorporates all our discussions, clarifies endpoints, and outlines exact responsibilities.
+
+Markdown
+
+Hello [Backend Developer's Name],
+
+The frontend development of the ATS Optimizer and Resume Builder modules has reached its final integration phase. We've ensured a clear, intuitive user experience based on the backend APIs.
+
+This document serves as the **definitive and precise outline of API endpoints** required to make these frontend features fully functional and production-ready. Please review this carefully, as the frontend components are now structured to interact with these exact specifications.
+
+---
+
+### **1. Core User & Authentication APIs (Status: CONFIRMED)**
+
+These are foundational.
+
+* `POST /api/auth/signup`
+* `POST /api/auth/login`
+* `GET /api/user-details`
+* `GET /api/auth/logout`
+* `POST /api/auth/google` (for Google OAuth)
+* `POST /api/auth/github` (for GitHub OAuth)
+* `POST /api/profile-image` (User profile image upload)
+* `DELETE /api/profile-image` (Delete user profile image)
+
+---
+
+### **2. Resume Builder APIs (Status: FINALIZED REQUIREMENTS)**
+
+These endpoints support the complete lifecycle of creating, managing, and listing user resumes.
+
+* **`GET /api/resumes`**
+    * **Purpose**: Fetch **all resumes** saved by the logged-in user.
+    * **Authentication**: Protected.
+    * **Frontend Usage**: `pages/resume/MyResumesPage.jsx`
+    * **Response**: `[{ _id: "string", title: "string", last_updated: "ISO date string", status: "string (e.g., 'Draft', 'Optimized', 'Published')", preview_url: "string (URL to a PDF or image preview)" }]`
+* **`GET /api/resumes/:resumeId`**
+    * **Purpose**: Fetch a **specific resume by ID** (for editing/viewing in the builder).
+    * **Authentication**: Protected.
+    * **Frontend Usage**: `pages/resumeBuilder/Resume.jsx`
+    * **Response**: `{ _id, userId, name, email, phone, linkedin, github, portfolio, target_profession, education: [{...}], experiences: [{...}], projects: [{...}], skills: [{...}], achievements: [{...}], coding_profiles: [{...}], layoutOptions: {...}, template: {...}, ... }` (This should return the **full JSON data representing the resume document structure**, exactly as it's saved/expected by the `ResumeOptimizer` form.)
+* **`POST /api/resumes`**
+    * **Purpose**: Create a new resume.
+    * **Authentication**: Protected.
+    * **Frontend Usage**: `pages/resumeBuilder/Resume.jsx`
+    * **Request**: JSON body. Example: `{ title: "My First Resume", data: { basicInfo: { name: "...", email: "..." }, selectedItems: { projects: [], skills: [] }, layoutOptions: {}, customSections: [] }, templateId: "string (optional)", previewUrl: "string (optional)" }`
+    * **Response**: `{ _id: "string", message: "Resume created successfully" }`
+* **`PUT /api/resumes/:resumeId`**
+    * **Purpose**: Update an existing resume by ID.
+    * **Authentication**: Protected.
+    * **Frontend Usage**: `pages/resumeBuilder/Resume.jsx`
+    * **Request**: JSON body with updated resume data (same structure as `POST /api/resumes`).
+    * **Response**: `{ message: "Resume updated successfully" }`
+* **`DELETE /api/resumes/:resumeId`**
+    * **Purpose**: Delete a resume by ID.
+    * **Authentication**: Protected.
+    * **Frontend Usage**: `pages/resume/MyResumesPage.jsx`
+    * **Response**: `{ message: "Resume deleted successfully" }`
+* **`GET /api/default-resume`**: Provide a default empty resume structure (Already implemented, confirm it returns a full initial state for `ResumeOptimizer`).
+
+---
+
+### **4. ATS Optimizer APIs (Status: FINALIZED REQUIREMENTS)**
+
+These APIs power the resume analysis and optimization features.
+
+* **`POST /api/ats/analyze`**
+    * **Purpose**: Upload resume (file) and job description (text) for analysis.
+    * **Authentication**: Protected.
+    * **Frontend Usage**: `pages/ats/AtsTracker.jsx`
+    * **Request**: `multipart/form-data`. Fields: `resume` (File), `jobDescription` (String).
+    * **Response**: `{ analysisId: "string (UUID or ObjectId)", message: "Analysis initiated" }`
+* **`GET /api/ats/analysis/:analysisId`**
+    * **Purpose**: Fetch **detailed** analysis results for a specific report ID.
+    * **Authentication**: Protected.
+    * **Frontend Usage**: `pages/ats/AnalysisView.jsx`
+    * **Response**: `{ overall_score: number, jobTitle: "string", resumeName: "string (from analyzed resume)", detailed_scores: { format: number, keywords: number, skills: number, experience: number }, format: { isCompatible: boolean, type: "string (e.g., PDF)", issues: ["string"], recommendations: ["string"] }, matchedKeywords: [{ text: "string", found: true, importance: number }], missingKeywords: [{ text: "string", found: false, importance: number }], improvementSuggestions: [{ text: "string", example: "string" }], analysis_method: "string (e.g., 'Upload', 'Text-Paste')", analysis_timestamp: "ISO date string", word_count: number }`
+* **`GET /api/ats/history`**
+    * **Purpose**: Fetch a summary list of all past analyses for the logged-in user.
+    * **Authentication**: Protected.
+    * **Frontend Usage**: `pages/ats/AtsHistoryPage.jsx`
+    * **Response**: `[{ _id: "string", jobTitle: "string", overall_score: number, analysis_timestamp: "ISO date string" }]`
+* **`DELETE /api/ats/analysis/:analysisId`**
+    * **Purpose**: Delete an analysis report by ID.
+    * **Authentication**: Protected.
+    * **Frontend Usage**: `pages/ats/AtsHistoryPage.jsx`
+    * **Response**: `{ message: "Analysis deleted successfully" }`
+* **`GET /api/ats/keywords`**: (For a standalone keyword tool).
+
+---
+
+### **5. Portfolio Management APIs (Status: CONFIRMED & REFINED)**
+
+These cover all aspects of a user's digital portfolio.
+
+### A. Portfolio Core Details:
+* `GET /api/portfolio/portfolio-details`
+    * **Purpose**: Fetch the logged-in user's portfolio details.
+    * **Authentication**: Protected.
+    * **Frontend Usage**: `pages/portfolio/PortfolioHome.jsx`, `pages/portfolio/ProfileSettingsPage.jsx`
+    * **Response**: `{ bio: "string", jobTitle: "string", location: "string", yearsOfExperience: number, availability: "string", socialLinks: { github: "url", linkedin: "url", twitter: "url", instagram: "url", facebook: "url", website: "url" }, email: "string (from user model if available)", phone: "string (from user model if available)" }`
+* **`PUT /api/portfolio/portfolio-details`**
+    * **Purpose**: Update the logged-in user's portfolio details.
+    * **Authentication**: Protected.
+    * **Frontend Usage**: `pages/portfolio/PortfolioDetailsForm.jsx` (via `ProfileSettingsPage`)
+    * **Request**: JSON body with updated portfolio details.
+    * **Response**: `{ success: true, data: { ...updated_details } }`
+* **`GET /api/portfolio/public/:username`**
+    * **Purpose**: Fetch **all public portfolio data** for a given username.
+    * **Authentication**: **UNAUTHENTICATED (Publicly accessible).**
+    * **Frontend Usage**: `pages/portfolio/PublicPortfolio.jsx`
+    * **Response**: `{ displayName: "string", jobTitle: "string", location: "string", bio: "string", profileImage: { url: "url", public_id: "string" }, socialLinks: { github: "url", linkedin: "url", twitter: "url", instagram: "url", facebook: "url", website: "url", email: "string (user's public email)", phone: "string (user's public phone)" }, skills: [{ category: "string", skills: ["string"] }], projects: [{ _id: "string", title: "string", description: "string", image: { url: "url" }, link: "url", technologies: ["string"], status: "string", progress: number, isPinned: boolean, tasks: [{ title: string, completed: boolean }] }], certificates: [{ _id: "string", name: "string", issuer: "string", issueDate: "ISO date string", credentialUrl: "url", image: { url: "url" }, skills: ["string"] }], experiences: [{ _id: "string", company: "string", position: "string", startDate: "ISO date string", endDate: "ISO date string", isCurrent: boolean, description: "string", skills: ["string"], companyLogo: { url: "url", public_id: "string" }, location: "string", employmentType: "string" }] }`
+
+### B. Skills Management:
+* **`POST /api/skills/manage`**: Create a new skill (Protected).
+* **`GET /api/skills/manage`**: Get all skills for a user (Protected).
+* **`PUT /api/skills/manage/:id`**: Update a skill (Protected).
+* **`DELETE /api/skills/manage/:id`**: Delete a skill (Protected).
+* **`PUT /api/skills/reorder`**: Reorder skills (Protected).
+
+### C. Project Management:
+* **`GET /api/projects`**: Get all projects (Protected, supports `status` and `isPinned` query params).
+* **`GET /api/projects/counts`**: Get project counts (Protected).
+* **`GET /api/projects/:id`**: Get single project (Protected).
+* **`POST /api/projects`**: Add a new project (Protected, `multipart/form-data` with `image`).
+* **`PUT /api/projects/:id`**: Update project (Protected, `multipart/form-data` with `image`).
+* **`DELETE /api/projects/:id`**: Delete project (Protected).
+
+### D. Certificates Management:
+* **`GET /api/certificates`**: Get all certificates (Protected).
+* **`POST /api/certificates`**: Add new certificate (Protected, `multipart/form-data` with `image`).
+* **`PUT /api/certificates/:id`**: Update certificate (Protected, `multipart/form-data` with `image`).
+* **`DELETE /api/certificates/:id`**: Delete certificate (Protected).
+* **`GET /api/certificates/count`**: Get certificate count (Protected).
+
+### E. Experience Management:
+* **`GET /api/experiences`**: Get all experiences (Protected).
+* **`POST /api/experiences`**: Add new experience (Protected, `multipart/form-data` with `companyLogo`).
+* **`PUT /api/experiences/:id`**: Update experience (Protected, `multipart/form-data` with `companyLogo`).
+* **`DELETE /api/experiences/:id`**: Delete experience (Protected).
+* **`GET /api/experiences/total`**: Get total experience (Protected).
+
+---
+
+### **6. Team Collaboration APIs (If proceeding with this feature)**
+
+* (As outlined in previous response, assuming these are placeholders for now.)
+
+---
+
+********************************************************************************************************************************************************************************
 
 Phase 3: Backend Developer API Structure (Instructions for Your Backend Developer)
 Once you complete all frontend updates, send your backend developer the following revised prompt. It integrates the structure of the routes you provided with the functionalities we've confirmed and new needs.
