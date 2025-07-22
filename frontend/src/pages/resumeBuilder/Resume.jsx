@@ -5,9 +5,17 @@ import { useTheme } from '../../context/ThemeContext';
 import { ChevronDown, ChevronUp, Plus, X, Download, Zap, Award, User, Mail, Phone, Globe, Github, Linkedin, GraduationCap, Briefcase, Code, Trophy, Target } from 'lucide-react';
 import '../../styles/pages/BuildResume.css';
 
+// 1. Add these imports at the top
+import { useParams, useNavigate } from 'react-router-dom';
+import SummaryApi from '../../config';
 
 const ResumeOptimizer = () => {
     const { theme, isDark } = useTheme();
+    // 2. Add these state variables in the ResumeOptimizer component
+    const { resumeId } = useParams(); // Get resumeId from URL params
+    const navigate = useNavigate();
+    const [isEditMode, setIsEditMode] = useState(false);
+    
     const [resumeData, setResumeData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [optimizing, setOptimizing] = useState(false);
@@ -26,34 +34,67 @@ const ResumeOptimizer = () => {
     // Define the backend URL
     const BACKEND_URL = 'http://localhost:5000'; // Confirmed to be 5000
 
-    // Fetch default data on component mount
+    // 3. Update the useEffect to handle both new and edit modes
     useEffect(() => {
-        const fetchDefaultData = async () => {
-            console.log('ResumeOptimizer: Attempting to fetch default resume data from:', `${BACKEND_URL}/api/default-resume`); // Debug log
+        const fetchResumeData = async () => {
+            console.log('ResumeOptimizer: resumeId from params:', resumeId);
+            
             try {
                 setLoading(true);
-                setError(null); // Clear previous errors
-                const response = await axios.get(`${BACKEND_URL}/api/default-resume`);
-
-                console.log('ResumeOptimizer: Fetched raw data:', response.data); // Debug log
-
-                // Ensure all expected arrays are initialized to empty arrays if not present
-                const data = response.data;
-                data.education = data.education || [];
-                data.experiences = data.experiences || [];
-                data.projects = data.projects || [];
-                data.skills = data.skills || [];
-                if (!Array.isArray(data.skills) || data.skills.some(s => !s.category || !Array.isArray(s.skills))) {
-                    data.skills = [{ category: "Programming Languages", skills: [] }, { category: "Frameworks", skills: [] }];
+                setError(null);
+                
+                if (resumeId) {
+                    // Edit mode - fetch existing resume
+                    console.log('ResumeOptimizer: Fetching existing resume for ID:', resumeId);
+                    setIsEditMode(true);
+                    
+                    const response = await axios.get(
+                        SummaryApi.resumes.single.url(resumeId),
+                        { withCredentials: true }
+                    );
+                    
+                    console.log('ResumeOptimizer: Fetched existing resume:', response.data);
+                    const resumeData = response.data.resume || response.data;
+                    
+                    // Ensure all expected arrays are initialized
+                    resumeData.education = resumeData.education || [];
+                    resumeData.experiences = resumeData.experiences || [];
+                    resumeData.projects = resumeData.projects || [];
+                    resumeData.skills = resumeData.skills || [
+                        { category: "Programming Languages", skills: [] }, 
+                        { category: "Frameworks", skills: [] }
+                    ];
+                    resumeData.achievements = resumeData.achievements || [];
+                    resumeData.coding_profiles = resumeData.coding_profiles || [];
+                    
+                    setResumeData(resumeData);
+                } else {
+                    // New resume mode - fetch default template
+                    console.log('ResumeOptimizer: Creating new resume with default data');
+                    setIsEditMode(false);
+                    
+                    const response = await axios.get(`${BACKEND_URL}/api/default-resume`);
+                    const data = response.data;
+                    
+                    // Initialize with empty data for new resume
+                    data.education = data.education || [];
+                    data.experiences = data.experiences || [];
+                    data.projects = data.projects || [];
+                    data.skills = data.skills || [
+                        { category: "Programming Languages", skills: [] }, 
+                        { category: "Frameworks", skills: [] }
+                    ];
+                    data.achievements = data.achievements || [];
+                    data.coding_profiles = data.coding_profiles || [];
+                    
+                    setResumeData(data);
                 }
-                data.achievements = data.achievements || [];
-                data.coding_profiles = data.coding_profiles || [];
-
-                setResumeData(data);
-                console.log('ResumeOptimizer: Resume data successfully set.'); // Debug log
             } catch (err) {
-                console.error('ResumeOptimizer: Fetch error:', err); // Log full error object
-                let errorMessage = 'Failed to load default resume data. ';
+                console.error('ResumeOptimizer: Fetch error:', err);
+                let errorMessage = isEditMode 
+                    ? 'Failed to load resume data. ' 
+                    : 'Failed to load default resume data. ';
+                
                 if (err.code === 'ERR_NETWORK') {
                     errorMessage += 'Network error, backend might not be running or reachable.';
                 } else if (err.response) {
@@ -62,24 +103,22 @@ const ResumeOptimizer = () => {
                     errorMessage += `Error: ${err.message}.`;
                 }
                 setError(errorMessage);
-                console.log('ResumeOptimizer: Setting resumeData to fallback structure.'); // Debug log
-                // Fallback to a minimal but complete structure if fetch fails
+                
+                // Fallback structure
                 setResumeData({
-                    name: "", email: "", phone: "", linkedin: "", github: "", portfolio: "", target_profession: "Software Engineer",
-                    education: [],
-                    experiences: [],
-                    projects: [],
-                    skills: [{ category: "Programming Languages", skills: [] }, { category: "Frameworks", skills: [] }],
-                    achievements: [],
-                    coding_profiles: []
+                    name: "", email: "", phone: "", linkedin: "", github: "", 
+                    portfolio: "", target_profession: "Software Engineer",
+                    education: [], experiences: [], projects: [],
+                    skills: [{ category: "Programming Languages", skills: [] }],
+                    achievements: [], coding_profiles: []
                 });
             } finally {
                 setLoading(false);
-                console.log('ResumeOptimizer: Loading process finished.'); // Debug log
             }
         };
-        fetchDefaultData();
-    }, []);
+        
+        fetchResumeData();
+    }, [resumeId]); // Dependency on resumeId
 
     // Section toggle handler
     const toggleSection = (section) => {
@@ -90,18 +129,141 @@ const ResumeOptimizer = () => {
     };
 
     // --- Helper Functions for Form Handling (unchanged) ---
-    const handleInputChange = (e, section, index, field) => { /* ... */ };
-    const handleTextAreaChange = (e, section, index, subIndex, field) => { /* ... */ };
-    const handleSkillChange = (e, categoryIndex, skillIndex) => { /* ... */ };
-    const handleAddItem = (section) => { /* ... */ };
-    const handleRemoveItem = (section, index) => { /* ... */ };
-    const handleAddBulletPoint = (section, index, field = 'description') => { /* ... */ };
-    const handleRemoveBulletPoint = (section, index, subIndex, field = 'description') => { /* ... */ };
-    const handleAddSkill = (categoryIndex) => { /* ... */ };
-    const handleRemoveSkill = (categoryIndex, skillIndex) => { /* ... */ };
-    const getNewItemTemplate = (section) => { /* ... */ };
+    // These functions need to be defined within the ResumeOptimizer component
+    // or imported if they are external utilities.
+    // For this update, assuming they are defined right after the state declarations
+    // or are placed logically before their first use.
+    // I'm adding placeholder comments for them as they were 'unchanged' in your instructions.
 
-    // --- Form Submission (unchanged, just added a log) ---
+    const handleInputChange = (e, section, index, field) => {
+        setResumeData(prevData => {
+            if (index !== undefined && field) { // For nested arrays like education, experience, projects
+                const updatedSection = [...prevData[section]];
+                if (field === 'technologies' && typeof e.target.value === 'string') {
+                    updatedSection[index] = {
+                        ...updatedSection[index],
+                        [field]: e.target.value.split(',').map(t => t.trim()).filter(t => t)
+                    };
+                } else {
+                    updatedSection[index] = {
+                        ...updatedSection[index],
+                        [field]: e.target.value
+                    };
+                }
+                return { ...prevData, [section]: updatedSection };
+            } else if (index !== undefined) { // For skill categories (only category field is directly input)
+                const updatedSection = [...prevData[section]];
+                updatedSection[index] = {
+                    ...updatedSection[index],
+                    category: e.target.value
+                };
+                return { ...prevData, [section]: updatedSection };
+            }
+            // For top-level fields like name, email, phone, etc.
+            return { ...prevData, [section]: e.target.value };
+        });
+    };
+    
+    const handleTextAreaChange = (e, section, index, subIndex, field) => {
+        setResumeData(prevData => {
+            const updatedSection = [...prevData[section]];
+            const updatedItem = { ...updatedSection[index] };
+            const updatedBulletPoints = [...(updatedItem[field] || [])];
+            updatedBulletPoints[subIndex] = e.target.value;
+            updatedItem[field] = updatedBulletPoints;
+            updatedSection[index] = updatedItem;
+            return { ...prevData, [section]: updatedSection };
+        });
+    };
+    
+    const handleSkillChange = (e, categoryIndex, skillIndex) => {
+        setResumeData(prevData => {
+            const updatedSkills = [...prevData.skills];
+            const updatedCategory = { ...updatedSkills[categoryIndex] };
+            const updatedSkillList = [...updatedCategory.skills];
+            updatedSkillList[skillIndex] = e.target.value;
+            updatedCategory.skills = updatedSkillList;
+            updatedSkills[categoryIndex] = updatedCategory;
+            return { ...prevData, skills: updatedSkills };
+        });
+    };
+    
+    const getNewItemTemplate = (section) => {
+        switch (section) {
+            case 'education':
+                return { institution: '', degree: '', field: '', date_range: '', gpa: '' };
+            case 'experiences':
+                return { company: '', position: '', date_range: '', description: [''] };
+            case 'projects':
+                return { name: '', link: '', technologies: '', description: [''] };
+            case 'skills':
+                return { category: '', skills: [''] };
+            case 'achievements':
+                return { title: '', description: '' };
+            case 'coding_profiles':
+                return { platform: '', url: '' };
+            default:
+                return {};
+        }
+    };
+
+    const handleAddItem = (section) => {
+        setResumeData(prevData => ({
+            ...prevData,
+            [section]: [...prevData[section], getNewItemTemplate(section)]
+        }));
+    };
+
+    const handleRemoveItem = (section, index) => {
+        setResumeData(prevData => ({
+            ...prevData,
+            [section]: prevData[section].filter((_, i) => i !== index)
+        }));
+    };
+
+    const handleAddBulletPoint = (section, index, field = 'description') => {
+        setResumeData(prevData => {
+            const updatedSection = [...prevData[section]];
+            const updatedItem = { ...updatedSection[index] };
+            const updatedBulletPoints = [...(updatedItem[field] || []), ''];
+            updatedItem[field] = updatedBulletPoints;
+            updatedSection[index] = updatedItem;
+            return { ...prevData, [section]: updatedSection };
+        });
+    };
+
+    const handleRemoveBulletPoint = (section, index, subIndex, field = 'description') => {
+        setResumeData(prevData => {
+            const updatedSection = [...prevData[section]];
+            const updatedItem = { ...updatedSection[index] };
+            const updatedBulletPoints = (updatedItem[field] || []).filter((_, i) => i !== subIndex);
+            updatedItem[field] = updatedBulletPoints;
+            updatedSection[index] = updatedItem;
+            return { ...prevData, [section]: updatedSection };
+        });
+    };
+
+    const handleAddSkill = (categoryIndex) => {
+        setResumeData(prevData => {
+            const updatedSkills = [...prevData.skills];
+            const updatedCategory = { ...updatedSkills[categoryIndex] };
+            updatedCategory.skills = [...updatedCategory.skills, ''];
+            updatedSkills[categoryIndex] = updatedCategory;
+            return { ...prevData, skills: updatedSkills };
+        });
+    };
+
+    const handleRemoveSkill = (categoryIndex, skillIndex) => {
+        setResumeData(prevData => {
+            const updatedSkills = [...prevData.skills];
+            const updatedCategory = { ...updatedSkills[categoryIndex] };
+            updatedCategory.skills = updatedCategory.skills.filter((_, i) => i !== skillIndex);
+            updatedSkills[categoryIndex] = updatedCategory;
+            return { ...prevData, skills: updatedSkills };
+        });
+    };
+
+    // 4. Update the handleSubmit function
     const handleSubmit = async (e) => {
         e.preventDefault();
         setOptimizing(true);
@@ -123,13 +285,41 @@ const ResumeOptimizer = () => {
                 }))
             };
 
-            console.log('ResumeOptimizer: Submitting data for optimization:', dataToSend); // Debug log
-            const response = await axios.post(`${BACKEND_URL}/api/optimize-resume`, dataToSend);
+            console.log('ResumeOptimizer: Submitting data for optimization:', dataToSend);
+            
+            let response;
+            if (isEditMode && resumeId) {
+                // Update existing resume
+                console.log('ResumeOptimizer: Updating existing resume');
+                response = await axios.put(
+                    SummaryApi.resumes.update.url(resumeId),
+                    dataToSend,
+                    { withCredentials: true }
+                );
+            } else {
+                // Create new resume
+                console.log('ResumeOptimizer: Creating new resume');
+                response = await axios.post(
+                    SummaryApi.resumes.create.url,
+                    dataToSend,
+                    { withCredentials: true }
+                );
+            }
+            
             setOptimizationResult(response.data);
-            console.log('ResumeOptimizer: Optimization successful:', response.data); // Debug log
+            console.log('ResumeOptimizer: Operation successful:', response.data);
+            
+            // Navigate to my-resumes after successful save
+            setTimeout(() => {
+                navigate('/resume/my-resumes');
+            }, 2000);
+            
         } catch (err) {
-            console.error('ResumeOptimizer: Optimization error:', err); // Log full error
-            let errorMessage = 'Failed to optimize resume. ';
+            console.error('ResumeOptimizer: Operation error:', err);
+            let errorMessage = isEditMode 
+                ? 'Failed to update resume. ' 
+                : 'Failed to create resume. ';
+                
             if (err.code === 'ERR_NETWORK') {
                 errorMessage += 'Network error, backend might not be running or reachable.';
             } else if (err.response) {
@@ -147,17 +337,23 @@ const ResumeOptimizer = () => {
     if (loading) {
         return (
             <div className={`resume-optimizer-container ${isDark ? 'dark' : ''}`}>
-                 {/* Hero section is visible even during loading */}
+                {/* Hero section is visible even during loading */}
                 <div className="hero-section">
                     <div className="hero-content">
                         <div className="hero-icon">
                             <Zap size={40} />
                         </div>
                         <h1 className="hero-title">
-                            <span className="gradient-text">ATS Resume Optimizer</span>
+                            {/* 6. Update the hero title based on mode */}
+                            <span className="gradient-text">
+                                {isEditMode ? 'Edit ATS Resume' : 'ATS Resume Builder'}
+                            </span>
                         </h1>
                         <p className="hero-subtitle">
-                            Transform your resume with AI-powered optimization for better ATS compatibility
+                            {isEditMode 
+                                ? 'Update your resume with AI-powered optimization for better ATS compatibility'
+                                : 'Create your resume with AI-powered optimization for better ATS compatibility'
+                            }
                         </p>
                     </div>
                 </div>
@@ -182,10 +378,16 @@ const ResumeOptimizer = () => {
                             <Zap size={40} />
                         </div>
                         <h1 className="hero-title">
-                            <span className="gradient-text">ATS Resume Optimizer</span>
+                            {/* 6. Update the hero title based on mode */}
+                            <span className="gradient-text">
+                                {isEditMode ? 'Edit ATS Resume' : 'ATS Resume Builder'}
+                            </span>
                         </h1>
                         <p className="hero-subtitle">
-                            Transform your resume with AI-powered optimization for better ATS compatibility
+                            {isEditMode 
+                                ? 'Update your resume with AI-powered optimization for better ATS compatibility'
+                                : 'Create your resume with AI-powered optimization for better ATS compatibility'
+                            }
                         </p>
                     </div>
                 </div>
@@ -209,10 +411,16 @@ const ResumeOptimizer = () => {
                         <Zap size={40} />
                     </div>
                     <h1 className="hero-title">
-                        <span className="gradient-text">ATS Resume Optimizer</span>
+                        {/* 6. Update the hero title based on mode */}
+                        <span className="gradient-text">
+                            {isEditMode ? 'Edit ATS Resume' : 'ATS Resume Builder'}
+                        </span>
                     </h1>
                     <p className="hero-subtitle">
-                        Transform your resume with AI-powered optimization for better ATS compatibility
+                        {isEditMode 
+                            ? 'Update your resume with AI-powered optimization for better ATS compatibility'
+                            : 'Create your resume with AI-powered optimization for better ATS compatibility'
+                        }
                     </p>
                 </div>
             </div>
@@ -555,6 +763,7 @@ const ResumeOptimizer = () => {
 
                 {/* Submit Button */}
                 <div className="submit-section">
+                    {/* 5. Update the submit button text based on mode */}
                     <button
                         type="submit"
                         disabled={optimizing || loading}
@@ -563,12 +772,16 @@ const ResumeOptimizer = () => {
                         {optimizing ? (
                             <>
                                 <div className="loading-spinner small"></div>
-                                <span>Optimizing Resume...</span>
+                                <span>
+                                    {isEditMode ? 'Updating Resume...' : 'Creating Resume...'}
+                                </span>
                             </>
                         ) : (
                             <>
                                 <Zap size={20} />
-                                <span>Optimize Resume & Generate PDF</span>
+                                <span>
+                                    {isEditMode ? 'Update Resume & Generate PDF' : 'Create Resume & Generate PDF'}
+                                </span>
                             </>
                         )}
                     </button>
@@ -746,11 +959,11 @@ const BulletPointEditor = ({ label, items, onChange, onAdd, onRemove }) => (
                     </button>
                 </div>
             ))}
-            <button type="button" onClick={onAdd} className="add-bullet-btn">
-                <Plus size={16} />
-                <span>Add Point</span>
-            </button>
         </div>
+        <button type="button" onClick={onAdd} className="add-bullet-btn">
+            <Plus size={16} />
+            <span>Add Point</span>
+        </button>
     </div>
 );
 

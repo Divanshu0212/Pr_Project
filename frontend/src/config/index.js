@@ -138,6 +138,53 @@ const SummaryApi = {
             url: `${backendDomain}/api/experiences/total`,
             method: 'GET'
         }
+    },
+    // ATS Module endpoints
+    ats: {
+        analyze: {
+            url: `${backendDomain}/api/ats/analyze`,
+            method: "POST"
+        },
+        getAnalysis: {
+            url: (id) => `${backendDomain}/api/ats/analysis/${id}`,
+            method: "GET"
+        },
+        getAllAnalyses: {
+            url: `${backendDomain}/api/ats/analyses`,
+            method: "GET"
+        },
+        deleteAnalysis: {
+            url: (id) => `${backendDomain}/api/ats/analysis/${id}`,
+            method: "DELETE"
+        },
+        updateAnalysis: {
+            url: (id) => `${backendDomain}/api/ats/analysis/${id}`,
+            method: "PUT"
+        }
+    },
+    // Added resumes module
+    resumes: {
+        create: {
+            url: `${backendDomain}/api/resumes`,
+            method: "POST"
+        },
+        single: {
+            url: (id) => `${backendDomain}/api/resumes/${id}`,
+            method: "GET"
+        },
+        update: {
+            url: (id) => `${backendDomain}/api/resumes/${id}`,
+            method: "PUT"
+        },
+        // Optionally, you might want a get all and delete endpoint for resumes too:
+        getAll: {
+            url: `${backendDomain}/api/resumes`,
+            method: "GET"
+        },
+        delete: {
+            url: (id) => `${backendDomain}/api/resumes/${id}`,
+            method: "DELETE"
+        }
     }
 };
 
