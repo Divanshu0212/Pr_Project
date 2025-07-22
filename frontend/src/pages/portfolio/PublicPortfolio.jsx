@@ -5,7 +5,8 @@ import { useQuery } from 'react-query';
 import { FaGithub, FaLinkedin, FaTwitter, FaInstagram, FaFacebook, FaGlobe, FaEnvelope, FaExternalLinkAlt } from 'react-icons/fa';
 import { MdLocationOn, MdWork, MdEmail, MdPhone } from 'react-icons/md';
 import { useTheme } from '../../context/ThemeContext';
-import SummaryApi from '../../config';
+// import SummaryApi from '../../config'; // No longer directly importing SummaryApi here
+import portfolioService from '../../services/portfolioService'; // Import the new service
 import '../../styles/pages/PublicPortfolio.css'; // Import the CSS file
 
 const PublicPortfolio = () => {
@@ -16,21 +17,7 @@ const PublicPortfolio = () => {
     // Fetch public portfolio data for the given username
     const { data: publicPortfolioData, isLoading, isError, error } = useQuery(
         ['publicPortfolio', username],
-        async () => {
-            if (!username) {
-                throw new Error("Username not provided in URL.");
-            }
-            // This endpoint must be publicly accessible (no token needed)
-            const response = await fetch(SummaryApi.portfolio.public.url(username), {
-                method: SummaryApi.portfolio.public.method
-            });
-
-            if (!response.ok) {
-                const errorBody = await response.json().catch(() => ({}));
-                throw new Error(errorBody.message || 'Portfolio not found');
-            }
-            return response.json();
-        },
+        () => portfolioService.getPublicPortfolioByUsername(username), // Use the service function here
         {
             retry: false,
             refetchOnWindowFocus: false
@@ -54,8 +41,8 @@ const PublicPortfolio = () => {
                 <div className={`text-center p-8 rounded-lg shadow-lg max-w-md ${isDark ? 'bg-gray-800' : 'bg-white'}`}>
                     <h2 className="text-2xl font-bold mb-4">Portfolio Not Found</h2>
                     <p className="mb-6 text-gray-600">{error?.message || `The portfolio for "${username}" could not be found.`}</p>
-                    <Link 
-                        to="/" 
+                    <Link
+                        to="/"
                         className={`inline-block px-6 py-3 rounded-lg font-medium transition-all duration-300 ${isDark ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
                     >
                         Go to Homepage
@@ -95,16 +82,16 @@ const PublicPortfolio = () => {
                                 className="profile-image"
                             />
                         </div>
-                        
+
                         <div className="profile-info">
                             <h1 className="profile-name">
-                                {user?.displayName || portfolioDetails?.displayName || 'Portfolio User'}
+                                {portfolioDetails?.displayName || user?.displayName || 'Portfolio User'} {/* Prioritize portfolioDetails.displayName */}
                             </h1>
-                            
+
                             {portfolioDetails?.jobTitle && (
                                 <p className="job-title">{portfolioDetails.jobTitle}</p>
                             )}
-                            
+
                             <div className="profile-meta">
                                 {portfolioDetails?.location && (
                                     <span className="meta-item">
@@ -195,8 +182,8 @@ const PublicPortfolio = () => {
                             {projects.map((project) => (
                                 <div key={project._id} className="project-card">
                                     {project.image?.url && (
-                                        <img 
-                                            src={project.image.url} 
+                                        <img
+                                            src={project.image.url}
                                             alt={project.title}
                                             className="project-image"
                                         />
@@ -204,7 +191,7 @@ const PublicPortfolio = () => {
                                     <div className="project-content">
                                         <h3 className="project-title">{project.title}</h3>
                                         <p className="project-description">{project.description}</p>
-                                        
+
                                         {project.technologies && project.technologies.length > 0 && (
                                             <div className="project-technologies">
                                                 {project.technologies.map((tech, index) => (
@@ -212,12 +199,12 @@ const PublicPortfolio = () => {
                                                 ))}
                                             </div>
                                         )}
-                                        
+
                                         <div className="project-links">
                                             {project.liveUrl && (
-                                                <a 
-                                                    href={project.liveUrl} 
-                                                    target="_blank" 
+                                                <a
+                                                    href={project.liveUrl}
+                                                    target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="project-link live"
                                                 >
@@ -225,9 +212,9 @@ const PublicPortfolio = () => {
                                                 </a>
                                             )}
                                             {project.githubUrl && (
-                                                <a 
-                                                    href={project.githubUrl} 
-                                                    target="_blank" 
+                                                <a
+                                                    href={project.githubUrl}
+                                                    target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="project-link github"
                                                 >
@@ -260,9 +247,9 @@ const PublicPortfolio = () => {
                                         <p className="certificate-description">{certificate.description}</p>
                                     )}
                                     {certificate.credentialUrl && (
-                                        <a 
-                                            href={certificate.credentialUrl} 
-                                            target="_blank" 
+                                        <a
+                                            href={certificate.credentialUrl}
+                                            target="_blank"
                                             rel="noopener noreferrer"
                                             className="certificate-link"
                                         >
@@ -286,7 +273,7 @@ const PublicPortfolio = () => {
                                         <h3 className="experience-position">{experience.position}</h3>
                                         <h4 className="experience-company">{experience.company}</h4>
                                         <div className="experience-duration">
-                                            {new Date(experience.startDate).toLocaleDateString()} - 
+                                            {new Date(experience.startDate).toLocaleDateString()} -
                                             {experience.endDate ? new Date(experience.endDate).toLocaleDateString() : 'Present'}
                                         </div>
                                         {experience.description && (
@@ -308,11 +295,17 @@ const PublicPortfolio = () => {
 
                 {/* Footer */}
                 <div className="portfolio-footer">
-                    <p>© {new Date().getFullYear()} {user?.displayName || username}. All rights reserved.</p>
+                    <p>© {new Date().getFullYear()} {portfolioDetails?.displayName || username}. All rights reserved.</p>
                 </div>
             </div>
         </div>
     );
+};
+
+// PropTypes (Optional but Recommended)
+PublicPortfolio.propTypes = {
+    // No props passed directly to PublicPortfolio from its parent route currently,
+    // but if it were to receive props in the future, define them here.
 };
 
 export default PublicPortfolio;

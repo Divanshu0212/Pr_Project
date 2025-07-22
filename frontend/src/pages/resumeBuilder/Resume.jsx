@@ -1,26 +1,177 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import PropTypes from 'prop-types'; // Import PropTypes
+import PropTypes from 'prop-types';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { ChevronDown, ChevronUp, Plus, X, Download, Zap, Award, User, Mail, Phone, Globe, Github, Linkedin, GraduationCap, Briefcase, Code, Trophy, Target } from 'lucide-react';
 import '../../styles/pages/BuildResume.css';
+import SummaryApi from '../../config'; // Make sure SummaryApi is correctly configured
 
-// 1. Add these imports at the top
-import { useParams, useNavigate } from 'react-router-dom';
-import SummaryApi from '../../config';
+// --- Auxiliary Components (Moved outside ResumeOptimizer for clarity and best practice) ---
+
+const Section = ({ title, subtitle, icon, children, isExpanded, onToggle, onAdd, addLabel, required }) => {
+    const { isDark } = useTheme();
+    return (
+        <div className={`form-section slide-in ${isDark ? 'dark-section' : ''}`}>
+            <div className="section-header" onClick={onToggle}>
+                <div className="section-title-group">
+                    <div className="section-icon">{icon}</div>
+                    <div>
+                        <h2 className="section-title">
+                            {title} {subtitle && <span className="section-subtitle">{subtitle}</span>}
+                            {required && <span className="required-indicator">*</span>}
+                        </h2>
+                    </div>
+                </div>
+                <div className="section-actions">
+                    {onAdd && (
+                        <button type="button" onClick={(e) => { e.stopPropagation(); onAdd(); }} className="add-btn">
+                            <Plus size={16} />
+                            <span>{addLabel}</span>
+                        </button>
+                    )}
+                    <button type="button" className="expand-btn">
+                        {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    </button>
+                </div>
+            </div>
+            {isExpanded && <div className="section-content">{children}</div>}
+        </div>
+    );
+};
+
+Section.propTypes = {
+    title: PropTypes.string.isRequired,
+    subtitle: PropTypes.string,
+    icon: PropTypes.element,
+    children: PropTypes.node,
+    isExpanded: PropTypes.bool.isRequired,
+    onToggle: PropTypes.func.isRequired,
+    onAdd: PropTypes.func, // Optional prop
+    addLabel: PropTypes.string,
+    required: PropTypes.bool,
+};
+
+const FormCard = ({ children, onRemove }) => {
+    const { isDark } = useTheme();
+    return (
+        <div className={`form-card ${isDark ? 'dark-card' : ''}`}>
+            <button type="button" onClick={onRemove} className="remove-card-btn">
+                <X size={18} />
+            </button>
+            {children}
+        </div>
+    );
+};
+
+FormCard.propTypes = {
+    children: PropTypes.node,
+    onRemove: PropTypes.func.isRequired,
+};
+
+const InputField = ({ label, type = 'text', value, onChange, required = false, placeholder = '', className = '', icon }) => {
+    const { isDark } = useTheme();
+    return (
+        <div className={`input-wrapper ${className}`}>
+            <label className="form-label">
+                {label}
+                {required && <span className="required-indicator">*</span>}
+            </label>
+            <div className="input-container">
+                {icon && <div className="input-icon">{icon}</div>}
+                <input
+                    type={type}
+                    value={value}
+                    onChange={onChange}
+                    required={required}
+                    placeholder={placeholder || label}
+                    className={`form-input ${isDark ? 'dark-input' : ''} ${icon ? 'has-icon' : ''}`}
+                />
+            </div>
+        </div>
+    );
+};
+
+InputField.propTypes = {
+    label: PropTypes.string.isRequired,
+    type: PropTypes.string,
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    onChange: PropTypes.func.isRequired,
+    required: PropTypes.bool,
+    placeholder: PropTypes.string,
+    className: PropTypes.string,
+    icon: PropTypes.element,
+};
+
+const BulletPointEditor = ({ label, items, onChange, onAdd, onRemove }) => {
+    const { isDark } = useTheme();
+    return (
+        <div className="bullet-editor">
+            <label className="form-label">{label}</label>
+            <div className="bullet-list">
+                {(items || []).map((item, index) => (
+                    <div key={index} className="bullet-item">
+                        <div className="bullet-dot"></div>
+                        <textarea
+                            value={item}
+                            onChange={(e) => onChange(index, e.target.value)}
+                            className={`bullet-textarea ${isDark ? 'dark-input' : ''}`}
+                            rows="2"
+                            placeholder="Describe your responsibilities and achievements..."
+                            required
+                        />
+                        <button
+                            type="button"
+                            onClick={() => onRemove(index)}
+                            className="bullet-remove-btn"
+                        >
+                            <X size={14} />
+                        </button>
+                    </div>
+                ))}
+                <button type="button" onClick={onAdd} className="add-bullet-btn">
+                    <Plus size={16} />
+                    <span>Add Point</span>
+                </button>
+            </div>
+        </div>
+    );
+};
+
+BulletPointEditor.propTypes = {
+    label: PropTypes.string.isRequired,
+    items: PropTypes.arrayOf(PropTypes.string).isRequired,
+    onChange: PropTypes.func.isRequired,
+    onAdd: PropTypes.func.isRequired,
+    onRemove: PropTypes.func.isRequired,
+};
+
+const EmptyState = ({ message }) => {
+    const { isDark } = useTheme();
+    return (
+        <div className={`empty-state ${isDark ? 'dark-empty-state' : ''}`}>
+            <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>{message}</p>
+        </div>
+    );
+};
+
+EmptyState.propTypes = {
+    message: PropTypes.string.isRequired,
+};
+
+// --- ResumeOptimizer Main Component ---
 
 const ResumeOptimizer = () => {
     const { theme, isDark } = useTheme();
-    // 2. Add these state variables in the ResumeOptimizer component
-    const { resumeId } = useParams(); // Get resumeId from URL params
+    const { resumeId } = useParams();
     const navigate = useNavigate();
     const [isEditMode, setIsEditMode] = useState(false);
-    
+
     const [resumeData, setResumeData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [optimizing, setOptimizing] = useState(false);
     const [optimizationResult, setOptimizationResult] = useState(null);
-    const [error, setError] = useState(null); // Now directly stores the error message
+    const [error, setError] = useState(null);
     const [expandedSections, setExpandedSections] = useState({
         personal: true,
         education: true,
@@ -31,163 +182,150 @@ const ResumeOptimizer = () => {
         coding: false
     });
 
-    // Define the backend URL
     const BACKEND_URL = 'http://localhost:5000'; // Confirmed to be 5000
 
-    // 3. Update the useEffect to handle both new and edit modes
     useEffect(() => {
         const fetchResumeData = async () => {
             console.log('ResumeOptimizer: resumeId from params:', resumeId);
-            
             try {
                 setLoading(true);
                 setError(null);
-                
+
+                let fetchedData;
                 if (resumeId) {
-                    // Edit mode - fetch existing resume
                     console.log('ResumeOptimizer: Fetching existing resume for ID:', resumeId);
                     setIsEditMode(true);
-                    
                     const response = await axios.get(
-                        SummaryApi.resumes.single.url(resumeId),
-                        { withCredentials: true }
+                        SummaryApi.resumes.single.url(resumeId), // Use the specific endpoint for fetching by ID
+                        { withCredentials: true } // Assuming authentication might be needed for existing resumes
                     );
-                    
-                    console.log('ResumeOptimizer: Fetched existing resume:', response.data);
-                    const resumeData = response.data.resume || response.data;
-                    
-                    // Ensure all expected arrays are initialized
-                    resumeData.education = resumeData.education || [];
-                    resumeData.experiences = resumeData.experiences || [];
-                    resumeData.projects = resumeData.projects || [];
-                    resumeData.skills = resumeData.skills || [
-                        { category: "Programming Languages", skills: [] }, 
-                        { category: "Frameworks", skills: [] }
-                    ];
-                    resumeData.achievements = resumeData.achievements || [];
-                    resumeData.coding_profiles = resumeData.coding_profiles || [];
-                    
-                    setResumeData(resumeData);
+                    fetchedData = response.data.resume || response.data; // Adjust based on actual backend response structure
+                    console.log('ResumeOptimizer: Fetched existing resume:', fetchedData);
                 } else {
-                    // New resume mode - fetch default template
                     console.log('ResumeOptimizer: Creating new resume with default data');
                     setIsEditMode(false);
-                    
                     const response = await axios.get(`${BACKEND_URL}/api/default-resume`);
-                    const data = response.data;
-                    
-                    // Initialize with empty data for new resume
-                    data.education = data.education || [];
-                    data.experiences = data.experiences || [];
-                    data.projects = data.projects || [];
-                    data.skills = data.skills || [
-                        { category: "Programming Languages", skills: [] }, 
-                        { category: "Frameworks", skills: [] }
-                    ];
-                    data.achievements = data.achievements || [];
-                    data.coding_profiles = data.coding_profiles || [];
-                    
-                    setResumeData(data);
+                    fetchedData = response.data;
+                    console.log('ResumeOptimizer: Fetched default data:', fetchedData);
                 }
+
+                // Ensure all expected arrays are initialized to empty arrays if not present
+                // This is crucial to prevent errors when trying to map over null/undefined arrays
+                fetchedData.education = fetchedData.education || [];
+                fetchedData.experiences = fetchedData.experiences || [];
+                fetchedData.projects = fetchedData.projects || [];
+                fetchedData.skills = fetchedData.skills || [
+                    { category: "Programming Languages", skills: [] },
+                    { category: "Frameworks", skills: [] }
+                ];
+                fetchedData.achievements = fetchedData.achievements || [];
+                fetchedData.coding_profiles = fetchedData.coding_profiles || [];
+
+                // Correctly initialize technologies within projects if they are strings
+                fetchedData.projects = fetchedData.projects.map(p => ({
+                    ...p,
+                    technologies: typeof p.technologies === 'string'
+                        ? p.technologies.split(',').map(t => t.trim()).filter(t => t)
+                        : (p.technologies || [])
+                }));
+
+
+                setResumeData(fetchedData);
+                console.log('ResumeOptimizer: Resume data successfully set.');
+
             } catch (err) {
                 console.error('ResumeOptimizer: Fetch error:', err);
-                let errorMessage = isEditMode 
-                    ? 'Failed to load resume data. ' 
-                    : 'Failed to load default resume data. ';
-                
+                let errorMessage = `Failed to load ${resumeId ? 'existing resume' : 'default resume data'}. `;
+
                 if (err.code === 'ERR_NETWORK') {
-                    errorMessage += 'Network error, backend might not be running or reachable.';
+                    errorMessage += 'Network error, please ensure the backend is running and reachable.';
                 } else if (err.response) {
                     errorMessage += `Server responded with status ${err.response.status}. Message: ${err.response.data?.message || err.response.data?.error || 'No specific message.'}`;
                 } else {
                     errorMessage += `Error: ${err.message}.`;
                 }
                 setError(errorMessage);
-                
-                // Fallback structure
+
+                // Fallback to a minimal but complete structure even on error, to allow user to start fresh
                 setResumeData({
-                    name: "", email: "", phone: "", linkedin: "", github: "", 
+                    name: "", email: "", phone: "", linkedin: "", github: "",
                     portfolio: "", target_profession: "Software Engineer",
                     education: [], experiences: [], projects: [],
-                    skills: [{ category: "Programming Languages", skills: [] }],
+                    skills: [{ category: "Programming Languages", skills: [] }, { category: "Frameworks", skills: [] }],
                     achievements: [], coding_profiles: []
                 });
             } finally {
                 setLoading(false);
+                console.log('ResumeOptimizer: Loading process finished.');
             }
         };
-        
+
         fetchResumeData();
-    }, [resumeId]); // Dependency on resumeId
+    }, [resumeId, BACKEND_URL, navigate]); // Added navigate and BACKEND_URL to dependencies for completeness
 
-    // Section toggle handler
-    const toggleSection = (section) => {
-        setExpandedSections(prev => ({
-            ...prev,
-            [section]: !prev[section]
-        }));
-    };
-
-    // --- Helper Functions for Form Handling (unchanged) ---
-    // These functions need to be defined within the ResumeOptimizer component
-    // or imported if they are external utilities.
-    // For this update, assuming they are defined right after the state declarations
-    // or are placed logically before their first use.
-    // I'm adding placeholder comments for them as they were 'unchanged' in your instructions.
+    // --- Helper Functions for Form Handling (Ensured they are defined within the component's scope) ---
 
     const handleInputChange = (e, section, index, field) => {
+        const value = e.target ? e.target.value : e; // Handle cases where 'e' is directly the value
         setResumeData(prevData => {
-            if (index !== undefined && field) { // For nested arrays like education, experience, projects
-                const updatedSection = [...prevData[section]];
-                if (field === 'technologies' && typeof e.target.value === 'string') {
+            if (!prevData) return prevData; // Defensive check
+
+            const newData = { ...prevData };
+            if (index === undefined) { // Top-level field (e.g., name, email)
+                newData[section] = value;
+            } else { // Field within an array item (e.g., education, experience, projects, achievements, coding_profiles)
+                const updatedSection = [...(newData[section] || [])];
+                if (field === 'technologies' && typeof value === 'string') {
                     updatedSection[index] = {
                         ...updatedSection[index],
-                        [field]: e.target.value.split(',').map(t => t.trim()).filter(t => t)
+                        [field]: value.split(',').map(t => t.trim()).filter(t => t)
                     };
                 } else {
                     updatedSection[index] = {
                         ...updatedSection[index],
-                        [field]: e.target.value
+                        [field]: value
                     };
                 }
-                return { ...prevData, [section]: updatedSection };
-            } else if (index !== undefined) { // For skill categories (only category field is directly input)
-                const updatedSection = [...prevData[section]];
-                updatedSection[index] = {
-                    ...updatedSection[index],
-                    category: e.target.value
-                };
-                return { ...prevData, [section]: updatedSection };
+                newData[section] = updatedSection;
             }
-            // For top-level fields like name, email, phone, etc.
-            return { ...prevData, [section]: e.target.value };
+            return newData;
         });
     };
-    
+
     const handleTextAreaChange = (e, section, index, subIndex, field) => {
+        const value = e.target ? e.target.value : e; // Handle cases where 'e' is directly the value
         setResumeData(prevData => {
-            const updatedSection = [...prevData[section]];
+            if (!prevData) return prevData;
+
+            const newData = { ...prevData };
+            const updatedSection = [...(newData[section] || [])];
             const updatedItem = { ...updatedSection[index] };
             const updatedBulletPoints = [...(updatedItem[field] || [])];
-            updatedBulletPoints[subIndex] = e.target.value;
+            updatedBulletPoints[subIndex] = value;
             updatedItem[field] = updatedBulletPoints;
             updatedSection[index] = updatedItem;
-            return { ...prevData, [section]: updatedSection };
+            newData[section] = updatedSection;
+            return newData;
         });
     };
-    
+
     const handleSkillChange = (e, categoryIndex, skillIndex) => {
+        const value = e.target ? e.target.value : e; // Handle cases where 'e' is directly the value
         setResumeData(prevData => {
-            const updatedSkills = [...prevData.skills];
+            if (!prevData) return prevData;
+
+            const newData = { ...prevData };
+            const updatedSkills = [...(newData.skills || [])];
             const updatedCategory = { ...updatedSkills[categoryIndex] };
-            const updatedSkillList = [...updatedCategory.skills];
-            updatedSkillList[skillIndex] = e.target.value;
+            const updatedSkillList = [...(updatedCategory.skills || [])];
+            updatedSkillList[skillIndex] = value;
             updatedCategory.skills = updatedSkillList;
             updatedSkills[categoryIndex] = updatedCategory;
-            return { ...prevData, skills: updatedSkills };
+            newData.skills = updatedSkills;
+            return newData;
         });
     };
-    
+
     const getNewItemTemplate = (section) => {
         switch (section) {
             case 'education':
@@ -208,22 +346,29 @@ const ResumeOptimizer = () => {
     };
 
     const handleAddItem = (section) => {
-        setResumeData(prevData => ({
-            ...prevData,
-            [section]: [...prevData[section], getNewItemTemplate(section)]
-        }));
+        setResumeData(prevData => {
+            if (!prevData) return prevData;
+            return {
+                ...prevData,
+                [section]: [...(prevData[section] || []), getNewItemTemplate(section)]
+            };
+        });
     };
 
     const handleRemoveItem = (section, index) => {
-        setResumeData(prevData => ({
-            ...prevData,
-            [section]: prevData[section].filter((_, i) => i !== index)
-        }));
+        setResumeData(prevData => {
+            if (!prevData) return prevData;
+            return {
+                ...prevData,
+                [section]: (prevData[section] || []).filter((_, i) => i !== index)
+            };
+        });
     };
 
     const handleAddBulletPoint = (section, index, field = 'description') => {
         setResumeData(prevData => {
-            const updatedSection = [...prevData[section]];
+            if (!prevData) return prevData;
+            const updatedSection = [...(prevData[section] || [])];
             const updatedItem = { ...updatedSection[index] };
             const updatedBulletPoints = [...(updatedItem[field] || []), ''];
             updatedItem[field] = updatedBulletPoints;
@@ -234,7 +379,8 @@ const ResumeOptimizer = () => {
 
     const handleRemoveBulletPoint = (section, index, subIndex, field = 'description') => {
         setResumeData(prevData => {
-            const updatedSection = [...prevData[section]];
+            if (!prevData) return prevData;
+            const updatedSection = [...(prevData[section] || [])];
             const updatedItem = { ...updatedSection[index] };
             const updatedBulletPoints = (updatedItem[field] || []).filter((_, i) => i !== subIndex);
             updatedItem[field] = updatedBulletPoints;
@@ -245,9 +391,10 @@ const ResumeOptimizer = () => {
 
     const handleAddSkill = (categoryIndex) => {
         setResumeData(prevData => {
-            const updatedSkills = [...prevData.skills];
+            if (!prevData) return prevData;
+            const updatedSkills = [...(prevData.skills || [])];
             const updatedCategory = { ...updatedSkills[categoryIndex] };
-            updatedCategory.skills = [...updatedCategory.skills, ''];
+            updatedCategory.skills = [...(updatedCategory.skills || []), ''];
             updatedSkills[categoryIndex] = updatedCategory;
             return { ...prevData, skills: updatedSkills };
         });
@@ -255,15 +402,17 @@ const ResumeOptimizer = () => {
 
     const handleRemoveSkill = (categoryIndex, skillIndex) => {
         setResumeData(prevData => {
-            const updatedSkills = [...prevData.skills];
+            if (!prevData) return prevData;
+            const updatedSkills = [...(prevData.skills || [])];
             const updatedCategory = { ...updatedSkills[categoryIndex] };
-            updatedCategory.skills = updatedCategory.skills.filter((_, i) => i !== skillIndex);
+            updatedCategory.skills = (updatedCategory.skills || []).filter((_, i) => i !== skillIndex);
             updatedSkills[categoryIndex] = updatedCategory;
             return { ...prevData, skills: updatedSkills };
         });
     };
 
-    // 4. Update the handleSubmit function
+
+    // --- Form Submission ---
     const handleSubmit = async (e) => {
         e.preventDefault();
         setOptimizing(true);
@@ -277,53 +426,60 @@ const ResumeOptimizer = () => {
 
             const dataToSend = {
                 ...resumeData,
+                // Ensure technologies are consistently arrays of strings, even if input as string
                 projects: resumeData.projects.map(p => ({
                     ...p,
-                    technologies: typeof p.technologies === 'string'
-                        ? p.technologies.split(',').map(t => t.trim()).filter(t => t)
-                        : (p.technologies || [])
+                    technologies: Array.isArray(p.technologies)
+                        ? p.technologies
+                        : (typeof p.technologies === 'string' ? p.technologies.split(',').map(t => t.trim()).filter(t => t) : [])
+                })),
+                // Ensure skills are consistently arrays of objects with category and skills array
+                skills: resumeData.skills.map(s => ({
+                    ...s,
+                    skills: Array.isArray(s.skills) ? s.skills : []
                 }))
             };
 
-            console.log('ResumeOptimizer: Submitting data for optimization:', dataToSend);
-            
+            console.log('ResumeOptimizer: Submitting data:', dataToSend);
+
             let response;
             if (isEditMode && resumeId) {
-                // Update existing resume
-                console.log('ResumeOptimizer: Updating existing resume');
+                console.log('ResumeOptimizer: Updating existing resume with ID:', resumeId);
                 response = await axios.put(
                     SummaryApi.resumes.update.url(resumeId),
                     dataToSend,
                     { withCredentials: true }
                 );
             } else {
-                // Create new resume
-                console.log('ResumeOptimizer: Creating new resume');
+                console.log('ResumeOptimizer: Creating new resume.');
                 response = await axios.post(
                     SummaryApi.resumes.create.url,
                     dataToSend,
                     { withCredentials: true }
                 );
             }
-            
+
             setOptimizationResult(response.data);
             console.log('ResumeOptimizer: Operation successful:', response.data);
-            
-            // Navigate to my-resumes after successful save
+
             setTimeout(() => {
-                navigate('/resume/my-resumes');
+                navigate('/resume/my-resumes'); // Navigate to my-resumes after successful save/update
             }, 2000);
-            
+
         } catch (err) {
             console.error('ResumeOptimizer: Operation error:', err);
-            let errorMessage = isEditMode 
-                ? 'Failed to update resume. ' 
+            let errorMessage = isEditMode
+                ? 'Failed to update resume. '
                 : 'Failed to create resume. ';
-                
-            if (err.code === 'ERR_NETWORK') {
-                errorMessage += 'Network error, backend might not be running or reachable.';
-            } else if (err.response) {
-                errorMessage += `Server responded with status ${err.response.status}. Message: ${err.response.data?.message || err.response.data?.error || 'No specific message.'}`;
+
+            if (axios.isAxiosError(err)) {
+                if (err.code === 'ERR_NETWORK') {
+                    errorMessage += 'Network error, please ensure the backend is running and reachable.';
+                } else if (err.response) {
+                    errorMessage += `Server responded with status ${err.response.status}. Message: ${err.response.data?.message || err.response.data?.error || 'No specific message.'}`;
+                } else {
+                    errorMessage += `Request failed: ${err.message}.`;
+                }
             } else {
                 errorMessage += `Error: ${err.message}.`;
             }
@@ -337,20 +493,18 @@ const ResumeOptimizer = () => {
     if (loading) {
         return (
             <div className={`resume-optimizer-container ${isDark ? 'dark' : ''}`}>
-                {/* Hero section is visible even during loading */}
                 <div className="hero-section">
                     <div className="hero-content">
                         <div className="hero-icon">
                             <Zap size={40} />
                         </div>
                         <h1 className="hero-title">
-                            {/* 6. Update the hero title based on mode */}
                             <span className="gradient-text">
                                 {isEditMode ? 'Edit ATS Resume' : 'ATS Resume Builder'}
                             </span>
                         </h1>
                         <p className="hero-subtitle">
-                            {isEditMode 
+                            {isEditMode
                                 ? 'Update your resume with AI-powered optimization for better ATS compatibility'
                                 : 'Create your resume with AI-powered optimization for better ATS compatibility'
                             }
@@ -365,37 +519,31 @@ const ResumeOptimizer = () => {
         );
     }
 
-    // Render form only when resumeData is available
-    if (!resumeData) {
-        // This state implies loading is false, but resumeData is null.
-        // This means the fetch attempt failed and the error state should contain a message.
+    if (!resumeData) { // This block will now display more prominent errors if initial fetch fails
         return (
             <div className={`resume-optimizer-container ${isDark ? 'dark' : ''}`}>
-                {/* Hero section remains visible */}
                 <div className="hero-section">
                     <div className="hero-content">
                         <div className="hero-icon">
                             <Zap size={40} />
                         </div>
                         <h1 className="hero-title">
-                            {/* 6. Update the hero title based on mode */}
                             <span className="gradient-text">
                                 {isEditMode ? 'Edit ATS Resume' : 'ATS Resume Builder'}
                             </span>
                         </h1>
                         <p className="hero-subtitle">
-                            {isEditMode 
+                            {isEditMode
                                 ? 'Update your resume with AI-powered optimization for better ATS compatibility'
                                 : 'Create your resume with AI-powered optimization for better ATS compatibility'
                             }
                         </p>
                     </div>
                 </div>
-                {/* Display a prominent error message here */}
                 <div className={`error-alert slide-in ${isDark ? 'bg-red-900/30 border-red-700 text-red-300' : 'bg-red-100 border-red-400 text-red-800'}`}>
                     <div className="error-content">
                         <X size={20} />
-                        <span>{error || 'Could not load resume data. Please check connection and try again.'}</span>
+                        <span>{error || 'An unexpected error occurred and resume data could not be loaded.'}</span>
                     </div>
                 </div>
             </div>
@@ -411,13 +559,12 @@ const ResumeOptimizer = () => {
                         <Zap size={40} />
                     </div>
                     <h1 className="hero-title">
-                        {/* 6. Update the hero title based on mode */}
                         <span className="gradient-text">
                             {isEditMode ? 'Edit ATS Resume' : 'ATS Resume Builder'}
                         </span>
                     </h1>
                     <p className="hero-subtitle">
-                        {isEditMode 
+                        {isEditMode
                             ? 'Update your resume with AI-powered optimization for better ATS compatibility'
                             : 'Create your resume with AI-powered optimization for better ATS compatibility'
                         }
@@ -425,8 +572,9 @@ const ResumeOptimizer = () => {
                 </div>
             </div>
 
-            {error && ( // This error refers to submission errors now, or previous errors not caught by the !resumeData block
-                <div className="error-alert slide-in">
+            {/* Error message for submission failures */}
+            {error && !loading && ( // Only show error if not loading and resumeData is present (meaning it's a submission error)
+                <div className={`error-alert slide-in ${isDark ? 'bg-red-900/30 border-red-700 text-red-300' : 'bg-red-100 border-red-400 text-red-800'}`}>
                     <div className="error-content">
                         <X size={20} />
                         <span>{error}</span>
@@ -659,330 +807,141 @@ const ResumeOptimizer = () => {
                                 placeholder="e.g., Programming Languages, Frameworks"
                             />
                             <div className="skills-grid">
-                                {skillCat.skills.map((skill, skillIndex) => (
-                                    <div key={skillIndex} className="skill-input-group">
+                                {(skillCat.skills || []).map((skill, skillIndex) => (
+                                    <div key={skillIndex} className="flex items-center space-x-2">
                                         <input
                                             type="text"
                                             value={skill}
                                             onChange={e => handleSkillChange(e, catIndex, skillIndex)}
-                                            className="skill-input"
-                                            placeholder="Enter a skill"
+                                            className={`input-field flex-grow ${isDark ? 'dark-input' : ''}`}
+                                            placeholder={`Skill ${skillIndex + 1}`}
                                         />
                                         <button
                                             type="button"
                                             onClick={() => handleRemoveSkill(catIndex, skillIndex)}
-                                            className="skill-remove-btn"
+                                            className="remove-button-circle"
+                                            aria-label="Remove skill"
                                         >
-                                            <X size={14} />
+                                            <X size={16} />
                                         </button>
                                     </div>
                                 ))}
-                                <button
-                                    type="button"
-                                    onClick={() => handleAddSkill(catIndex)}
-                                    className="add-skill-btn"
-                                >
-                                    <Plus size={16} />
-                                    <span>Add Skill</span>
-                                </button>
                             </div>
+                            <button
+                                type="button"
+                                onClick={() => handleAddSkill(catIndex)}
+                                className="add-item-button mt-4"
+                            >
+                                <Plus size={16} /> Add Skill
+                            </button>
                         </FormCard>
                     ))}
                     {resumeData.skills.length === 0 && (
-                        <EmptyState message="No skill categories added yet. Click 'Add Skill Category' to organize your skills." />
+                        <EmptyState message="No skill categories added yet. Click 'Add Skill Category' to list your skills." />
                     )}
                 </Section>
 
                 {/* Achievements */}
                 <Section
                     title="Achievements"
-                    subtitle="(Optional)"
                     icon={<Trophy size={20} />}
                     isExpanded={expandedSections.achievements}
                     onToggle={() => toggleSection('achievements')}
                     onAdd={() => handleAddItem('achievements')}
                     addLabel="Add Achievement"
                 >
-                    {resumeData.achievements.map((ach, index) => (
+                    {resumeData.achievements.map((achievement, index) => (
                         <FormCard key={index} onRemove={() => handleRemoveItem('achievements', index)}>
                             <InputField
-                                label="Achievement Title"
-                                value={ach.title}
+                                label="Title"
+                                value={achievement.title}
                                 onChange={e => handleInputChange(e, 'achievements', index, 'title')}
-                                className="mb-4"
+                                required
                             />
-                            <div className="textarea-wrapper">
-                                <label className="form-label">Description</label>
-                                <textarea
-                                    value={ach.description}
+                            <div className="input-group">
+                                <label className={isDark ? 'text-gray-300' : 'text-gray-700'}>Description</label>
+                                <input
+                                    type="text"
+                                    value={achievement.description || ''}
                                     onChange={e => handleInputChange(e, 'achievements', index, 'description')}
-                                    className="form-textarea"
-                                    rows="3"
-                                    placeholder="Describe your achievement..."
+                                    className={`input-field ${isDark ? 'dark-input' : ''}`}
+                                    placeholder="e.g., Awarded 'Employee of the Year' for Q4 2023"
                                 />
                             </div>
                         </FormCard>
                     ))}
                     {resumeData.achievements.length === 0 && (
-                        <EmptyState message="No achievements added yet. Click 'Add Achievement' to showcase your accomplishments." />
+                        <EmptyState message="No achievements added yet. Showcase your accomplishments!" />
                     )}
                 </Section>
 
-                {/* Coding Profiles */}
+                {/* Coding Profiles (Optional) */}
                 <Section
                     title="Coding Profiles"
-                    subtitle="(Optional)"
                     icon={<Code size={20} />}
                     isExpanded={expandedSections.coding}
                     onToggle={() => toggleSection('coding')}
                     onAdd={() => handleAddItem('coding_profiles')}
                     addLabel="Add Profile"
                 >
-                    {resumeData.coding_profiles.map((prof, index) => (
+                    {resumeData.coding_profiles.map((profile, index) => (
                         <FormCard key={index} onRemove={() => handleRemoveItem('coding_profiles', index)}>
                             <div className="form-grid">
                                 <InputField
                                     label="Platform"
-                                    value={prof.platform}
+                                    value={profile.platform}
                                     onChange={e => handleInputChange(e, 'coding_profiles', index, 'platform')}
-                                    placeholder="e.g., LeetCode, CodeChef, HackerRank"
+                                    required
+                                    placeholder="e.g., LeetCode, HackerRank"
                                 />
                                 <InputField
-                                    label="Profile URL"
-                                    value={prof.url}
+                                    label="URL"
+                                    type="url"
+                                    value={profile.url}
                                     onChange={e => handleInputChange(e, 'coding_profiles', index, 'url')}
-                                    icon={<Globe size={16} />}
+                                    required
+                                    placeholder="https://leetcode.com/yourprofile"
                                 />
                             </div>
                         </FormCard>
                     ))}
                     {resumeData.coding_profiles.length === 0 && (
-                        <EmptyState message="No coding profiles added yet. Add your competitive programming profiles to stand out." />
+                        <EmptyState message="No coding profiles added. Add links to your competitive programming or coding challenge profiles." />
                     )}
                 </Section>
 
-                {/* Submit Button */}
-                <div className="submit-section">
-                    {/* 5. Update the submit button text based on mode */}
-                    <button
-                        type="submit"
-                        disabled={optimizing || loading}
-                        className="submit-btn"
-                    >
+                <div className="form-actions">
+                    <button type="submit" className="submit-button" disabled={optimizing}>
                         {optimizing ? (
                             <>
                                 <div className="loading-spinner small"></div>
-                                <span>
-                                    {isEditMode ? 'Updating Resume...' : 'Creating Resume...'}
-                                </span>
+                                {isEditMode ? 'Updating...' : 'Building & Optimizing...'}
                             </>
                         ) : (
                             <>
-                                <Zap size={20} />
-                                <span>
-                                    {isEditMode ? 'Update Resume & Generate PDF' : 'Create Resume & Generate PDF'}
-                                </span>
+                                <Zap size={20} /> {isEditMode ? 'Update Resume' : 'Build & Optimize Resume'}
                             </>
                         )}
                     </button>
+                    {isEditMode && (
+                        <button type="button" className="download-button" onClick={() => console.log("Download PDF functionality to be implemented")}>
+                            <Download size={20} /> Download PDF
+                        </button>
+                    )}
                 </div>
+
+                {optimizationResult && (
+                    <div className="optimization-result slide-in">
+                        <h3 className="result-title">🚀 Resume {isEditMode ? 'Updated' : 'Created'} Successfully!</h3>
+                        <p className="result-message">{optimizationResult.message}</p>
+                        {optimizationResult.resumeId && (
+                            <p className="result-id">Resume ID: {optimizationResult.resumeId}</p>
+                        )}
+                    </div>
+                )}
             </form>
-
-            {/* Optimization Results */}
-            {optimizationResult && (
-                <div className="results-section slide-in">
-                    <div className="results-header">
-                        <div className="results-icon">
-                            <Zap size={32} />
-                        </div>
-                        <h2 className="results-title">
-                            <span className="gradient-text">Optimization Complete!</span>
-                        </h2>
-                    </div>
-
-                    <div className="results-content">
-                        <div className="ats-score-card">
-                            <h3>ATS Compatibility Score</h3>
-                            <div className="score-display">
-                                <span className="score-number">{optimizationResult.ats_score.toFixed(1)}</span>
-                                <span className="score-max">/ 100</span>
-                            </div>
-                            <div className="score-bar">
-                                <div
-                                    className="score-fill"
-                                    style={{ width: `${optimizationResult.ats_score}%` }}
-                                ></div>
-                            </div>
-                        </div>
-
-                        <div className="improvements-card">
-                            <h3>Improvement Suggestions</h3>
-                            <ul className="improvements-list">
-                                {optimizationResult.improvement_notes.map((note, index) => (
-                                    <li key={index} className="improvement-item">
-                                        <div className="improvement-bullet"></div>
-                                        <span>{note}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        <div className="download-card">
-                            <h3>Download Your Optimized Resume</h3>
-                            <a
-                                href={optimizationResult.pdf_url}
-                                download="optimized_resume.pdf"
-                                className="download-btn"
-                            >
-                                <Download size={20} />
-                                <span>Download PDF</span>
-                            </a>
-                            <p className="download-note">
-                                Your optimized resume is ready for download as a PDF file.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
-};
-
-// --- Helper Components with PropTypes ---
-
-const Section = ({ title, subtitle, icon, children, isExpanded, onToggle, onAdd, addLabel, required }) => (
-    <div className="form-section slide-in">
-        <div className="section-header" onClick={onToggle}>
-            <div className="section-title-group">
-                <div className="section-icon">{icon}</div>
-                <div>
-                    <h2 className="section-title">
-                        {title} {subtitle && <span className="section-subtitle">{subtitle}</span>}
-                        {required && <span className="required-indicator">*</span>}
-                    </h2>
-                </div>
-            </div>
-            <div className="section-actions">
-                {onAdd && (
-                    <button type="button" onClick={(e) => { e.stopPropagation(); onAdd(); }} className="add-btn">
-                        <Plus size={16} />
-                        <span>{addLabel}</span>
-                    </button>
-                )}
-                <button type="button" className="expand-btn">
-                    {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                </button>
-            </div>
-        </div>
-        {isExpanded && <div className="section-content">{children}</div>}
-    </div>
-);
-
-Section.propTypes = {
-    title: PropTypes.string.isRequired,
-    subtitle: PropTypes.string,
-    icon: PropTypes.element,
-    children: PropTypes.node,
-    isExpanded: PropTypes.bool.isRequired,
-    onToggle: PropTypes.func.isRequired,
-    onAdd: PropTypes.func, // Optional prop
-    addLabel: PropTypes.string,
-    required: PropTypes.bool,
-};
-
-const FormCard = ({ children, onRemove }) => (
-    <div className="form-card">
-        <button type="button" onClick={onRemove} className="remove-card-btn">
-            <X size={18} />
-        </button>
-        {children}
-    </div>
-);
-
-FormCard.propTypes = {
-    children: PropTypes.node,
-    onRemove: PropTypes.func.isRequired,
-};
-
-const InputField = ({ label, type = 'text', value, onChange, required = false, placeholder = '', className = '', icon }) => (
-    <div className={`input-wrapper ${className}`}>
-        <label className="form-label">
-            {label}
-            {required && <span className="required-indicator">*</span>}
-        </label>
-        <div className="input-container">
-            {icon && <div className="input-icon">{icon}</div>}
-            <input
-                type={type}
-                value={value}
-                onChange={onChange}
-                required={required}
-                placeholder={placeholder || label}
-                className={`form-input ${icon ? 'has-icon' : ''}`}
-            />
-        </div>
-    </div>
-);
-
-InputField.propTypes = {
-    label: PropTypes.string.isRequired,
-    type: PropTypes.string,
-    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-    onChange: PropTypes.func.isRequired,
-    required: PropTypes.bool,
-    placeholder: PropTypes.string,
-    className: PropTypes.string,
-    icon: PropTypes.element,
-};
-
-const BulletPointEditor = ({ label, items, onChange, onAdd, onRemove }) => (
-    <div className="bullet-editor">
-        <label className="form-label">{label}</label>
-        <div className="bullet-list">
-            {(items || []).map((item, index) => ( // Ensure items is an array
-                <div key={index} className="bullet-item">
-                    <div className="bullet-dot"></div>
-                    <textarea
-                        value={item}
-                        onChange={(e) => onChange(index, e.target.value)}
-                        className="bullet-textarea"
-                        rows="2"
-                        placeholder="Describe your responsibilities and achievements..."
-                        required
-                    />
-                    <button
-                        type="button"
-                        onClick={() => onRemove(index)}
-                        className="bullet-remove-btn"
-                    >
-                        <X size={14} />
-                    </button>
-                </div>
-            ))}
-        </div>
-        <button type="button" onClick={onAdd} className="add-bullet-btn">
-            <Plus size={16} />
-            <span>Add Point</span>
-        </button>
-    </div>
-);
-
-BulletPointEditor.propTypes = {
-    label: PropTypes.string.isRequired,
-    items: PropTypes.arrayOf(PropTypes.string).isRequired, // Expects an array of strings
-    onChange: PropTypes.func.isRequired,
-    onAdd: PropTypes.func.isRequired,
-    onRemove: PropTypes.func.isRequired,
-};
-
-const EmptyState = ({ message }) => (
-    <div className="empty-state">
-        <p>{message}</p>
-    </div>
-);
-
-EmptyState.propTypes = {
-    message: PropTypes.string.isRequired,
 };
 
 export default ResumeOptimizer;
