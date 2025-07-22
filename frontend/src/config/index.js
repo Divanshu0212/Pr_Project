@@ -41,6 +41,12 @@ const SummaryApi = {
             method: "put"
         }
     },
+    portfolio: {
+        public: {
+            url: (username) => `${backendDomain}/api/portfolio/public/${username}`,
+            method: "get"
+        }
+    },
     skills: {
         get: {
             url: `${backendDomain}/api/skills/manage`,
@@ -121,11 +127,11 @@ const SummaryApi = {
             method: 'POST'
         },
         update: {
-            url: `${backendDomain}/api/experiences`,
+            url: `${backendDomain}/api/experiences`, // Base URL, ID will be appended
             method: 'PUT'
         },
         delete: {
-            url: `${backendDomain}/api/experiences`,
+            url: `${backendDomain}/api/experiences`, // Base URL, ID will be appended
             method: 'DELETE'
         },
         total: {

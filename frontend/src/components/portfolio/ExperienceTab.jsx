@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaPlus, FaBriefcase } from 'react-icons/fa';
-import { useQuery } from 'react-query';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 import axios from 'axios';
 import SummaryApi from '../../config';
 import ExperienceCard from './ExperienceCard';
@@ -12,49 +12,105 @@ const ExperienceTab = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingExperience, setEditingExperience] = useState(null);
   const { theme } = useTheme();
+  const queryClient = useQueryClient();
 
-  const { data: experiences, isLoading, refetch } = useQuery('experiences', async () => {
-    const token = localStorage.getItem('token');
-    const response = await axios.get(SummaryApi.experiences.get.url, {
-      headers: {
-        'Authorization': `Bearer ${token}`
+  // Get experiences query
+  const { data: experiences, isLoading, error } = useQuery(
+    'experiences', 
+    async () => {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No authentication token found');
+      
+      const response = await axios.get(SummaryApi.experiences.get.url, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data.experiences || response.data.data || [];
+    },
+    {
+      retry: 2,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      onError: (error) => {
+        console.error('Error fetching experiences:', error);
       }
-    });
-    return response.data.experiences;
-  });
+    }
+  );
 
+  // Delete experience mutation
+  const deleteMutation = useMutation(
+    async (experienceId) => {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('No authentication token found');
+      
+      // Construct the delete URL with ID
+      const deleteUrl = `${SummaryApi.experiences.delete.url}/${experienceId}`;
+      
+      const response = await axios.delete(deleteUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      return response.data;
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('experiences');
+        // Show success feedback (optional)
+        console.log('Experience deleted successfully');
+      },
+      onError: (error) => {
+        console.error('Error deleting experience:', error);
+        alert('Failed to delete experience. Please try again.');
+      }
+    }
+  );
+
+  // Handle add new experience
   const handleAddExperience = () => {
     setEditingExperience(null);
     setShowForm(true);
   };
 
+  // Handle edit existing experience
   const handleEditExperience = (experience) => {
     setEditingExperience(experience);
     setShowForm(true);
   };
 
+  // Handle delete experience
   const handleDeleteExperience = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this experience?')) {
+    if (!id) {
+      console.error('No experience ID provided for deletion');
       return;
     }
 
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${SummaryApi.experiences.delete.url}/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      refetch();
-    } catch (error) {
-      console.error('Error deleting experience:', error);
-      alert('Failed to delete experience');
+    const confirmed = window.confirm('Are you sure you want to delete this experience? This action cannot be undone.');
+    
+    if (confirmed) {
+      try {
+        await deleteMutation.mutateAsync(id);
+      } catch (error) {
+        console.error('Delete operation failed:', error);
+      }
     }
   };
 
-  const handleFormSubmit = () => {
-    refetch();
+  // Handle form submission (both add and edit)
+  const handleFormSubmit = (updatedExperience) => {
+    // Invalidate and refetch experiences
+    queryClient.invalidateQueries('experiences');
     setShowForm(false);
+    setEditingExperience(null);
+    
+    // Optional: Show success message
+    console.log('Experience saved successfully:', updatedExperience);
+  };
+
+  // Handle form close
+  const handleFormClose = () => {
+    setShowForm(false);
+    setEditingExperience(null);
   };
 
   const headerClasses = `
@@ -69,6 +125,57 @@ const ExperienceTab = () => {
   const textPrimary = theme === 'dark' ? 'text-[#E5E5E5]' : 'text-gray-900';
   const textSecondary = theme === 'dark' ? 'text-gray-400' : 'text-gray-600';
   const accentText = theme === 'dark' ? 'text-[#00FFFF]' : 'text-blue-600';
+
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <div className="experience-tab animate-fadeIn">
+        <div className="flex flex-col justify-center items-center h-64 animate-fadeIn">
+          <div className={`
+            animate-spin rounded-full h-16 w-16 border-4 border-t-transparent
+            ${theme === 'dark' ? 'border-[#00FFFF]' : 'border-blue-500'}
+          `}></div>
+          <p className={`mt-4 ${textSecondary} animate-pulse`}>
+            Loading your experiences...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle error state
+  if (error) {
+    return (
+      <div className="experience-tab animate-fadeIn">
+        <div className={`
+          rounded-2xl p-8 text-center
+          ${theme === 'dark' 
+            ? 'bg-red-900/20 border border-red-700' 
+            : 'bg-red-50 border border-red-200'
+          }
+        `}>
+          <p className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-red-400' : 'text-red-600'}`}>
+            Failed to load experiences
+          </p>
+          <p className={`${textSecondary} mb-4`}>
+            {error.message || 'Something went wrong while fetching your experiences.'}
+          </p>
+          <button
+            onClick={() => queryClient.invalidateQueries('experiences')}
+            className={`
+              px-6 py-2 rounded-lg font-semibold transition-all duration-300
+              ${theme === 'dark' 
+                ? 'bg-red-600 hover:bg-red-700 text-white' 
+                : 'bg-red-500 hover:bg-red-600 text-white'
+              }
+            `}
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="experience-tab animate-fadeIn">
@@ -105,6 +212,7 @@ const ExperienceTab = () => {
         
         <button
           onClick={handleAddExperience}
+          disabled={deleteMutation.isLoading}
           className={`
             group flex items-center gap-3 px-6 py-3 rounded-xl font-semibold
             transition-all duration-300 transform hover:scale-105
@@ -112,7 +220,8 @@ const ExperienceTab = () => {
               ? 'bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] text-black hover:shadow-2xl hover:shadow-cyan-500/25' 
               : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:shadow-2xl hover:shadow-blue-500/25'
             }
-            animate-pulse-subtle
+            ${deleteMutation.isLoading ? 'opacity-50 cursor-not-allowed' : 'animate-pulse-subtle'}
+            disabled:transform-none disabled:scale-100
           `}
         >
           <FaPlus className="transition-transform duration-300 group-hover:rotate-90" />
@@ -121,17 +230,7 @@ const ExperienceTab = () => {
       </div>
 
       {/* Content Section */}
-      {isLoading ? (
-        <div className="flex flex-col justify-center items-center h-64 animate-fadeIn">
-          <div className={`
-            animate-spin rounded-full h-16 w-16 border-4 border-t-transparent
-            ${theme === 'dark' ? 'border-[#00FFFF]' : 'border-blue-500'}
-          `}></div>
-          <p className={`mt-4 ${textSecondary} animate-pulse`}>
-            Loading your experiences...
-          </p>
-        </div>
-      ) : experiences?.length === 0 ? (
+      {!experiences || experiences.length === 0 ? (
         <div className={`
           empty-state rounded-2xl p-12 text-center
           ${theme === 'dark' 
@@ -191,6 +290,7 @@ const ExperienceTab = () => {
                   className={`
                     w-2 h-2 rounded-full
                     ${theme === 'dark' ? 'bg-[#00FFFF]' : 'bg-blue-500'}
+                    animate-pulse
                   `}
                   style={{ animationDelay: `${index * 0.1}s` }}
                 />
@@ -200,9 +300,9 @@ const ExperienceTab = () => {
 
           {/* Experience Cards */}
           <div className="grid gap-6">
-            {experiences?.map((experience, index) => (
+            {experiences.map((experience, index) => (
               <div 
-                key={experience._id} 
+                key={experience._id || experience.id} 
                 className="animate-fadeInUp"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
@@ -210,6 +310,7 @@ const ExperienceTab = () => {
                   experience={experience}
                   onEdit={handleEditExperience}
                   onDelete={handleDeleteExperience}
+                  isDeleting={deleteMutation.isLoading}
                 />
               </div>
             ))}
@@ -220,10 +321,26 @@ const ExperienceTab = () => {
       {/* Form Modal */}
       {showForm && (
         <ExperienceForm
-          onClose={() => setShowForm(false)}
+          onClose={handleFormClose}
           onSubmit={handleFormSubmit}
           initialData={editingExperience}
         />
+      )}
+
+      {/* Loading overlay when deleting */}
+      {deleteMutation.isLoading && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className={`
+            p-6 rounded-lg flex items-center gap-3
+            ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}
+          `}>
+            <div className={`
+              animate-spin rounded-full h-6 w-6 border-2 border-t-transparent
+              ${theme === 'dark' ? 'border-[#00FFFF]' : 'border-blue-500'}
+            `}></div>
+            <span>Deleting experience...</span>
+          </div>
+        </div>
       )}
     </div>
   );

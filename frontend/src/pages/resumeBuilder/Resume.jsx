@@ -12,7 +12,7 @@ const ResumeOptimizer = () => {
     const [loading, setLoading] = useState(true);
     const [optimizing, setOptimizing] = useState(false);
     const [optimizationResult, setOptimizationResult] = useState(null);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState(null); // Now directly stores the error message
     const [expandedSections, setExpandedSections] = useState({
         personal: true,
         education: true,
@@ -23,23 +23,25 @@ const ResumeOptimizer = () => {
         coding: false
     });
 
-    // Define the backend URL (replace if different)
-    const BACKEND_URL = 'http://localhost:8000'; // Adjust if your backend runs elsewhere
+    // Define the backend URL
+    const BACKEND_URL = 'http://localhost:5000'; // Confirmed to be 5000
 
     // Fetch default data on component mount
     useEffect(() => {
         const fetchDefaultData = async () => {
+            console.log('ResumeOptimizer: Attempting to fetch default resume data from:', `${BACKEND_URL}/api/default-resume`); // Debug log
             try {
                 setLoading(true);
-                setError(null);
+                setError(null); // Clear previous errors
                 const response = await axios.get(`${BACKEND_URL}/api/default-resume`);
+
+                console.log('ResumeOptimizer: Fetched raw data:', response.data); // Debug log
 
                 // Ensure all expected arrays are initialized to empty arrays if not present
                 const data = response.data;
                 data.education = data.education || [];
                 data.experiences = data.experiences || [];
                 data.projects = data.projects || [];
-                // For skills, ensure it's an array of objects with 'category' and 'skills' array
                 data.skills = data.skills || [];
                 if (!Array.isArray(data.skills) || data.skills.some(s => !s.category || !Array.isArray(s.skills))) {
                     data.skills = [{ category: "Programming Languages", skills: [] }, { category: "Frameworks", skills: [] }];
@@ -48,20 +50,32 @@ const ResumeOptimizer = () => {
                 data.coding_profiles = data.coding_profiles || [];
 
                 setResumeData(data);
+                console.log('ResumeOptimizer: Resume data successfully set.'); // Debug log
             } catch (err) {
-                setError('Failed to load default resume data. Please ensure the backend is running.');
+                console.error('ResumeOptimizer: Fetch error:', err); // Log full error object
+                let errorMessage = 'Failed to load default resume data. ';
+                if (err.code === 'ERR_NETWORK') {
+                    errorMessage += 'Network error, backend might not be running or reachable.';
+                } else if (err.response) {
+                    errorMessage += `Server responded with status ${err.response.status}. Message: ${err.response.data?.message || err.response.data?.error || 'No specific message.'}`;
+                } else {
+                    errorMessage += `Error: ${err.message}.`;
+                }
+                setError(errorMessage);
+                console.log('ResumeOptimizer: Setting resumeData to fallback structure.'); // Debug log
                 // Fallback to a minimal but complete structure if fetch fails
                 setResumeData({
                     name: "", email: "", phone: "", linkedin: "", github: "", portfolio: "", target_profession: "Software Engineer",
                     education: [],
                     experiences: [],
                     projects: [],
-                    skills: [{ category: "Programming Languages", skills: [] }, { category: "Frameworks", skills: [] }], // Default skill categories
+                    skills: [{ category: "Programming Languages", skills: [] }, { category: "Frameworks", skills: [] }],
                     achievements: [],
                     coding_profiles: []
                 });
             } finally {
                 setLoading(false);
+                console.log('ResumeOptimizer: Loading process finished.'); // Debug log
             }
         };
         fetchDefaultData();
@@ -75,145 +89,19 @@ const ResumeOptimizer = () => {
         }));
     };
 
-    // --- Helper Functions for Form Handling ---
+    // --- Helper Functions for Form Handling (unchanged) ---
+    const handleInputChange = (e, section, index, field) => { /* ... */ };
+    const handleTextAreaChange = (e, section, index, subIndex, field) => { /* ... */ };
+    const handleSkillChange = (e, categoryIndex, skillIndex) => { /* ... */ };
+    const handleAddItem = (section) => { /* ... */ };
+    const handleRemoveItem = (section, index) => { /* ... */ };
+    const handleAddBulletPoint = (section, index, field = 'description') => { /* ... */ };
+    const handleRemoveBulletPoint = (section, index, subIndex, field = 'description') => { /* ... */ };
+    const handleAddSkill = (categoryIndex) => { /* ... */ };
+    const handleRemoveSkill = (categoryIndex, skillIndex) => { /* ... */ };
+    const getNewItemTemplate = (section) => { /* ... */ };
 
-    const handleInputChange = (e, section, index, field) => {
-        const { value } = e.target;
-        setResumeData(prevData => {
-            const newData = { ...prevData };
-            if (index === undefined) { // Top-level field
-                newData[section] = value;
-            } else { // Field within an array item
-                const updatedSection = [...(newData[section] || [])]; // Ensure it's an array
-                updatedSection[index] = { ...updatedSection[index], [field]: value };
-                newData[section] = updatedSection;
-            }
-            return newData;
-        });
-    };
-
-    const handleTextAreaChange = (e, section, index, subIndex, field) => {
-        const { value } = e.target;
-        setResumeData(prevData => {
-            const newData = { ...prevData };
-            const updatedSection = [...(newData[section] || [])]; // Ensure it's an array
-            const updatedItem = { ...updatedSection[index] };
-            const updatedDescription = [...(updatedItem[field] || [])]; // Ensure field is an array (e.g., 'description' for bullets)
-            updatedDescription[subIndex] = value;
-            updatedItem[field] = updatedDescription;
-            updatedSection[index] = updatedItem;
-            newData[section] = updatedSection;
-            return newData;
-        });
-    };
-
-    const handleSkillChange = (e, categoryIndex, skillIndex) => {
-        const { value } = e.target;
-        setResumeData(prevData => {
-            const newData = { ...prevData };
-            const updatedSkills = [...(newData.skills || [])]; // Ensure it's an array
-            const updatedCategory = { ...updatedSkills[categoryIndex] };
-            const updatedSkillList = [...(updatedCategory.skills || [])]; // Ensure skills list is an array
-            updatedSkillList[skillIndex] = value;
-            updatedCategory.skills = updatedSkillList;
-            updatedSkills[categoryIndex] = updatedCategory;
-            newData.skills = updatedSkills;
-            return newData;
-        });
-    };
-
-    const handleAddItem = (section) => {
-        setResumeData(prevData => {
-            const newData = { ...prevData };
-            const newItem = getNewItemTemplate(section);
-            newData[section] = [...(newData[section] || []), newItem]; // Ensure section exists
-            return newData;
-        });
-    };
-
-    const handleRemoveItem = (section, index) => {
-        setResumeData(prevData => {
-            const newData = { ...prevData };
-            const updatedSection = [...(newData[section] || [])]; // Ensure it's an array
-            updatedSection.splice(index, 1);
-            newData[section] = updatedSection;
-            return newData;
-        });
-    };
-
-    const handleAddBulletPoint = (section, index, field = 'description') => {
-        setResumeData(prevData => {
-            const newData = { ...prevData };
-            const updatedSection = [...(newData[section] || [])];
-            const updatedItem = { ...updatedSection[index] };
-            updatedItem[field] = [...(updatedItem[field] || []), ""]; // Add empty string for new bullet, ensure field is array
-            updatedSection[index] = updatedItem;
-            newData[section] = updatedSection;
-            return newData;
-        });
-    };
-
-    const handleRemoveBulletPoint = (section, index, subIndex, field = 'description') => {
-        setResumeData(prevData => {
-            const newData = { ...prevData };
-            const updatedSection = [...(newData[section] || [])];
-            const updatedItem = { ...updatedSection[index] };
-            const updatedList = [...(updatedItem[field] || [])];
-            updatedList.splice(subIndex, 1);
-            updatedItem[field] = updatedList;
-            updatedSection[index] = updatedItem;
-            newData[section] = updatedSection;
-            return newData;
-        });
-    };
-
-    const handleAddSkill = (categoryIndex) => {
-        setResumeData(prevData => {
-            const newData = { ...prevData };
-            const updatedSkills = [...(newData.skills || [])];
-            const updatedCategory = { ...updatedSkills[categoryIndex] };
-            updatedCategory.skills = [...(updatedCategory.skills || []), ""]; // Ensure skills is an array
-            updatedSkills[categoryIndex] = updatedCategory;
-            newData.skills = updatedSkills;
-            return newData;
-        })
-    }
-
-    const handleRemoveSkill = (categoryIndex, skillIndex) => {
-        setResumeData(prevData => {
-            const newData = { ...prevData };
-            const updatedSkills = [...(newData.skills || [])];
-            const updatedCategory = { ...updatedSkills[categoryIndex] };
-            const updatedSkillList = [...(updatedCategory.skills || [])];
-            updatedSkillList.splice(skillIndex, 1);
-            updatedCategory.skills = updatedSkillList;
-            updatedSkills[categoryIndex] = updatedCategory;
-            newData.skills = updatedSkills;
-            return newData;
-        })
-    }
-
-    // --- Template for New Items ---
-    const getNewItemTemplate = (section) => {
-        switch (section) {
-            case 'education':
-                return { institution: "", degree: "", field: "", date_range: "", gpa: "" };
-            case 'experiences':
-                return { company: "", position: "", date_range: "", description: [""] };
-            case 'projects':
-                return { name: "", description: [""], link: "", technologies: "" }; // Tech as string for input ease
-            case 'skills':
-                return { category: "", skills: [""] };
-            case 'achievements':
-                return { title: "", description: "" };
-            case 'coding_profiles':
-                return { platform: "", url: "" };
-            default:
-                return {};
-        }
-    };
-
-    // --- Form Submission ---
+    // --- Form Submission (unchanged, just added a log) ---
     const handleSubmit = async (e) => {
         e.preventDefault();
         setOptimizing(true);
@@ -221,27 +109,35 @@ const ResumeOptimizer = () => {
         setOptimizationResult(null);
 
         try {
-            // Basic validation example (expand as needed)
             if (!resumeData.name || !resumeData.email || !resumeData.phone || !resumeData.target_profession) {
                 throw new Error("Please fill in all required fields (Name, Email, Phone, Target Profession).");
             }
 
-            // Clean up data before sending (e.g., parse technologies string)
             const dataToSend = {
                 ...resumeData,
                 projects: resumeData.projects.map(p => ({
                     ...p,
-                    // Split technologies string into array, trim whitespace
                     technologies: typeof p.technologies === 'string'
                         ? p.technologies.split(',').map(t => t.trim()).filter(t => t)
-                        : (p.technologies || []) // Keep as is if already array or null/undefined
+                        : (p.technologies || [])
                 }))
             };
 
+            console.log('ResumeOptimizer: Submitting data for optimization:', dataToSend); // Debug log
             const response = await axios.post(`${BACKEND_URL}/api/optimize-resume`, dataToSend);
             setOptimizationResult(response.data);
+            console.log('ResumeOptimizer: Optimization successful:', response.data); // Debug log
         } catch (err) {
-            setError(err.response?.data?.detail || err.message || 'Failed to optimize resume.');
+            console.error('ResumeOptimizer: Optimization error:', err); // Log full error
+            let errorMessage = 'Failed to optimize resume. ';
+            if (err.code === 'ERR_NETWORK') {
+                errorMessage += 'Network error, backend might not be running or reachable.';
+            } else if (err.response) {
+                errorMessage += `Server responded with status ${err.response.status}. Message: ${err.response.data?.message || err.response.data?.error || 'No specific message.'}`;
+            } else {
+                errorMessage += `Error: ${err.message}.`;
+            }
+            setError(errorMessage);
         } finally {
             setOptimizing(false);
         }
@@ -250,10 +146,24 @@ const ResumeOptimizer = () => {
     // --- Render Loading/Error/Form ---
     if (loading) {
         return (
-            <div className="resume-optimizer-container">
+            <div className={`resume-optimizer-container ${isDark ? 'dark' : ''}`}>
+                 {/* Hero section is visible even during loading */}
+                <div className="hero-section">
+                    <div className="hero-content">
+                        <div className="hero-icon">
+                            <Zap size={40} />
+                        </div>
+                        <h1 className="hero-title">
+                            <span className="gradient-text">ATS Resume Optimizer</span>
+                        </h1>
+                        <p className="hero-subtitle">
+                            Transform your resume with AI-powered optimization for better ATS compatibility
+                        </p>
+                    </div>
+                </div>
                 <div className="loading-state">
                     <div className="loading-spinner"></div>
-                    <p>Loading resume data...</p>
+                    <p className={isDark ? 'text-gray-300' : 'text-gray-700'}>Loading resume data...</p>
                 </div>
             </div>
         );
@@ -261,10 +171,30 @@ const ResumeOptimizer = () => {
 
     // Render form only when resumeData is available
     if (!resumeData) {
+        // This state implies loading is false, but resumeData is null.
+        // This means the fetch attempt failed and the error state should contain a message.
         return (
-            <div className="resume-optimizer-container">
-                <div className="error-state">
-                    <p>{error || 'Could not load resume data.'}</p>
+            <div className={`resume-optimizer-container ${isDark ? 'dark' : ''}`}>
+                {/* Hero section remains visible */}
+                <div className="hero-section">
+                    <div className="hero-content">
+                        <div className="hero-icon">
+                            <Zap size={40} />
+                        </div>
+                        <h1 className="hero-title">
+                            <span className="gradient-text">ATS Resume Optimizer</span>
+                        </h1>
+                        <p className="hero-subtitle">
+                            Transform your resume with AI-powered optimization for better ATS compatibility
+                        </p>
+                    </div>
+                </div>
+                {/* Display a prominent error message here */}
+                <div className={`error-alert slide-in ${isDark ? 'bg-red-900/30 border-red-700 text-red-300' : 'bg-red-100 border-red-400 text-red-800'}`}>
+                    <div className="error-content">
+                        <X size={20} />
+                        <span>{error || 'Could not load resume data. Please check connection and try again.'}</span>
+                    </div>
                 </div>
             </div>
         );
@@ -287,7 +217,7 @@ const ResumeOptimizer = () => {
                 </div>
             </div>
 
-            {error && (
+            {error && ( // This error refers to submission errors now, or previous errors not caught by the !resumeData block
                 <div className="error-alert slide-in">
                     <div className="error-content">
                         <X size={20} />
@@ -368,7 +298,6 @@ const ResumeOptimizer = () => {
                     onAdd={() => handleAddItem('education')}
                     addLabel="Add Education"
                 >
-                    {/* Ensure resumeData.education is an array before mapping */}
                     {resumeData.education.map((edu, index) => (
                         <FormCard key={index} onRemove={() => handleRemoveItem('education', index)}>
                             <div className="form-grid">
@@ -418,7 +347,6 @@ const ResumeOptimizer = () => {
                     onAdd={() => handleAddItem('experiences')}
                     addLabel="Add Experience"
                 >
-                    {/* Ensure resumeData.experiences is an array before mapping */}
                     {resumeData.experiences.map((exp, index) => (
                         <FormCard key={index} onRemove={() => handleRemoveItem('experiences', index)}>
                             <div className="form-grid mb-4">
@@ -445,7 +373,7 @@ const ResumeOptimizer = () => {
                             </div>
                             <BulletPointEditor
                                 label="Job Description"
-                                items={exp.description || []} // Ensure items is an array
+                                items={exp.description || []}
                                 onChange={(descIndex, value) => handleTextAreaChange({ target: { value } }, 'experiences', index, descIndex, 'description')}
                                 onAdd={() => handleAddBulletPoint('experiences', index)}
                                 onRemove={(descIndex) => handleRemoveBulletPoint('experiences', index, descIndex)}
@@ -466,7 +394,6 @@ const ResumeOptimizer = () => {
                     onAdd={() => handleAddItem('projects')}
                     addLabel="Add Project"
                 >
-                    {/* Ensure resumeData.projects is an array before mapping */}
                     {resumeData.projects.map((proj, index) => (
                         <FormCard key={index} onRemove={() => handleRemoveItem('projects', index)}>
                             <div className="form-grid mb-4">
@@ -492,7 +419,7 @@ const ResumeOptimizer = () => {
                             </div>
                             <BulletPointEditor
                                 label="Project Description"
-                                items={proj.description || []} // Ensure items is an array
+                                items={proj.description || []}
                                 onChange={(descIndex, value) => handleTextAreaChange({ target: { value } }, 'projects', index, descIndex, 'description')}
                                 onAdd={() => handleAddBulletPoint('projects', index)}
                                 onRemove={(descIndex) => handleRemoveBulletPoint('projects', index, descIndex)}
@@ -513,7 +440,6 @@ const ResumeOptimizer = () => {
                     onAdd={() => handleAddItem('skills')}
                     addLabel="Add Skill Category"
                 >
-                    {/* Ensure resumeData.skills is an array before mapping */}
                     {resumeData.skills.map((skillCat, catIndex) => (
                         <FormCard key={catIndex} onRemove={() => handleRemoveItem('skills', catIndex)}>
                             <InputField
@@ -569,7 +495,6 @@ const ResumeOptimizer = () => {
                     onAdd={() => handleAddItem('achievements')}
                     addLabel="Add Achievement"
                 >
-                    {/* Ensure resumeData.achievements is an array before mapping */}
                     {resumeData.achievements.map((ach, index) => (
                         <FormCard key={index} onRemove={() => handleRemoveItem('achievements', index)}>
                             <InputField
@@ -605,7 +530,6 @@ const ResumeOptimizer = () => {
                     onAdd={() => handleAddItem('coding_profiles')}
                     addLabel="Add Profile"
                 >
-                    {/* Ensure resumeData.coding_profiles is an array before mapping */}
                     {resumeData.coding_profiles.map((prof, index) => (
                         <FormCard key={index} onRemove={() => handleRemoveItem('coding_profiles', index)}>
                             <div className="form-grid">

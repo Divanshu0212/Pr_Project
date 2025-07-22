@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { FaPlus, FaGithub, FaLinkedin, FaTwitter, FaCertificate, FaCamera, FaInstagram, FaFacebook, FaEdit, FaEye, FaShare, FaDownload } from 'react-icons/fa';
+import { FaPlus, FaGithub, FaLinkedin, FaTwitter, FaCamera, FaInstagram, FaFacebook, FaEdit, FaEye, FaShare, FaDownload, FaGlobe } from 'react-icons/fa';
 import { MdEdit, MdLocationOn, MdWork, MdClose, MdCheck, MdEmail, MdPhone, MdLanguage } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
@@ -7,12 +7,8 @@ import '../../styles/pages/PortfolioHome.css';
 import '../../styles/animations.css';
 import { AuthContext } from '../../context/AuthContext';
 import SummaryApi from '../../config';
-import PortfolioDetailsForm from './PortfolioDetailsForm'; // Ensure this path is correct
+import PortfolioDetailsForm from './PortfolioDetailsForm';
 import { useQuery } from 'react-query';
-import ProjectCard from '../../components/portfolio/ProjectCard';
-import CertificateCard from '../../components/portfolio/CertificateCard';
-import AddCertificateForm from '../../components/portfolio/AddCertificateForm';
-import ExperienceTab from '../../components/portfolio/ExperienceTab';
 import axios from 'axios';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -27,10 +23,9 @@ const PortfolioHome = ({ user: propUser }) => {
     const [newProfilePic, setNewProfilePic] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const [showDetailsForm, setShowDetailsForm] = useState(false);
-    const [showCertificateForm, setShowCertificateForm] = useState(false);
-    const [editingCertificate, setEditingCertificate] = useState(null);
     const [skills, setSkills] = useState([]);
     const [certificates, setCertificates] = useState([]);
+    const [shareMessage, setShareMessage] = useState('');
     const fileInputRef = React.useRef(null);
 
     const user = propUser || { ...currentUser, ...portfolioDetails };
@@ -46,7 +41,7 @@ const PortfolioHome = ({ user: propUser }) => {
         return response.json();
     });
 
-    const { data: certificatesData, refetch: refetchCertificates } = useQuery('certificates', async () => {
+    const { data: certificatesData } = useQuery('certificates', async () => {
         const token = localStorage.getItem('token');
         const response = await fetch(SummaryApi.certificates.get.url, {
             method: SummaryApi.certificates.get.method,
@@ -156,51 +151,39 @@ const PortfolioHome = ({ user: propUser }) => {
         }
     };
 
-    // Certificate handlers
-    const handleCertificateSubmit = async (formData, certificateId) => {
-        try {
-            const token = localStorage.getItem('token');
-            const url = certificateId
-                ? `${SummaryApi.certificates.update.url}/${certificateId}`
-                : SummaryApi.certificates.add.url;
-            const method = certificateId
-                ? SummaryApi.certificates.update.method
-                : SummaryApi.certificates.add.method;
-
-            const response = await fetch(url, {
-                method,
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: formData
-            });
-
-            if (!response.ok) {
-                throw new Error(certificateId ? 'Failed to update certificate' : 'Failed to add certificate');
-            }
-
-            refetchCertificates();
-        } catch (error) {
-            console.error('Error submitting certificate:', error);
-            throw error;
+    // Share portfolio handler
+    const handleSharePortfolio = async () => {
+        if (!user?.username) {
+            alert('Please set up your username in profile settings first');
+            return;
         }
-    };
 
-    const handleDeleteCertificate = async (certificateId) => {
-        if (!window.confirm('Are you sure you want to delete this certificate?')) return;
-
+        const publicPortfolioUrl = `${window.location.origin}/portfolio/public/${user.username}`;
+        
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`${SummaryApi.certificates.delete.url}/${certificateId}`, {
-                method: SummaryApi.certificates.delete.method,
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (!response.ok) throw new Error('Failed to delete certificate');
-
-            refetchCertificates();
-            alert('Certificate deleted successfully');
+            // Try to use the Web Share API if available
+            if (navigator.share) {
+                await navigator.share({
+                    title: `${user.displayName || user.username}'s Portfolio`,
+                    text: `Check out ${user.displayName || user.username}'s professional portfolio`,
+                    url: publicPortfolioUrl
+                });
+            } else {
+                // Fallback to clipboard copy
+                await navigator.clipboard.writeText(publicPortfolioUrl);
+                setShareMessage('Portfolio link copied to clipboard!');
+                setTimeout(() => setShareMessage(''), 3000);
+            }
         } catch (error) {
-            console.error('Error deleting certificate:', error);
-            alert('Failed to delete certificate');
+            console.error('Error sharing portfolio:', error);
+            // Final fallback - just copy to clipboard
+            try {
+                await navigator.clipboard.writeText(publicPortfolioUrl);
+                setShareMessage('Portfolio link copied to clipboard!');
+                setTimeout(() => setShareMessage(''), 3000);
+            } catch (clipboardError) {
+                alert(`Share your portfolio: ${publicPortfolioUrl}`);
+            }
         }
     };
 
@@ -237,13 +220,19 @@ const PortfolioHome = ({ user: propUser }) => {
         {
             icon: FaEye,
             label: 'Preview',
-            action: () => window.open(`/portfolio/public/${user?.username || 'preview'}`, '_blank'), // Updated to public view
+            action: () => {
+                if (!user?.username) {
+                    alert('Please set up your username in profile settings first');
+                    return;
+                }
+                window.open(`/portfolio/public/${user.username}`, '_blank');
+            },
             primary: true
         },
         {
             icon: FaShare,
             label: 'Share',
-            action: () => navigator.clipboard.writeText(`${window.location.origin}/portfolio/public/${user?.username}`) // Updated to public view
+            action: handleSharePortfolio
         },
         {
             icon: FaDownload,
@@ -254,6 +243,13 @@ const PortfolioHome = ({ user: propUser }) => {
 
     return (
         <div className={`portfolio-home ${isDark ? 'dark' : ''}`}>
+            {/* Share Success Message */}
+            {shareMessage && (
+                <div className="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fade-in">
+                    {shareMessage}
+                </div>
+            )}
+
             {/* Header Section */}
             <div className="portfolio-header">
                 <div className="header-content">
@@ -292,11 +288,32 @@ const PortfolioHome = ({ user: propUser }) => {
                                         <MdEmail /> {portfolioDetails.email}
                                     </span>
                                 )}
-                                {/* Add phone number meta item if available in portfolioDetails */}
                                 {portfolioDetails?.phone && (
                                     <span className="meta-item">
                                         <MdPhone /> {portfolioDetails.phone}
                                     </span>
+                                )}
+                            </div>
+                            
+                            {/* Username Display */}
+                            <div className="username-section">
+                                {user?.username ? (
+                                    <div className="username-display">
+                                        <span className="username-label">Portfolio URL:</span>
+                                        <code className="username-url">
+                                            {window.location.origin}/portfolio/public/{user.username}
+                                        </code>
+                                    </div>
+                                ) : (
+                                    <div className="username-missing">
+                                        <span className="warning-text">⚠️ Set up your username to enable portfolio sharing</span>
+                                        <button 
+                                            onClick={() => navigate('/portfolio/settings')}
+                                            className="setup-username-btn"
+                                        >
+                                            Set Username
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -307,6 +324,7 @@ const PortfolioHome = ({ user: propUser }) => {
                                     key={index}
                                     className={`action-btn ${action.primary ? 'primary' : ''}`}
                                     onClick={action.action}
+                                    disabled={!user?.username && (action.label === 'Preview' || action.label === 'Share')}
                                 >
                                     <action.icon />
                                     <span>{action.label}</span>
@@ -314,56 +332,75 @@ const PortfolioHome = ({ user: propUser }) => {
                             ))}
                         </div>
                     </div>
-
-                    <div className="completion-card">
-                        <h3>Profile Completion</h3>
-                        <div className="completion-progress">
-                            <div
-                                className="progress-bar"
-                                style={{ width: `${completionPercentage}%` }}
-                            ></div>
-                        </div>
-                        <span className="completion-percentage">{completionPercentage}%</span>
-
-                        <div className="completion-checklist">
-                            <div className={`check-item ${completionStatus.basic ? 'completed' : ''}`}>
-                                <MdCheck /> Basic Information
-                            </div>
-                            <div className={`check-item ${completionStatus.skills ? 'completed' : ''}`}>
-                                <MdCheck /> Skills Added
-                            </div>
-                            <div className={`check-item ${completionStatus.projects ? 'completed' : ''}`}>
-                                <MdCheck /> Projects Showcased
-                            </div>
-                            {/* Add checks for Contact and Social if desired */}
-                            <div className={`check-item ${completionStatus.contact ? 'completed' : ''}`}>
-                                <MdCheck /> Contact Info
-                            </div>
-                            <div className={`check-item ${completionStatus.social ? 'completed' : ''}`}>
-                                <MdCheck /> Social Links
-                            </div>
-                            <div className={`check-item ${completionStatus.certificates ? 'completed' : ''}`}>
-                                <MdCheck /> Certificates Added
-                            </div>
-                        </div>
-
-                        <button
-                            className="complete-profile-btn"
-                            // Link to the dedicated profile settings page
-                            onClick={() => navigate('/portfolio/settings')}
-                        >
-                            <FaEdit /> Complete Profile
-                        </button>
-                    </div>
                 </div>
             </div>
 
-            {/* Bio Section */}
-            {portfolioDetails?.bio && (
+            {/* Bio and Completion Container - Side by Side */}
+            <div className="bio-completion-container">
+                {/* Bio Section */}
                 <div className="bio-section">
-                    <p className="bio-text">{portfolioDetails.bio}</p>
+                    {portfolioDetails?.bio ? (
+                        <>
+                            <h3>About Me</h3>
+                            <p className="bio-text">{portfolioDetails.bio}</p>
+                        </>
+                    ) : (
+                        <div className="empty-bio">
+                            <h3>About Me</h3>
+                            <p className="empty-bio-text">Add a bio to tell visitors about yourself</p>
+                            <button
+                                onClick={() => navigate('/portfolio/settings')}
+                                className="add-bio-btn"
+                            >
+                                <FaEdit /> Add Bio
+                            </button>
+                        </div>
+                    )}
                 </div>
-            )}
+
+                {/* Completion Card */}
+                <div className="completion-card">
+                    <h3>Profile Completion</h3>
+                    <div className="completion-progress">
+                        <div
+                            className="progress-bar"
+                            style={{ width: `${completionPercentage}%` }}
+                        ></div>
+                    </div>
+                    <span className="completion-percentage">{completionPercentage}%</span>
+
+                    <div className="completion-checklist">
+                        <div className={`check-item ${completionStatus.basic ? 'completed' : ''}`}>
+                            <MdCheck /> Basic Information
+                        </div>
+                        <div className={`check-item ${completionStatus.skills ? 'completed' : ''}`}>
+                            <MdCheck /> Skills Added
+                        </div>
+                        <div className={`check-item ${completionStatus.projects ? 'completed' : ''}`}>
+                            <MdCheck /> Projects Showcased
+                        </div>
+                        <div className={`check-item ${completionStatus.contact ? 'completed' : ''}`}>
+                            <MdCheck /> Contact Info
+                        </div>
+                        <div className={`check-item ${completionStatus.social ? 'completed' : ''}`}>
+                            <MdCheck /> Social Links
+                        </div>
+                        <div className={`check-item ${completionStatus.certificates ? 'completed' : ''}`}>
+                            <MdCheck /> Certificates Added
+                        </div>
+                        <div className={`check-item ${user?.username ? 'completed' : ''}`}>
+                            <MdCheck /> Username Set
+                        </div>
+                    </div>
+
+                    <button
+                        className="complete-profile-btn"
+                        onClick={() => navigate('/portfolio/settings')}
+                    >
+                        <FaEdit /> Complete Profile
+                    </button>
+                </div>
+            </div>
 
             {/* Stats Overview */}
             <div className="stats-section">
@@ -386,12 +423,17 @@ const PortfolioHome = ({ user: propUser }) => {
                         key={section}
                         className={`nav-tab ${activeSection === section ? 'active' : ''}`}
                         onClick={() => {
-                            // Navigate to specific pages for Projects, Skills, Certificates, Experience
-                            if (section === 'projects') navigate('/portfolio/projects');
-                            else if (section === 'skills') navigate('/portfolio/skills');
-                            else if (section === 'certificates') navigate('/portfolio/certificates');
-                            else if (section === 'experience') navigate('/portfolio/experience');
-                            else setActiveSection(section); // Stay on overview tab in PortfolioHome
+                            if (section === 'overview') {
+                                setActiveSection('overview');
+                            } else if (section === 'projects') {
+                                navigate('/portfolio/projects');
+                            } else if (section === 'skills') {
+                                navigate('/portfolio/skills');
+                            } else if (section === 'certificates') {
+                                navigate('/portfolio/certificates');
+                            } else if (section === 'experience') {
+                                navigate('/portfolio/experience');
+                            }
                         }}
                     >
                         {section.charAt(0).toUpperCase() + section.slice(1)}
@@ -399,7 +441,7 @@ const PortfolioHome = ({ user: propUser }) => {
                 ))}
             </div>
 
-            {/* Content Sections (Now only 'overview' remains in PortfolioHome) */}
+            {/* Content Sections - Only Overview */}
             <div className="main-content">
                 {activeSection === 'overview' && (
                     <div className="overview-section">
@@ -477,49 +519,86 @@ const PortfolioHome = ({ user: propUser }) => {
                                     </div>
                                     <div className="social-links">
                                         {portfolioDetails.socialLinks.github && (
-                                            <a href={portfolioDetails.socialLinks.github} className="social-link">
+                                            <a href={portfolioDetails.socialLinks.github} className="social-link" target="_blank" rel="noopener noreferrer">
                                                 <FaGithub /> GitHub
                                             </a>
                                         )}
                                         {portfolioDetails.socialLinks.linkedin && (
-                                            <a href={portfolioDetails.socialLinks.linkedin} className="social-link">
+                                            <a href={portfolioDetails.socialLinks.linkedin} className="social-link" target="_blank" rel="noopener noreferrer">
                                                 <FaLinkedin /> LinkedIn
                                             </a>
                                         )}
                                         {portfolioDetails.socialLinks.twitter && (
-                                            <a href={portfolioDetails.socialLinks.twitter} className="social-link">
+                                            <a href={portfolioDetails.socialLinks.twitter} className="social-link" target="_blank" rel="noopener noreferrer">
                                                 <FaTwitter /> Twitter
                                             </a>
                                         )}
-                                        {/* Add more social links if needed, e.g., Instagram, Facebook, Website */}
                                         {portfolioDetails.socialLinks.instagram && (
-                                            <a href={portfolioDetails.socialLinks.instagram} className="social-link">
+                                            <a href={portfolioDetails.socialLinks.instagram} className="social-link" target="_blank" rel="noopener noreferrer">
                                                 <FaInstagram /> Instagram
                                             </a>
                                         )}
                                         {portfolioDetails.socialLinks.facebook && (
-                                            <a href={portfolioDetails.socialLinks.facebook} className="social-link">
+                                            <a href={portfolioDetails.socialLinks.facebook} className="social-link" target="_blank" rel="noopener noreferrer">
                                                 <FaFacebook /> Facebook
                                             </a>
                                         )}
                                         {portfolioDetails.socialLinks.website && (
-                                            <a href={portfolioDetails.socialLinks.website} className="social-link">
+                                            <a href={portfolioDetails.socialLinks.website} className="social-link" target="_blank" rel="noopener noreferrer">
                                                 <FaGlobe /> Website
                                             </a>
                                         )}
                                     </div>
                                 </div>
                             )}
+
+                            {/* Portfolio Sharing Info */}
+                            <div className="overview-card sharing-info">
+                                <div className="card-header">
+                                    <h3>Share Your Portfolio</h3>
+                                </div>
+                                <div className="sharing-content">
+                                    {user?.username ? (
+                                        <>
+                                            <p className="sharing-description">
+                                                Your portfolio is ready to share with employers and clients!
+                                            </p>
+                                            <div className="sharing-url">
+                                                <code>{window.location.origin}/portfolio/public/{user.username}</code>
+                                            </div>
+                                            <div className="sharing-actions">
+                                                <button 
+                                                    onClick={() => window.open(`/portfolio/public/${user.username}`, '_blank')}
+                                                    className="preview-public-btn"
+                                                >
+                                                    <FaEye /> View Public Portfolio
+                                                </button>
+                                                <button 
+                                                    onClick={handleSharePortfolio}
+                                                    className="share-portfolio-btn"
+                                                >
+                                                    <FaShare /> Share Portfolio
+                                                </button>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <p className="sharing-warning">
+                                                Set up your username to make your portfolio shareable!
+                                            </p>
+                                            <button 
+                                                onClick={() => navigate('/portfolio/settings')}
+                                                className="setup-sharing-btn"
+                                            >
+                                                Setup Portfolio Sharing
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
-
-                {/* The 'projects', 'skills', 'certificates', 'experience' sections are now external pages */}
-                {/* These activeSection === 'XYZ' checks should be removed from PortfolioHome
-                    because the navigation tabs now link directly to those pages.
-                    Keeping them here would mean you have duplicate content if a user navigates
-                    to /portfolio and then clicks on the "Projects" tab.
-                */}
             </div>
 
             {/* Profile Picture Edit Modal */}
@@ -567,7 +646,7 @@ const PortfolioHome = ({ user: propUser }) => {
                 </div>
             )}
 
-            {/* Portfolio Details Form Modal (This modal is still opened from PortfolioHome) */}
+            {/* Portfolio Details Form Modal */}
             {showDetailsForm && (
                 <div className="modal-overlay">
                     <div className="modal-container large">
@@ -578,23 +657,6 @@ const PortfolioHome = ({ user: propUser }) => {
                     </div>
                 </div>
             )}
-
-            {/* Certificate Form Modal (This modal is now opened from the dedicated CertificatesPage, NOT PortfolioHome) */}
-            {/* REMOVE THIS BLOCK FROM PortfolioHome.jsx IF CERTIFICATES IS A SEPARATE PAGE */}
-            {/* If CertificatesPage handles its own AddCertificateForm */}
-            {/*
-            {showCertificateForm && (
-                <AddCertificateForm
-                    onClose={() => {
-                        setShowCertificateForm(false);
-                        setEditingCertificate(null);
-                    }}
-                    onSubmit={handleCertificateSubmit}
-                    initialData={editingCertificate}
-                    isEditing={!!editingCertificate}
-                />
-            )}
-            */}
         </div>
     );
 };

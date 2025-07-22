@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { useTheme } from '../../context/ThemeContext';
 import '../../styles/animations.css';
 
-const CertificateCard = ({ certificate, onEdit, onDelete }) => {
+const CertificateCard = ({ certificate, onEdit, onDelete, isPublicView = false }) => {
     const { theme } = useTheme();
     
     const formatDate = (dateString) => {
@@ -97,7 +97,7 @@ const CertificateCard = ({ certificate, onEdit, onDelete }) => {
                     )}
 
                     {/* Action Buttons */}
-                    <div className="flex justify-between items-center pt-4 border-t border-opacity-20 border-gray-500">
+                    <div className={`flex ${isPublicView ? 'justify-center' : 'justify-between'} items-center pt-4 border-t border-opacity-20 border-gray-500`}>
                         <a
                             href={certificate.credentialUrl}
                             target="_blank"
@@ -119,36 +119,39 @@ const CertificateCard = ({ certificate, onEdit, onDelete }) => {
                             Verify Certificate
                         </a>
 
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => onEdit(certificate)}
-                                className={`
-                                    p-2 rounded-lg transition-all duration-300
-                                    ${theme === 'dark' 
-                                        ? 'text-gray-400 hover:text-[#00FFFF] hover:bg-[#00FFFF]/10' 
-                                        : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50'
-                                    }
-                                    transform hover:scale-110
-                                `}
-                                title="Edit Certificate"
-                            >
-                                <FaEdit size={16} />
-                            </button>
-                            <button
-                                onClick={() => onDelete(certificate._id)}
-                                className={`
-                                    p-2 rounded-lg transition-all duration-300
-                                    ${theme === 'dark' 
-                                        ? 'text-gray-400 hover:text-red-400 hover:bg-red-500/10' 
-                                        : 'text-gray-500 hover:text-red-500 hover:bg-red-50'
-                                    }
-                                    transform hover:scale-110
-                                `}
-                                title="Delete Certificate"
-                            >
-                                <FaTrash size={16} />
-                            </button>
-                        </div>
+                        {/* Edit/Delete buttons - only show when NOT in public view */}
+                        {!isPublicView && onEdit && onDelete && (
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => onEdit(certificate)}
+                                    className={`
+                                        p-2 rounded-lg transition-all duration-300
+                                        ${theme === 'dark' 
+                                            ? 'text-gray-400 hover:text-[#00FFFF] hover:bg-[#00FFFF]/10' 
+                                            : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50'
+                                        }
+                                        transform hover:scale-110
+                                    `}
+                                    title="Edit Certificate"
+                                >
+                                    <FaEdit size={16} />
+                                </button>
+                                <button
+                                    onClick={() => onDelete(certificate._id)}
+                                    className={`
+                                        p-2 rounded-lg transition-all duration-300
+                                        ${theme === 'dark' 
+                                            ? 'text-gray-400 hover:text-red-400 hover:bg-red-500/10' 
+                                            : 'text-gray-500 hover:text-red-500 hover:bg-red-50'
+                                        }
+                                        transform hover:scale-110
+                                    `}
+                                    title="Delete Certificate"
+                                >
+                                    <FaTrash size={16} />
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -158,8 +161,9 @@ const CertificateCard = ({ certificate, onEdit, onDelete }) => {
 
 CertificateCard.propTypes = {
     certificate: PropTypes.object.isRequired,
-    onEdit: PropTypes.func.isRequired,
-    onDelete: PropTypes.func.isRequired
+    onEdit: PropTypes.func,
+    onDelete: PropTypes.func,
+    isPublicView: PropTypes.bool,
 };
 
 export default CertificateCard;

@@ -3,9 +3,9 @@ import { FaGithub } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import Card from '../common/Card';
-import PropTypes from 'prop-types'; // Import PropTypes
+import PropTypes from 'prop-types';
 
-const ProjectCard = ({ project }) => {
+const ProjectCard = ({ project, isPublicView = false }) => {
   const { isDark } = useTheme();
 
   const getStatusColor = (status) => {
@@ -122,7 +122,7 @@ const ProjectCard = ({ project }) => {
           </div>
         </div>
 
-        <div className="flex justify-between items-center">
+        <div className={`flex ${isPublicView ? 'justify-between' : 'justify-between'} items-center`}>
           <a
             href={project.link}
             target="_blank"
@@ -138,7 +138,7 @@ const ProjectCard = ({ project }) => {
           </a>
           
           <Link
-            to={`/portfolio/${project._id}`}
+            to={isPublicView ? `/portfolio/projects/${project._id}` : `/portfolio/projects/${project._id}`}
             className={`px-6 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 hover:shadow-lg ${
               isDark 
                 ? 'bg-gradient-to-r from-cyan-400 to-purple-400 text-gray-900 hover:from-cyan-300 hover:to-purple-300'
@@ -153,6 +153,40 @@ const ProjectCard = ({ project }) => {
             Details
           </Link>
         </div>
+
+        {/* Edit/Delete buttons - only show when NOT in public view */}
+        {!isPublicView && project.onEdit && project.onDelete && (
+          <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-opacity-20 border-gray-500">
+            <button
+              onClick={() => project.onEdit(project)}
+              className={`
+                p-2 rounded-lg transition-all duration-300
+                ${isDark 
+                  ? 'text-gray-400 hover:text-cyan-400 hover:bg-cyan-400/10' 
+                  : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50'
+                }
+                transform hover:scale-110
+              `}
+              title="Edit Project"
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => project.onDelete(project._id)}
+              className={`
+                p-2 rounded-lg transition-all duration-300
+                ${isDark 
+                  ? 'text-gray-400 hover:text-red-400 hover:bg-red-500/10' 
+                  : 'text-gray-500 hover:text-red-500 hover:bg-red-50'
+                }
+                transform hover:scale-110
+              `}
+              title="Delete Project"
+            >
+              Delete
+            </button>
+          </div>
+        )}
       </div>
     </Card>
   );
@@ -171,7 +205,10 @@ ProjectCard.propTypes = {
     technologies: PropTypes.arrayOf(PropTypes.string).isRequired,
     progress: PropTypes.number.isRequired,
     link: PropTypes.string.isRequired,
+    onEdit: PropTypes.func,
+    onDelete: PropTypes.func,
   }).isRequired,
+  isPublicView: PropTypes.bool,
 };
 
 export default ProjectCard;

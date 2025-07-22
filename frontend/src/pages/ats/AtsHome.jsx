@@ -123,7 +123,7 @@ const AtsHome = () => {
                             </div>
 
                             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                                <Link to="/ats/tracker">
+                                <Link to="/ats/scan">
                                     <Button
                                         text="Start Free Analysis"
                                         className="bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 text-white font-bold px-8 py-4 rounded-full shadow-2xl hover:shadow-cyan-400/25 transform hover:scale-105 transition-all duration-300 hover:rotate-1"
@@ -194,7 +194,7 @@ const AtsHome = () => {
                                 Upload your resume and job description to get instant ATS compatibility feedback
                                 with detailed scoring and improvement suggestions.
                             </p>
-                            <Link to="/ats/tracker">
+                            <Link to="/ats/scan">
                                 <Button
                                     text="Start Free Analysis"
                                     className="bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 text-white font-bold px-10 py-4 rounded-full shadow-2xl hover:shadow-cyan-400/30 transform hover:scale-110 transition-all duration-300 animate-gradient-x-ats" // Using new class
@@ -270,7 +270,7 @@ const AtsHome = () => {
                                     <p className={`${isDark ? 'text-[#E5E5E5]' : 'text-gray-900'} mb-8 text-xl font-semibold`}>
                                         Start by uploading your resume and see how it performs against ATS systems.
                                     </p>
-                                    <Link to="/ats/tracker">
+                                    <Link to="/ats/scan">
                                         <Button
                                             text="Upload Your First Resume"
                                             className="bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 text-white font-bold px-10 py-4 rounded-full shadow-2xl hover:shadow-cyan-400/30 transform hover:scale-110 transition-all duration-300"
