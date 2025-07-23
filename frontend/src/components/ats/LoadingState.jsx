@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useTheme } from '../../context/ThemeContext';
-import Loader from '../../components/common/Loader';
-import Card from '../../components/common/Card';
+import Loader from '../common/Loader';
+import Card from '../common/Card';
 
 const LoadingState = ({ message = 'Analyzing your resume...', type = 'spinner' }) => {
   const { isDark } = useTheme();

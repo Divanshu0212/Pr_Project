@@ -175,10 +175,11 @@
   font-weight: 500;
   gap: 0.75rem;
 }
-
-/* Form Styling */
+/* Corrected rule in BuildResume.css */
 .optimizer-form {
-  space-y: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; /* 'gap' is the modern way to add space between flex items */
 }
 
 /* Form Sections */

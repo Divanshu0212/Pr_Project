@@ -4,6 +4,12 @@ const router = express.Router();
 const resumeController = require('../controller/resumeController');
 const auth = require('../middleware/auth'); // Assuming you have an authentication middleware
 
+// @route   GET /api/resumes/default-resume
+// @desc    Get a default/empty resume structure
+// @access  Public (No Auth required for template creation)
+// IMPORTANT: This static route MUST come BEFORE the dynamic /:id route.
+router.get('/default-resume', resumeController.getDefaultResume);
+
 // @route   POST /api/resumes
 // @desc    Create a new resume
 // @access  Private
@@ -29,10 +35,5 @@ router.put('/:id', auth, resumeController.updateResume);
 // @access  Private
 router.delete('/:id', auth, resumeController.deleteResume);
 
-// @route   GET /api/resumes/default-resume
-// @desc    Get a default/empty resume structure
-// @access  Public (No Auth required for template creation)
-// IMPORTANT: Place this route AFTER specific ID routes to avoid /default-resume being interpreted as an ID.
-router.get('/default-resume', resumeController.getDefaultResume);
 
 module.exports = router;
