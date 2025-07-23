@@ -1,4 +1,3 @@
-
 const BACKEND_DOMAIN = import.meta.env.VITE_REACT_APP_API_BASE_URL || "http://localhost:5000";
 
 const SummaryApi = {
@@ -11,7 +10,7 @@ const SummaryApi = {
         method: "post"
     },
     current_user: {
-        url: `${BACKEND_DOMAIN}/api/user-details`,
+        url: `${BACKEND_DOMAIN}/api/users/user-details`,
         method: "get"
     },
     logout_user: {
@@ -45,10 +44,9 @@ const SummaryApi = {
     portfolio: {
         public: {
             url: (username) => `${BACKEND_DOMAIN}/api/portfolio/public/${username}`,
-            method: "GET" // Changed to GET as per standard practice for public views
+            method: "GET"
         },
-        // ... (other private portfolio endpoints if they were in a SummaryApi here, e.g.)
-        details: { // Example for private portfolio details
+        details: {
             url: `${BACKEND_DOMAIN}/api/portfolio-details`,
             method: "GET"
         },
@@ -67,11 +65,11 @@ const SummaryApi = {
             method: "post"
         },
         update: {
-            url: (id) => `${BACKEND_DOMAIN}/api/skills/manage/${id}`, // Added ID parameter
+            url: (id) => `${BACKEND_DOMAIN}/api/skills/manage/${id}`,
             method: "put"
         },
         delete: {
-            url: (id) => `${BACKEND_DOMAIN}/api/skills/manage/${id}`, // Added ID parameter
+            url: (id) => `${BACKEND_DOMAIN}/api/skills/manage/${id}`,
             method: "delete"
         },
         reorder: {
@@ -115,11 +113,11 @@ const SummaryApi = {
             method: 'POST'
         },
         update: {
-            url: (id) => `${BACKEND_DOMAIN}/api/certificates/${id}`, // Base URL, ID will be appended
+            url: (id) => `${BACKEND_DOMAIN}/api/certificates/${id}`,
             method: 'PUT'
         },
         delete: {
-            url: (id) => `${BACKEND_DOMAIN}/api/certificates/${id}`, // Base URL, ID will be appended
+            url: (id) => `${BACKEND_DOMAIN}/api/certificates/${id}`,
             method: 'DELETE'
         },
         count: {
@@ -137,11 +135,11 @@ const SummaryApi = {
             method: 'POST'
         },
         update: {
-            url: (id) => `${BACKEND_DOMAIN}/api/experiences/${id}`, // Base URL, ID will be appended
+            url: (id) => `${BACKEND_DOMAIN}/api/experiences/${id}`,
             method: 'PUT'
         },
         delete: {
-            url: (id) => `${BACKEND_DOMAIN}/api/experiences/${id}`, // Base URL, ID will be appended
+            url: (id) => `${BACKEND_DOMAIN}/api/experiences/${id}`,
             method: 'DELETE'
         },
         total: {
@@ -149,7 +147,6 @@ const SummaryApi = {
             method: 'GET'
         }
     },
-    // ATS Module endpoints
     ats: {
         analyze: {
             url: `${BACKEND_DOMAIN}/api/ats/analyze`,
@@ -172,7 +169,6 @@ const SummaryApi = {
             method: "PUT"
         }
     },
-    // Added resumes module
     resumes: {
         create: {
             url: `${BACKEND_DOMAIN}/api/resumes`,
@@ -186,7 +182,6 @@ const SummaryApi = {
             url: (id) => `${BACKEND_DOMAIN}/api/resumes/${id}`,
             method: "PUT"
         },
-        // Optionally, you might want a get all and delete endpoint for resumes too:
         getAll: {
             url: `${BACKEND_DOMAIN}/api/resumes`,
             method: "GET"
@@ -194,6 +189,11 @@ const SummaryApi = {
         delete: {
             url: (id) => `${BACKEND_DOMAIN}/api/resumes/${id}`,
             method: "DELETE"
+        },
+        // ADDED THIS ENTRY 👇
+        default: {
+            url: `${BACKEND_DOMAIN}/api/resumes/default-resume`,
+            method: "GET"
         }
     }
 };

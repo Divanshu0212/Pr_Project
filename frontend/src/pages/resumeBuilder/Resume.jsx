@@ -5,9 +5,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { ChevronDown, ChevronUp, Plus, X, Download, Zap, Award, User, Mail, Phone, Globe, Github, Linkedin, GraduationCap, Briefcase, Code, Trophy, Target } from 'lucide-react';
 import '../../styles/pages/BuildResume.css';
-import SummaryApi from '../../config'; // Make sure SummaryApi is correctly configured
+import SummaryApi from '../../config';
 
-// --- Auxiliary Components (Moved outside ResumeOptimizer for clarity and best practice) ---
+// --- Auxiliary Components (These are correct, no changes needed) ---
 
 const Section = ({ title, subtitle, icon, children, isExpanded, onToggle, onAdd, addLabel, required }) => {
     const { isDark } = useTheme();
@@ -73,20 +73,10 @@ const InputField = ({ label, type = 'text', value, onChange, required = false, p
     const { isDark } = useTheme();
     return (
         <div className={`input-wrapper ${className}`}>
-            <label className="form-label">
-                {label}
-                {required && <span className="required-indicator">*</span>}
-            </label>
+            <label className="form-label">{label}{required && <span className="required-indicator">*</span>}</label>
             <div className="input-container">
                 {icon && <div className="input-icon">{icon}</div>}
-                <input
-                    type={type}
-                    value={value}
-                    onChange={onChange}
-                    required={required}
-                    placeholder={placeholder || label}
-                    className={`form-input ${isDark ? 'dark-input' : ''} ${icon ? 'has-icon' : ''}`}
-                />
+                <input type={type} value={value} onChange={onChange} required={required} placeholder={placeholder || label} className={`form-input ${isDark ? 'dark-input' : ''} ${icon ? 'has-icon' : ''}`} />
             </div>
         </div>
     );
@@ -112,27 +102,11 @@ const BulletPointEditor = ({ label, items, onChange, onAdd, onRemove }) => {
                 {(items || []).map((item, index) => (
                     <div key={index} className="bullet-item">
                         <div className="bullet-dot"></div>
-                        <textarea
-                            value={item}
-                            onChange={(e) => onChange(index, e.target.value)}
-                            className={`bullet-textarea ${isDark ? 'dark-input' : ''}`}
-                            rows="2"
-                            placeholder="Describe your responsibilities and achievements..."
-                            required
-                        />
-                        <button
-                            type="button"
-                            onClick={() => onRemove(index)}
-                            className="bullet-remove-btn"
-                        >
-                            <X size={14} />
-                        </button>
+                        <textarea value={item} onChange={(e) => onChange(index, e.target.value)} className={`bullet-textarea ${isDark ? 'dark-input' : ''}`} rows="2" placeholder="Describe your responsibilities and achievements..." required />
+                        <button type="button" onClick={() => onRemove(index)} className="bullet-remove-btn"><X size={14} /></button>
                     </div>
                 ))}
-                <button type="button" onClick={onAdd} className="add-bullet-btn">
-                    <Plus size={16} />
-                    <span>Add Point</span>
-                </button>
+                <button type="button" onClick={onAdd} className="add-bullet-btn"><Plus size={16} /><span>Add Point</span></button>
             </div>
         </div>
     );
@@ -148,11 +122,7 @@ BulletPointEditor.propTypes = {
 
 const EmptyState = ({ message }) => {
     const { isDark } = useTheme();
-    return (
-        <div className={`empty-state ${isDark ? 'dark-empty-state' : ''}`}>
-            <p className={isDark ? 'text-gray-400' : 'text-gray-600'}>{message}</p>
-        </div>
-    );
+    return <div className={`empty-state ${isDark ? 'dark-empty-state' : ''}`}><p className={isDark ? 'text-gray-400' : 'text-gray-600'}>{message}</p></div>;
 };
 
 EmptyState.propTypes = {
@@ -162,129 +132,114 @@ EmptyState.propTypes = {
 // --- ResumeOptimizer Main Component ---
 
 const ResumeOptimizer = () => {
-    const { theme, isDark } = useTheme();
+    const { isDark } = useTheme();
     const { resumeId } = useParams();
     const navigate = useNavigate();
-    const [isEditMode, setIsEditMode] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(!!resumeId);
 
-    const [resumeData, setResumeData] = useState(null);
-    const [loading, setLoading] = useState(true);
+    // Initialize resumeData with a blank structure immediately if not in edit mode
+    // This ensures the form can render even if no resumeId is present.
+    const [resumeData, setResumeData] = useState(() => {
+        if (resumeId) {
+            return null; // Will be fetched in useEffect
+        } else {
+            return {
+                name: "", email: "", phone: "", linkedin: "", github: "", portfolio: "",
+                target_profession: "", education: [], experiences: [], projects: [],
+                skills: [
+                    { category: "Programming Languages", skills: [] },
+                    { category: "Frameworks & Libraries", skills: [] },
+                    { category: "Tools & Platforms", skills: [] }
+                ],
+                achievements: [], coding_profiles: []
+            };
+        }
+    });
+    const [loading, setLoading] = useState(!!resumeId); // Only set loading true if resumeId exists (i.e., in edit mode)
     const [optimizing, setOptimizing] = useState(false);
     const [optimizationResult, setOptimizationResult] = useState(null);
     const [error, setError] = useState(null);
     const [expandedSections, setExpandedSections] = useState({
-        personal: true,
-        education: true,
-        experience: true,
-        projects: true,
-        skills: true,
-        achievements: false,
-        coding: false
+        personal: true, education: true, experience: true, projects: true,
+        skills: true, achievements: false, coding: false
     });
-
-    const BACKEND_URL = 'http://localhost:5000'; // Confirmed to be 5000
 
     useEffect(() => {
         const fetchResumeData = async () => {
-            console.log('ResumeOptimizer: resumeId from params:', resumeId);
-            try {
+            if (resumeId) { // Only fetch if in edit mode
                 setLoading(true);
                 setError(null);
-
-                let fetchedData;
-                if (resumeId) {
-                    console.log('ResumeOptimizer: Fetching existing resume for ID:', resumeId);
-                    setIsEditMode(true);
-                    const response = await axios.get(
-                        SummaryApi.resumes.single.url(resumeId), // Use the specific endpoint for fetching by ID
-                        { withCredentials: true } // Assuming authentication might be needed for existing resumes
-                    );
-                    fetchedData = response.data.resume || response.data; // Adjust based on actual backend response structure
-                    console.log('ResumeOptimizer: Fetched existing resume:', fetchedData);
-                } else {
-                    console.log('ResumeOptimizer: Creating new resume with default data');
-                    setIsEditMode(false);
-                    const response = await axios.get(`${BACKEND_URL}/api/default-resume`);
-                    fetchedData = response.data;
-                    console.log('ResumeOptimizer: Fetched default data:', fetchedData);
+                try {
+                    const response = await axios.get(SummaryApi.resumes.single.url(resumeId), { withCredentials: true });
+                    let fetchedData = response.data.resume;
+                    
+                    // Ensure data structure consistency
+                    fetchedData.education = fetchedData.education || [];
+                    fetchedData.experiences = fetchedData.experiences || [];
+                    fetchedData.projects = (fetchedData.projects || []).map(p => ({
+                        ...p,
+                        technologies: Array.isArray(p.technologies) ? p.technologies : (p.technologies || '').split(',').map(t => t.trim()).filter(Boolean)
+                    }));
+                    fetchedData.skills = fetchedData.skills || [{ category: "Programming Languages", skills: [] }];
+                    fetchedData.achievements = fetchedData.achievements || [];
+                    fetchedData.coding_profiles = fetchedData.coding_profiles || [];
+                    
+                    setResumeData(fetchedData);
+                } catch (err) {
+                    console.error('ResumeOptimizer: Fetch error:', err);
+                    let errorMessage = `Failed to load resume. `;
+                    if (axios.isAxiosError(err) && err.response) {
+                        errorMessage += `Server responded with status ${err.response.status}.`;
+                    } else {
+                        errorMessage += `Please check your network connection and try again.`;
+                    }
+                    setError(errorMessage);
+                } finally {
+                    setLoading(false);
                 }
-
-                // Ensure all expected arrays are initialized to empty arrays if not present
-                // This is crucial to prevent errors when trying to map over null/undefined arrays
-                fetchedData.education = fetchedData.education || [];
-                fetchedData.experiences = fetchedData.experiences || [];
-                fetchedData.projects = fetchedData.projects || [];
-                fetchedData.skills = fetchedData.skills || [
-                    { category: "Programming Languages", skills: [] },
-                    { category: "Frameworks", skills: [] }
-                ];
-                fetchedData.achievements = fetchedData.achievements || [];
-                fetchedData.coding_profiles = fetchedData.coding_profiles || [];
-
-                // Correctly initialize technologies within projects if they are strings
-                fetchedData.projects = fetchedData.projects.map(p => ({
-                    ...p,
-                    technologies: typeof p.technologies === 'string'
-                        ? p.technologies.split(',').map(t => t.trim()).filter(t => t)
-                        : (p.technologies || [])
-                }));
-
-
-                setResumeData(fetchedData);
-                console.log('ResumeOptimizer: Resume data successfully set.');
-
-            } catch (err) {
-                console.error('ResumeOptimizer: Fetch error:', err);
-                let errorMessage = `Failed to load ${resumeId ? 'existing resume' : 'default resume data'}. `;
-
-                if (err.code === 'ERR_NETWORK') {
-                    errorMessage += 'Network error, please ensure the backend is running and reachable.';
-                } else if (err.response) {
-                    errorMessage += `Server responded with status ${err.response.status}. Message: ${err.response.data?.message || err.response.data?.error || 'No specific message.'}`;
-                } else {
-                    errorMessage += `Error: ${err.message}.`;
-                }
-                setError(errorMessage);
-
-                // Fallback to a minimal but complete structure even on error, to allow user to start fresh
-                setResumeData({
-                    name: "", email: "", phone: "", linkedin: "", github: "",
-                    portfolio: "", target_profession: "Software Engineer",
-                    education: [], experiences: [], projects: [],
-                    skills: [{ category: "Programming Languages", skills: [] }, { category: "Frameworks", skills: [] }],
-                    achievements: [], coding_profiles: []
-                });
-            } finally {
-                setLoading(false);
-                console.log('ResumeOptimizer: Loading process finished.');
             }
         };
 
         fetchResumeData();
-    }, [resumeId, BACKEND_URL, navigate]); // Added navigate and BACKEND_URL to dependencies for completeness
+    }, [resumeId]);
 
-    // --- Helper Functions for Form Handling (Ensured they are defined within the component's scope) ---
+    // --- All your handler functions (handleInputChange, etc.) go here ---
+    // --- NO CHANGES ARE NEEDED IN THE HANDLERS as per instructions ---
+
+    const toggleSection = (section) => {
+        setExpandedSections(prev => ({
+            ...prev,
+            [section]: !prev[section]
+        }));
+    };
 
     const handleInputChange = (e, section, index, field) => {
-        const value = e.target ? e.target.value : e; // Handle cases where 'e' is directly the value
+        const value = e && e.target ? e.target.value : e;
         setResumeData(prevData => {
-            if (!prevData) return prevData; // Defensive check
-
+            if (!prevData) return prevData;
             const newData = { ...prevData };
-            if (index === undefined) { // Top-level field (e.g., name, email)
+            if (index === undefined && field === undefined) {
                 newData[section] = value;
-            } else { // Field within an array item (e.g., education, experience, projects, achievements, coding_profiles)
+            } else if (field === 'category' && index !== undefined) {
+                const updatedSkills = [...(newData.skills || [])];
+                if (updatedSkills[index]) {
+                    updatedSkills[index] = { ...updatedSkills[index], category: value };
+                }
+                newData.skills = updatedSkills;
+            } else if (index !== undefined && field) {
                 const updatedSection = [...(newData[section] || [])];
-                if (field === 'technologies' && typeof value === 'string') {
-                    updatedSection[index] = {
-                        ...updatedSection[index],
-                        [field]: value.split(',').map(t => t.trim()).filter(t => t)
-                    };
-                } else {
-                    updatedSection[index] = {
-                        ...updatedSection[index],
-                        [field]: value
-                    };
+                if (updatedSection[index]) {
+                    if (field === 'technologies' && typeof value === 'string') {
+                        updatedSection[index] = {
+                            ...updatedSection[index],
+                            [field]: value.split(',').map(t => t.trim()).filter(t => t)
+                        };
+                    } else {
+                        updatedSection[index] = {
+                            ...updatedSection[index],
+                            [field]: value
+                        };
+                    }
                 }
                 newData[section] = updatedSection;
             }
@@ -293,10 +248,9 @@ const ResumeOptimizer = () => {
     };
 
     const handleTextAreaChange = (e, section, index, subIndex, field) => {
-        const value = e.target ? e.target.value : e; // Handle cases where 'e' is directly the value
+        const value = e && e.target ? e.target.value : e;
         setResumeData(prevData => {
             if (!prevData) return prevData;
-
             const newData = { ...prevData };
             const updatedSection = [...(newData[section] || [])];
             const updatedItem = { ...updatedSection[index] };
@@ -310,10 +264,9 @@ const ResumeOptimizer = () => {
     };
 
     const handleSkillChange = (e, categoryIndex, skillIndex) => {
-        const value = e.target ? e.target.value : e; // Handle cases where 'e' is directly the value
+        const value = e && e.target ? e.target.value : e;
         setResumeData(prevData => {
             if (!prevData) return prevData;
-
             const newData = { ...prevData };
             const updatedSkills = [...(newData.skills || [])];
             const updatedCategory = { ...updatedSkills[categoryIndex] };
@@ -348,6 +301,12 @@ const ResumeOptimizer = () => {
     const handleAddItem = (section) => {
         setResumeData(prevData => {
             if (!prevData) return prevData;
+            if (section === 'skills') {
+                return {
+                    ...prevData,
+                    skills: [...(prevData.skills || []), { category: '', skills: [''] }]
+                };
+            }
             return {
                 ...prevData,
                 [section]: [...(prevData[section] || []), getNewItemTemplate(section)]
@@ -411,7 +370,6 @@ const ResumeOptimizer = () => {
         });
     };
 
-
     // --- Form Submission ---
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -425,45 +383,42 @@ const ResumeOptimizer = () => {
             }
 
             const dataToSend = {
-                ...resumeData,
-                // Ensure technologies are consistently arrays of strings, even if input as string
-                projects: resumeData.projects.map(p => ({
-                    ...p,
-                    technologies: Array.isArray(p.technologies)
-                        ? p.technologies
-                        : (typeof p.technologies === 'string' ? p.technologies.split(',').map(t => t.trim()).filter(t => t) : [])
-                })),
-                // Ensure skills are consistently arrays of objects with category and skills array
-                skills: resumeData.skills.map(s => ({
-                    ...s,
-                    skills: Array.isArray(s.skills) ? s.skills : []
-                }))
+                title: resumeData.name || `Resume - ${new Date().toLocaleDateString()}`,
+                resumeData: {
+                    ...resumeData,
+                    projects: resumeData.projects.map(p => ({
+                        ...p,
+                        technologies: Array.isArray(p.technologies)
+                            ? p.technologies
+                            : (typeof p.technologies === 'string' ? p.technologies.split(',').map(t => t.trim()).filter(t => t) : [])
+                    })),
+                    skills: resumeData.skills.map(s => ({
+                        ...s,
+                        skills: Array.isArray(s.skills) ? s.skills : []
+                    }))
+                }
             };
-
-            console.log('ResumeOptimizer: Submitting data:', dataToSend);
 
             let response;
             if (isEditMode && resumeId) {
-                console.log('ResumeOptimizer: Updating existing resume with ID:', resumeId);
-                response = await axios.put(
-                    SummaryApi.resumes.update.url(resumeId),
-                    dataToSend,
-                    { withCredentials: true }
-                );
+                response = await axios({
+                    method: SummaryApi.resumes.update.method,
+                    url: SummaryApi.resumes.update.url(resumeId),
+                    data: dataToSend,
+                    withCredentials: true
+                });
             } else {
-                console.log('ResumeOptimizer: Creating new resume.');
-                response = await axios.post(
-                    SummaryApi.resumes.create.url,
-                    dataToSend,
-                    { withCredentials: true }
-                );
+                response = await axios({
+                    method: SummaryApi.resumes.create.method,
+                    url: SummaryApi.resumes.create.url,
+                    data: dataToSend,
+                    withCredentials: true
+                });
             }
 
             setOptimizationResult(response.data);
-            console.log('ResumeOptimizer: Operation successful:', response.data);
-
             setTimeout(() => {
-                navigate('/resume/my-resumes'); // Navigate to my-resumes after successful save/update
+                navigate('/resume/my-resumes');
             }, 2000);
 
         } catch (err) {
@@ -489,159 +444,80 @@ const ResumeOptimizer = () => {
         }
     };
 
-    // --- Render Loading/Error/Form ---
-    if (loading) {
+    // --- Definitive Render Logic ---
+
+    const renderHero = () => (
+        <div className="hero-section">
+            <div className="hero-content">
+                <div className="hero-icon"><Zap size={40} /></div>
+                <h1 className="hero-title">
+                    <span className="gradient-text">{isEditMode ? 'Edit ATS Resume' : 'ATS Resume Builder'}</span>
+                </h1>
+                <p className="hero-subtitle">
+                    {isEditMode
+                        ? 'Update your resume with AI-powered optimization for better ATS compatibility'
+                        : 'Create your resume with AI-powered optimization for better ATS compatibility'
+                    }
+                </p>
+            </div>
+        </div>
+    );
+
+    // Show loading state only if in edit mode and data is being fetched
+    if (loading && resumeId) {
         return (
             <div className={`resume-optimizer-container ${isDark ? 'dark' : ''}`}>
-                <div className="hero-section">
-                    <div className="hero-content">
-                        <div className="hero-icon">
-                            <Zap size={40} />
-                        </div>
-                        <h1 className="hero-title">
-                            <span className="gradient-text">
-                                {isEditMode ? 'Edit ATS Resume' : 'ATS Resume Builder'}
-                            </span>
-                        </h1>
-                        <p className="hero-subtitle">
-                            {isEditMode
-                                ? 'Update your resume with AI-powered optimization for better ATS compatibility'
-                                : 'Create your resume with AI-powered optimization for better ATS compatibility'
-                            }
-                        </p>
-                    </div>
-                </div>
+                {renderHero()}
                 <div className="loading-state">
                     <div className="loading-spinner"></div>
-                    <p className={isDark ? 'text-gray-300' : 'text-gray-700'}>Loading resume data...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (!resumeData) { // This block will now display more prominent errors if initial fetch fails
-        return (
-            <div className={`resume-optimizer-container ${isDark ? 'dark' : ''}`}>
-                <div className="hero-section">
-                    <div className="hero-content">
-                        <div className="hero-icon">
-                            <Zap size={40} />
-                        </div>
-                        <h1 className="hero-title">
-                            <span className="gradient-text">
-                                {isEditMode ? 'Edit ATS Resume' : 'ATS Resume Builder'}
-                            </span>
-                        </h1>
-                        <p className="hero-subtitle">
-                            {isEditMode
-                                ? 'Update your resume with AI-powered optimization for better ATS compatibility'
-                                : 'Create your resume with AI-powered optimization for better ATS compatibility'
-                            }
-                        </p>
-                    </div>
-                </div>
-                <div className={`error-alert slide-in ${isDark ? 'bg-red-900/30 border-red-700 text-red-300' : 'bg-red-100 border-red-400 text-red-800'}`}>
-                    <div className="error-content">
-                        <X size={20} />
-                        <span>{error || 'An unexpected error occurred and resume data could not be loaded.'}</span>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    return (
-        <div className={`resume-optimizer-container ${isDark ? 'dark' : ''}`}>
-            {/* Hero Section */}
-            <div className="hero-section">
-                <div className="hero-content">
-                    <div className="hero-icon">
-                        <Zap size={40} />
-                    </div>
-                    <h1 className="hero-title">
-                        <span className="gradient-text">
-                            {isEditMode ? 'Edit ATS Resume' : 'ATS Resume Builder'}
-                        </span>
-                    </h1>
-                    <p className="hero-subtitle">
-                        {isEditMode
-                            ? 'Update your resume with AI-powered optimization for better ATS compatibility'
-                            : 'Create your resume with AI-powered optimization for better ATS compatibility'
-                        }
+                    <p className={isDark ? 'text-gray-300' : 'text-gray-700'}>
+                        Loading resume data...
                     </p>
                 </div>
             </div>
+        );
+    }
 
-            {/* Error message for submission failures */}
-            {error && !loading && ( // Only show error if not loading and resumeData is present (meaning it's a submission error)
+    // Displays if there was an error during the initial data fetch (resumeData would be null) AND we are in edit mode
+    if (error && !resumeData && resumeId) {
+        return (
+            <div className={`resume-optimizer-container ${isDark ? 'dark' : ''}`}>
+                {renderHero()}
                 <div className={`error-alert slide-in ${isDark ? 'bg-red-900/30 border-red-700 text-red-300' : 'bg-red-100 border-red-400 text-red-800'}`}>
                     <div className="error-content">
                         <X size={20} />
                         <span>{error}</span>
                     </div>
                 </div>
+            </div>
+        );
+    }
+
+    // The form will always attempt to render now, as resumeData is either fetched or initialized to a blank object.
+    return (
+        <div className={`resume-optimizer-container ${isDark ? 'dark' : ''}`}>
+            {renderHero()}
+
+            {/* Error message ONLY for submission failures */}
+            {/* This error will only show if optimizing is false (submission attempt finished) AND an error exists */}
+            {error && !optimizing && !loading && (
+                <div className={`error-alert slide-in ${isDark ? 'bg-red-900/30 border-red-700 text-red-300' : 'bg-red-100 border-red-400 text-red-800'}`}>
+                    <div className="error-content"><X size={20} /><span>{error}</span></div>
+                </div>
             )}
 
+            {/* Form always renders as resumeData is now guaranteed to be an object (either fetched or blank) */}
             <form onSubmit={handleSubmit} className="optimizer-form">
                 {/* Personal Information */}
-                <Section
-                    title="Personal Information"
-                    icon={<User size={20} />}
-                    isExpanded={expandedSections.personal}
-                    onToggle={() => toggleSection('personal')}
-                    required
-                >
+                <Section title="Personal Information" icon={<User size={20} />} isExpanded={expandedSections.personal} onToggle={() => toggleSection('personal')} required>
                     <div className="form-grid">
-                        <InputField
-                            label="Full Name"
-                            value={resumeData.name}
-                            onChange={e => handleInputChange(e, 'name')}
-                            required
-                            icon={<User size={16} />}
-                        />
-                        <InputField
-                            label="Email Address"
-                            type="email"
-                            value={resumeData.email}
-                            onChange={e => handleInputChange(e, 'email')}
-                            required
-                            icon={<Mail size={16} />}
-                        />
-                        <InputField
-                            label="Phone Number"
-                            type="tel"
-                            value={resumeData.phone}
-                            onChange={e => handleInputChange(e, 'phone')}
-                            required
-                            icon={<Phone size={16} />}
-                        />
-                        <InputField
-                            label="LinkedIn Profile"
-                            value={resumeData.linkedin || ''}
-                            onChange={e => handleInputChange(e, 'linkedin')}
-                            icon={<Linkedin size={16} />}
-                        />
-                        <InputField
-                            label="GitHub Profile"
-                            value={resumeData.github || ''}
-                            onChange={e => handleInputChange(e, 'github')}
-                            icon={<Github size={16} />}
-                        />
-                        <InputField
-                            label="Portfolio Website"
-                            value={resumeData.portfolio || ''}
-                            onChange={e => handleInputChange(e, 'portfolio')}
-                            icon={<Globe size={16} />}
-                        />
-                        <InputField
-                            label="Target Profession"
-                            value={resumeData.target_profession}
-                            onChange={e => handleInputChange(e, 'target_profession')}
-                            required
-                            placeholder="e.g., Software Engineer, Data Scientist"
-                            icon={<Target size={16} />}
-                            className="col-span-2"
-                        />
+                        <InputField label="Full Name" value={resumeData.name} onChange={e => handleInputChange(e, 'name')} required icon={<User size={16} />} />
+                        <InputField label="Email Address" type="email" value={resumeData.email} onChange={e => handleInputChange(e, 'email')} required icon={<Mail size={16} />} />
+                        <InputField label="Phone Number" type="tel" value={resumeData.phone} onChange={e => handleInputChange(e, 'phone')} required icon={<Phone size={16} />} />
+                        <InputField label="LinkedIn Profile" value={resumeData.linkedin || ''} onChange={e => handleInputChange(e, 'linkedin')} icon={<Linkedin size={16} />} />
+                        <InputField label="GitHub Profile" value={resumeData.github || ''} onChange={e => handleInputChange(e, 'github')} icon={<Github size={16} />} />
+                        <InputField label="Portfolio Website" value={resumeData.portfolio || ''} onChange={e => handleInputChange(e, 'portfolio')} icon={<Globe size={16} />} />
+                        <InputField label="Target Profession" value={resumeData.target_profession} onChange={e => handleInputChange(e, 'target_profession')} required placeholder="e.g., Software Engineer" icon={<Target size={16} />} className="col-span-2" />
                     </div>
                 </Section>
 
@@ -793,7 +669,7 @@ const ResumeOptimizer = () => {
                     icon={<Award size={20} />}
                     isExpanded={expandedSections.skills}
                     onToggle={() => toggleSection('skills')}
-                    onAdd={() => handleAddItem('skills')}
+                    onAdd={() => handleAddItem('skills')} // This will now add a new skill category
                     addLabel="Add Skill Category"
                 >
                     {resumeData.skills.map((skillCat, catIndex) => (
