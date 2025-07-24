@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
-const { getPortfolioDetails, updateOrCreatePortfolioDetails, getPublicPortfolio } = require('../controller/portfolioDetailsController');
+const { getPortfolioDetails, updateOrCreatePortfolioDetails, getPublicPortfolio, searchPortfolios } = require('../controller/portfolioDetailsController');
 
 // Private routes for authenticated users to manage their own portfolio details
 // @desc    Get portfolio details for authenticated user
@@ -20,6 +20,8 @@ router.put('/portfolio-details', passport.authenticate('jwt', { session: false }
 // @route   GET /api/portfolio/public/:username
 // @access  Public
 router.get('/public/:username', getPublicPortfolio); // No authentication needed for public view
+
+router.get('/search', passport.authenticate('jwt', { session: false }), searchPortfolios);
 
 module.exports = router;
 

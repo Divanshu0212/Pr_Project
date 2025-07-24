@@ -53,6 +53,10 @@ const SummaryApi = {
         updateDetails: {
             url: `${BACKEND_DOMAIN}/api/portfolio-details`,
             method: "PUT"
+        },
+        search: {
+            url: `${BACKEND_DOMAIN}/api/portfolio/search`,
+            method: "GET"
         }
     },
     skills: {
