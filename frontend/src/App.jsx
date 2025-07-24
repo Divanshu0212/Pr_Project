@@ -21,6 +21,7 @@ import { useAuth } from './hooks/useAuth';
 import './styles/global.css';
 import './App.css';
 import './styles/animations.css'; // Global animations
+import PortfolioNotFound from './pages/portfolio/PortfolioNotFound';
 
 // Lazy-loaded components (grouped by module and access level for clarity)
 
@@ -127,7 +128,7 @@ const AnimatedRoutes = () => {
           <Route path="/terms" element={<MainLayout user={currentUser}><TermsAndConditions /></MainLayout>} />
           <Route path="/help" element={<MainLayout user={currentUser}><HelpCenter /></MainLayout>} />
           <Route path="/portfolio/public/:username" element={<MainLayout user={currentUser}><PublicPortfolio /></MainLayout>} /> {/* Public portfolio view */}
-
+          <Route path="/portfolio-not-found" element={<MainLayout user={currentUser}><PortfolioNotFound /></MainLayout>} /> {/* Portfolio Not Found page */}
 
           {/* --- Authentication Routes --- */}
           <Route path="/login" element={<Login />} />

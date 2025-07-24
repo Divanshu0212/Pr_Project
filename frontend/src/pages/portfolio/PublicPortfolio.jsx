@@ -17,12 +17,26 @@ const PublicPortfolio = () => {
     // Fetch public portfolio data for the given username
     const { data: publicPortfolioData, isLoading, isError, error } = useQuery(
         ['publicPortfolio', username],
-        () => portfolioService.getPublicPortfolioByUsername(username), // Use the service function here
+        () => portfolioService.getPublicPortfolioByUsername(username),
         {
             retry: false,
-            refetchOnWindowFocus: false
+            refetchOnWindowFocus: false,
+            onError: (err) => {
+                console.error('Portfolio fetch error:', err);
+                if (err.response?.status === 404) {
+                    navigate('/portfolio-not-found', { state: { username } });
+                }
+            }
         }
     );
+
+    // Add this useEffect to handle missing username:
+    useEffect(() => {
+        if (!username) {
+            navigate('/'); // Redirect to home if no username
+        }
+    }, [username, navigate]);
+
 
     if (isLoading) {
         return (
@@ -53,21 +67,24 @@ const PublicPortfolio = () => {
     }
 
     const {
-        user,
-        portfolioDetails,
-        skills,
-        projects,
-        certificates,
-        experiences,
+        user = {},
+        portfolioDetails = {},
+        skills = [],
+        projects = [],
+        certificates = [],
+        experiences = [],
     } = publicPortfolioData || {};
 
     // Organize skills by category for display
-    const skillsByCategory = (skills || []).reduce((acc, skill) => {
+    const skillsByCategory = (publicPortfolioData.data.skills || []).reduce((acc, skill) => {
         const category = skill.category || 'Other';
         if (!acc[category]) acc[category] = [];
         acc[category].push(skill.name);
         return acc;
     }, {});
+
+    console.log(publicPortfolioData);
+
 
     return (
         <div className={`public-portfolio ${isDark ? 'dark' : ''}`}>
@@ -77,73 +94,73 @@ const PublicPortfolio = () => {
                     <div className="profile-content">
                         <div className="profile-image-section">
                             <img
-                                src={user?.profileImage?.url || '/default-avatar.png'}
-                                alt={user?.displayName || 'User Profile'}
+                                src={publicPortfolioData.data.user?.profileImage?.url || publicPortfolioData.data.user?.profileImage || '/default-avatar.png'}
+                                alt={publicPortfolioData.data.user?.displayName || 'User Profile'}
                                 className="profile-image"
                             />
                         </div>
 
                         <div className="profile-info">
                             <h1 className="profile-name">
-                                {portfolioDetails?.displayName || user?.displayName || 'Portfolio User'} {/* Prioritize portfolioDetails.displayName */}
+                                {publicPortfolioData.data.user?.displayName || 'Portfolio User'} {/* Prioritize portfolioDetails.displayName */}
                             </h1>
 
-                            {portfolioDetails?.jobTitle && (
-                                <p className="job-title">{portfolioDetails.jobTitle}</p>
+                            {publicPortfolioData.data.portfolioDetails?.jobTitle && (
+                                <p className="job-title">{publicPortfolioData.data.portfolioDetails.jobTitle}</p>
                             )}
 
                             <div className="profile-meta">
-                                {portfolioDetails?.location && (
+                                {publicPortfolioData.data.portfolioDetails?.location && (
                                     <span className="meta-item">
-                                        <MdLocationOn /> {portfolioDetails.location}
+                                        <MdLocationOn /> {publicPortfolioData.data.portfolioDetails.location}
                                     </span>
                                 )}
-                                {portfolioDetails?.email && (
+                                {publicPortfolioData.data.portfolioDetails?.email && (
                                     <span className="meta-item">
-                                        <MdEmail /> {portfolioDetails.email}
+                                        <MdEmail /> {publicPortfolioData.data.portfolioDetails.email}
                                     </span>
                                 )}
-                                {portfolioDetails?.phone && (
+                                {publicPortfolioData.data.portfolioDetails?.phone && (
                                     <span className="meta-item">
-                                        <MdPhone /> {portfolioDetails.phone}
+                                        <MdPhone /> {publicPortfolioData.data.portfolioDetails.phone}
                                     </span>
                                 )}
                             </div>
 
-                            {portfolioDetails?.bio && (
-                                <p className="profile-bio">{portfolioDetails.bio}</p>
+                            {publicPortfolioData.data.portfolioDetails?.bio && (
+                                <p className="profile-bio">{publicPortfolioData.data.portfolioDetails.bio}</p>
                             )}
 
                             {/* Social Links */}
-                            {portfolioDetails?.socialLinks && (
+                            {publicPortfolioData.data.portfolioDetails?.socialLinks && (
                                 <div className="social-links">
-                                    {portfolioDetails.socialLinks.github && (
-                                        <a href={portfolioDetails.socialLinks.github} target="_blank" rel="noopener noreferrer" className="social-link github">
+                                    {publicPortfolioData.data.portfolioDetails.socialLinks.github && (
+                                        <a href={publicPortfolioData.data.portfolioDetails.socialLinks.github} target="_blank" rel="noopener noreferrer" className="social-link github">
                                             <FaGithub />
                                         </a>
                                     )}
-                                    {portfolioDetails.socialLinks.linkedin && (
-                                        <a href={portfolioDetails.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="social-link linkedin">
+                                    {publicPortfolioData.data.portfolioDetails.socialLinks.linkedin && (
+                                        <a href={publicPortfolioData.data.portfolioDetails.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" className="social-link linkedin">
                                             <FaLinkedin />
                                         </a>
                                     )}
-                                    {portfolioDetails.socialLinks.twitter && (
-                                        <a href={portfolioDetails.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="social-link twitter">
+                                    {publicPortfolioData.data.portfolioDetails.socialLinks.twitter && (
+                                        <a href={publicPortfolioData.data.portfolioDetails.socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="social-link twitter">
                                             <FaTwitter />
                                         </a>
                                     )}
-                                    {portfolioDetails.socialLinks.instagram && (
-                                        <a href={portfolioDetails.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="social-link instagram">
+                                    {publicPortfolioData.data.portfolioDetails.socialLinks.instagram && (
+                                        <a href={publicPortfolioData.data.portfolioDetails.socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="social-link instagram">
                                             <FaInstagram />
                                         </a>
                                     )}
-                                    {portfolioDetails.socialLinks.facebook && (
-                                        <a href={portfolioDetails.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="social-link facebook">
+                                    {publicPortfolioData.data.portfolioDetails.socialLinks.facebook && (
+                                        <a href={publicPortfolioData.data.portfolioDetails.socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="social-link facebook">
                                             <FaFacebook />
                                         </a>
                                     )}
-                                    {portfolioDetails.socialLinks.website && (
-                                        <a href={portfolioDetails.socialLinks.website} target="_blank" rel="noopener noreferrer" className="social-link website">
+                                    {publicPortfolioData.data.portfolioDetails.socialLinks.website && (
+                                        <a href={publicPortfolioData.data.portfolioDetails.socialLinks.website} target="_blank" rel="noopener noreferrer" className="social-link website">
                                             <FaGlobe />
                                         </a>
                                     )}
@@ -175,11 +192,11 @@ const PublicPortfolio = () => {
                 )}
 
                 {/* Projects Section */}
-                {projects && projects.length > 0 && (
+                {publicPortfolioData.data.projects && publicPortfolioData.data.projects.length > 0 && (
                     <div className="portfolio-section">
                         <h2 className="section-title">Projects</h2>
                         <div className="projects-grid">
-                            {projects.map((project) => (
+                            {publicPortfolioData.data.projects.map((project) => (
                                 <div key={project._id} className="project-card">
                                     {project.image?.url && (
                                         <img
@@ -230,11 +247,11 @@ const PublicPortfolio = () => {
                 )}
 
                 {/* Certificates Section */}
-                {certificates && certificates.length > 0 && (
+                {publicPortfolioData.data.certificates && publicPortfolioData.data.certificates.length > 0 && (
                     <div className="portfolio-section">
                         <h2 className="section-title">Certificates</h2>
                         <div className="certificates-grid">
-                            {certificates.map((certificate) => (
+                            {publicPortfolioData.data.certificates.map((certificate) => (
                                 <div key={certificate._id} className="certificate-card">
                                     <h3 className="certificate-title">{certificate.title}</h3>
                                     <p className="certificate-issuer">{certificate.issuer}</p>
@@ -263,11 +280,11 @@ const PublicPortfolio = () => {
                 )}
 
                 {/* Experience Section */}
-                {experiences && experiences.length > 0 && (
+                {publicPortfolioData.data.experiences && publicPortfolioData.data.experiences.length > 0 && (
                     <div className="portfolio-section">
                         <h2 className="section-title">Work Experience</h2>
                         <div className="experience-timeline">
-                            {experiences.map((experience) => (
+                            {publicPortfolioData.data.experiences.map((experience) => (
                                 <div key={experience._id} className="experience-item">
                                     <div className="experience-content">
                                         <h3 className="experience-position">{experience.position}</h3>
@@ -295,7 +312,7 @@ const PublicPortfolio = () => {
 
                 {/* Footer */}
                 <div className="portfolio-footer">
-                    <p>© {new Date().getFullYear()} {portfolioDetails?.displayName || username}. All rights reserved.</p>
+                    <p>© {new Date().getFullYear()} {publicPortfolioData.data?.user.displayName || username}. All rights reserved.</p>
                 </div>
             </div>
         </div>

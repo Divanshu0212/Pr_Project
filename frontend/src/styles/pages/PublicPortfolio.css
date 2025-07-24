@@ -42,17 +42,23 @@
   color: rgb(var(--color-text-primary));
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .portfolio-container {
+  flex: 1;
+  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1rem;
   position: relative;
+  padding: 2rem 1rem;
 }
 
 /* Profile Header Section */
 .profile-header {
+  width: 100%;
   background: var(--gradient-card-light);
   border-radius: 2rem;
   padding: 3rem 2rem;
@@ -529,6 +535,18 @@
   box-shadow: 0 0 0 2px rgba(var(--color-accent-primary), 0.3);
 }
 
+.social-link, .project-link, .certificate-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: 1rem;
+}
+
+.social-link:hover, .project-link:hover, .certificate-link:hover {
+  text-decoration: underline;
+}
 
 /* Footer */
 .portfolio-footer {
