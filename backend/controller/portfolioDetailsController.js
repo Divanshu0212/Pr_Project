@@ -41,50 +41,111 @@ exports.updateOrCreatePortfolioDetails = asyncHandler(async (req, res) => {
 exports.getPublicPortfolio = asyncHandler(async (req, res) => {
     const { username } = req.params;
 
-    // 1. Find the user by username
-    const user = await User.findOne({ username }).select('-password -__v -createdAt -updatedAt'); // Exclude sensitive/unnecessary fields
-
-    if (!user) {
-        res.status(404);
-        throw new Error('User not found.');
+    if (!username) {
+        return res.status(400).json({
+            success: false,
+            message: 'Username is required'
+        });
     }
 
-    const userId = user._id;
+    try {
+        // 1. Find the user by username
+        const user = await User.findOne({ username })
+            .select('-password -__v -createdAt -updatedAt');
 
-    // 2. Fetch PortfolioDetails
-    const portfolioDetails = await PortfolioDetails.findOne({ user: userId }).select('-user -__v -createdAt -updatedAt');
-    if (!portfolioDetails === null) {
-      console.log('Portfolio details are not found for this user.')
-    }
-
-    // 3. Fetch Skills
-    const skills = await Skill.find({ userId }).select('-userId -__v -createdAt -updatedAt').sort({ order: 1 });
-
-    // 4. Fetch Projects
-    // Consider filtering by isPinned or other public flags if needed, and select public fields
-    const projects = await Project.find({ userId }).select('-userId -__v -createdAt -updatedAt -tasks'); // Exclude tasks for public view
-    
-    // 5. Fetch Certificates
-    const certificates = await Certificate.find({ userId }).select('-userId -__v -createdAt -updatedAt');
-
-    // 6. Fetch Experiences
-    const experiences = await Experience.find({ user: userId }).select('-user -__v -createdAt -updatedAt');
-
-    // Aggregate all data
-    res.status(200).json({
-        success: true,
-        data: {
-            user: {
-                username: user.username,
-                displayName: user.displayName,
-                profileImage: user.profileImage?.url || null,
-                email: user.email // Depending on privacy, you might remove email for public profile
-            },
-            portfolioDetails: portfolioDetails || {}, // Provide empty object if not found
-            skills: skills || [],
-            projects: projects || [],
-            certificates: certificates || [],
-            experiences: experiences || []
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
         }
-    });
+
+        const userId = user._id;
+
+        // 2. Fetch PortfolioDetails with null checks
+        const portfolioDetails = await PortfolioDetails.findOne({ user: userId })
+            .select('-user -__v -createdAt -updatedAt') || {};
+
+        // 3. Fetch other data with empty array fallbacks
+        const [skills, projects, certificates, experiences] = await Promise.all([
+            Skill.find({ userId }).select('-userId -__v -createdAt -updatedAt').sort({ order: 1 }) || [],
+            Project.find({ userId }).select('-userId -__v -createdAt -updatedAt -tasks') || [],
+            Certificate.find({ userId }).select('-userId -__v -createdAt -updatedAt') || [],
+            Experience.find({ user: userId }).select('-user -__v -createdAt -updatedAt') || []
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: {
+                user: {
+                    _id: user._id,
+                    username: user.username,
+                    displayName: user.displayName,
+                    profileImage: user.profileImage || null,
+                    email: user.email
+                },
+                portfolioDetails,
+                skills,
+                projects,
+                certificates,
+                experiences
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching public portfolio:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching portfolio data'
+        });
+    }
+});
+
+// In your backend controller (portfolioDetailsController.js)
+exports.searchPortfolios = asyncHandler(async (req, res) => {
+    const { q } = req.query;
+
+    if (!q) {
+        return res.status(400).json({ success: false, message: 'Search query is required' });
+    }
+
+    try {
+        const users = await User.aggregate([
+            {
+                $lookup: {
+                    from: 'portfoliodetails',
+                    localField: '_id',
+                    foreignField: 'user',
+                    as: 'portfolioDetails'
+                }
+            },
+            { $unwind: { path: '$portfolioDetails', preserveNullAndEmptyArrays: true } },
+            {
+                $match: {
+                    $or: [
+                        { username: { $regex: q, $options: 'i' } },
+                        { displayName: { $regex: q, $options: 'i' } },
+                        { 'portfolioDetails.jobTitle': { $regex: q, $options: 'i' } },
+                        { 'portfolioDetails.skills': { $regex: q, $options: 'i' } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    username: 1,
+                    displayName: 1,
+                    profileImage: 1,
+                    'portfolioDetails.jobTitle': 1,
+                    'portfolioDetails.skills': 1
+                }
+            },
+            { $limit: 10 }
+        ]);
+
+        res.status(200).json({ success: true, users });
+    } catch (error) {
+        console.error('Search error:', error);
+        res.status(500).json({ success: false, message: 'Search failed' });
+    }
 });

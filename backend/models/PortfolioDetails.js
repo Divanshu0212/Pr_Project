@@ -37,4 +37,10 @@ const portfolioDetailsSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+// In your PortfolioDetails model
+portfolioDetailsSchema.index({
+  jobTitle: 'text',
+  skills: 'text'
+});
+
 module.exports = mongoose.model('PortfolioDetails', portfolioDetailsSchema);

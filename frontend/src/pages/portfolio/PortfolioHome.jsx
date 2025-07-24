@@ -151,7 +151,16 @@ const PortfolioHome = ({ user: propUser }) => {
         }
     };
 
-    // Share portfolio handler
+    // In PortfolioHome.jsx, update the preview button and sharing logic:
+    const handlePreviewPortfolio = () => {
+        if (!user?.username) {
+            alert('Please set up your username in profile settings first');
+            return;
+        }
+        const previewUrl = `${window.location.origin}/portfolio/public/${user.username}`;
+        window.open(previewUrl, '_blank');
+    };
+
     const handleSharePortfolio = async () => {
         if (!user?.username) {
             alert('Please set up your username in profile settings first');
@@ -159,9 +168,8 @@ const PortfolioHome = ({ user: propUser }) => {
         }
 
         const publicPortfolioUrl = `${window.location.origin}/portfolio/public/${user.username}`;
-        
+
         try {
-            // Try to use the Web Share API if available
             if (navigator.share) {
                 await navigator.share({
                     title: `${user.displayName || user.username}'s Portfolio`,
@@ -169,14 +177,12 @@ const PortfolioHome = ({ user: propUser }) => {
                     url: publicPortfolioUrl
                 });
             } else {
-                // Fallback to clipboard copy
                 await navigator.clipboard.writeText(publicPortfolioUrl);
                 setShareMessage('Portfolio link copied to clipboard!');
                 setTimeout(() => setShareMessage(''), 3000);
             }
         } catch (error) {
             console.error('Error sharing portfolio:', error);
-            // Final fallback - just copy to clipboard
             try {
                 await navigator.clipboard.writeText(publicPortfolioUrl);
                 setShareMessage('Portfolio link copied to clipboard!');
@@ -216,17 +222,12 @@ const PortfolioHome = ({ user: propUser }) => {
         (Object.values(completionStatus).filter(Boolean).length / Object.keys(completionStatus).length) * 100
     );
 
+    // Update the profileActions array:
     const profileActions = [
         {
             icon: FaEye,
             label: 'Preview',
-            action: () => {
-                if (!user?.username) {
-                    alert('Please set up your username in profile settings first');
-                    return;
-                }
-                window.open(`/portfolio/public/${user.username}`, '_blank');
-            },
+            action: handlePreviewPortfolio,
             primary: true
         },
         {
@@ -283,9 +284,9 @@ const PortfolioHome = ({ user: propUser }) => {
                                         <MdLocationOn /> {portfolioDetails.location}
                                     </span>
                                 )}
-                                {portfolioDetails?.email && (
+                                {user?.email && (
                                     <span className="meta-item">
-                                        <MdEmail /> {portfolioDetails.email}
+                                        <MdEmail /> {user?.email}
                                     </span>
                                 )}
                                 {portfolioDetails?.phone && (
@@ -294,7 +295,7 @@ const PortfolioHome = ({ user: propUser }) => {
                                     </span>
                                 )}
                             </div>
-                            
+
                             {/* Username Display */}
                             <div className="username-section">
                                 {user?.username ? (
@@ -307,7 +308,7 @@ const PortfolioHome = ({ user: propUser }) => {
                                 ) : (
                                     <div className="username-missing">
                                         <span className="warning-text">⚠️ Set up your username to enable portfolio sharing</span>
-                                        <button 
+                                        <button
                                             onClick={() => navigate('/portfolio/settings')}
                                             className="setup-username-btn"
                                         >
@@ -567,13 +568,13 @@ const PortfolioHome = ({ user: propUser }) => {
                                                 <code>{window.location.origin}/portfolio/public/{user.username}</code>
                                             </div>
                                             <div className="sharing-actions">
-                                                <button 
+                                                <button
                                                     onClick={() => window.open(`/portfolio/public/${user.username}`, '_blank')}
                                                     className="preview-public-btn"
                                                 >
                                                     <FaEye /> View Public Portfolio
                                                 </button>
-                                                <button 
+                                                <button
                                                     onClick={handleSharePortfolio}
                                                     className="share-portfolio-btn"
                                                 >
@@ -586,7 +587,7 @@ const PortfolioHome = ({ user: propUser }) => {
                                             <p className="sharing-warning">
                                                 Set up your username to make your portfolio shareable!
                                             </p>
-                                            <button 
+                                            <button
                                                 onClick={() => navigate('/portfolio/settings')}
                                                 className="setup-sharing-btn"
                                             >
