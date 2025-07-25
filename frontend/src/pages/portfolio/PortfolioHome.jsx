@@ -485,16 +485,15 @@ const PortfolioHome = ({ user: propUser }) => {
                                     </button>
                                 </div>
                                 <div className="skills-preview">
-                                    {Object.entries(skillsByCategory).slice(0, 2).map(([category, categorySkills]) => (
+                                    {Object.entries(skillsByCategory).map(([category, categorySkills]) => (
                                         <div key={category} className="skill-category-preview">
-                                            <h4>{category}</h4>
+                                            <h4 className='pt-2'>{category}</h4>
                                             <div className="skill-tags-preview">
-                                                {categorySkills.slice(0, 3).map((skill, index) => (
-                                                    <span key={index} className="skill-tag">{skill}</span>
+                                                {categorySkills.map((skill, index) => (
+                                                    <span key={`${category}-${index}`} className="skill-tag">
+                                                        {skill}
+                                                    </span>
                                                 ))}
-                                                {categorySkills.length > 3 && (
-                                                    <span className="more-skills">+{categorySkills.length - 3} more</span>
-                                                )}
                                             </div>
                                         </div>
                                     ))}
@@ -553,50 +552,7 @@ const PortfolioHome = ({ user: propUser }) => {
                                 </div>
                             )}
 
-                            {/* Portfolio Sharing Info */}
-                            <div className="overview-card sharing-info">
-                                <div className="card-header">
-                                    <h3>Share Your Portfolio</h3>
-                                </div>
-                                <div className="sharing-content">
-                                    {user?.username ? (
-                                        <>
-                                            <p className="sharing-description">
-                                                Your portfolio is ready to share with employers and clients!
-                                            </p>
-                                            <div className="sharing-url">
-                                                <code>{window.location.origin}/portfolio/public/{user.username}</code>
-                                            </div>
-                                            <div className="sharing-actions">
-                                                <button
-                                                    onClick={() => window.open(`/portfolio/public/${user.username}`, '_blank')}
-                                                    className="preview-public-btn"
-                                                >
-                                                    <FaEye /> View Public Portfolio
-                                                </button>
-                                                <button
-                                                    onClick={handleSharePortfolio}
-                                                    className="share-portfolio-btn"
-                                                >
-                                                    <FaShare /> Share Portfolio
-                                                </button>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <p className="sharing-warning">
-                                                Set up your username to make your portfolio shareable!
-                                            </p>
-                                            <button
-                                                onClick={() => navigate('/portfolio/settings')}
-                                                className="setup-sharing-btn"
-                                            >
-                                                Setup Portfolio Sharing
-                                            </button>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
+                            
                         </div>
                     </div>
                 )}

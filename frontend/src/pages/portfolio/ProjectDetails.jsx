@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { FaGithub, FaEdit, FaTrash, FaArrowLeft, FaCheck } from 'react-icons/fa';
 import { MdWork, MdLocationOn } from 'react-icons/md';
-import SummaryApi from '../../config/index';
-import axios from 'axios';
+import SummaryApi from '../../config';
+// import axios from 'axios';
 import { useTheme } from '../../context/ThemeContext';
 
 const ProjectDetails = () => {
@@ -50,35 +50,50 @@ const ProjectDetails = () => {
                 setLoading(true);
                 setError('');
 
+                if (!id || id === 'undefined') {
+                    throw new Error('Invalid project ID');
+                }
+
                 const token = localStorage.getItem('token');
-                const response = await axios.get(SummaryApi.projects.single.url(id), {
+                const response = await fetch(SummaryApi.projects.single.url(id), {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
                 });
-                if (!response.data.success) {
-                    throw new Error(response.data.message || 'Failed to fetch project');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch project');
                 }
-                setProject(response.data.project);
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(data.message || 'Failed to fetch project');
+                }
+                setProject(data.project);
             } catch (err) {
                 console.error('Fetch error:', err);
-                setError(err.response?.data?.message || err.message || 'Failed to fetch project details');
+                setError(err.message || 'Failed to fetch project details');
             } finally {
                 setLoading(false);
             }
         };
         fetchProject();
-    }, [id]); // Depend on ID from URL params
+    }, [id, navigate]); // Depend on ID from URL params
 
     const handleDelete = async () => {
         if (window.confirm('Are you sure you want to delete this project?')) {
             try {
                 const token = localStorage.getItem('token');
-                await axios.delete(SummaryApi.projects.delete.url(id), {
+                await fetch(SummaryApi.projects.delete.url(id), {
+                    method: 'DELETE',
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
                 });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
                 navigate('/portfolio'); // Navigate back to portfolio page
             } catch (err) {
                 setError('Failed to delete project');

@@ -184,17 +184,26 @@
 
 /* Form Sections */
 .form-section {
-  background: linear-gradient(135deg, 
-    rgba(var(--color-background-secondary), 0.8), 
-    rgba(var(--color-background-secondary), 0.6)
+  background: linear-gradient(
+    135deg,
+    rgba(30, 30, 30, 0.8), /* Fallback solid color */
+    rgba(50, 50, 50, 0.6)  /* Fallback solid color */
   );
-  border: 1px solid rgba(var(--color-accent-primary), 0.15);
+  background: linear-gradient(
+    135deg,
+    rgba(var(--color-background-secondary, 30, 30, 30), 0.8),
+    rgba(var(--color-background-secondary, 50, 50, 50), 0.6)
+  );
+  border: 1px solid rgba(0, 200, 255, 0.15); /* Fallback */
+  border: 1px solid rgba(var(--color-accent-primary, 0, 200, 255), 0.15);
   border-radius: 1rem;
   overflow: hidden;
+  -webkit-backdrop-filter: blur(10px); /* Safari support */
   backdrop-filter: blur(10px);
   animation: slideIn 0.6s ease-out;
   transition: all 0.3s ease;
   margin-bottom: 2rem;
+  opacity: 1; /* Force visibility */
 }
 
 .form-section:hover {
