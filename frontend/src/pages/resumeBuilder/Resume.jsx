@@ -32,7 +32,7 @@ const Section = ({ title, subtitle, icon, children, isExpanded, onToggle, onAdd,
                         </button>
                     )}
                     <button type="button" className="expand-btn">
-                        {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        <span>{isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}</span>
                     </button>
                 </div>
             </div>
