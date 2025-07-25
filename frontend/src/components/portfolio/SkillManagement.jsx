@@ -36,31 +36,52 @@ const SkillManagement = () => {
 
     const categories = ['Languages', 'Frontend', 'Backend', 'Database', 'DevOps', 'Other'];
 
-    const { data: skillsData, isLoading, isError, error, refetch: refetchSkills } = useQuery(
-        ['skills', currentUser?.uid],
+    const { data: skillsData, isLoading, isError, error } = useQuery(
+        ['skills', currentUser?._id],
         async () => {
-            if (!currentUser?.uid) return [];
+            if (!currentUser?._id) {
+                console.log('No user ID');
+                return [];
+            }
 
             const token = localStorage.getItem('token');
-            const response = await fetch(SummaryApi.skills.get.url, {
-                method: SummaryApi.skills.get.method,
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!response.ok) {
-                if (response.status === 404 || response.status === 204) return [];
-                const errorBody = await response.json();
-                throw new Error(errorBody.message || 'Failed to fetch skills');
+            if (!token) {
+                console.log('No token found');
+                return [];
             }
-            return response.json();
+
+            try {
+                const response = await fetch(SummaryApi.skills.get.url, {
+                    method: SummaryApi.skills.get.method,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorBody = await response.text(); // Use text() first in case JSON parsing fails
+                    console.error('Error response body:', errorBody);
+                    throw new Error(errorBody || 'Failed to fetch skills');
+                }
+
+                const data = await response.json();
+                console.log('Fetched skills data:', data);
+                return data;
+            } catch (err) {
+                console.error('Fetch error:', err);
+                throw err;
+            }
         },
         {
-            enabled: !!currentUser?.uid,
+            enabled: !!currentUser?._id,
             staleTime: 5 * 60 * 1000,
             cacheTime: 10 * 60 * 1000,
+            onError: (err) => {
+                console.error('Query error:', err);
+            }
         }
     );
 
@@ -174,7 +195,7 @@ const SkillManagement = () => {
             return response.json();
         },
         {
-            onSuccess: () => { 
+            onSuccess: () => {
                 queryClient.invalidateQueries(['skills']);
                 queryClient.refetchQueries(['skills']);
             },
@@ -242,20 +263,26 @@ const SkillManagement = () => {
         )}>
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
-                <div className="animate-on-scroll mb-8">
-                    <Button
-                        onClick={() => navigate('/portfolio')}
-                        variant="ghost"
-                        className={clsx(
-                            "mb-6 group transition-colors duration-300",
-                            isDark ? 'text-[#00FFFF] hover:text-[#9C27B0]' : 'text-blue-600 hover:text-purple-600'
-                        )}
-                    >
-                        <FaArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform duration-200" />
-                        Back to Portfolio
-                    </Button>
+                <div className="flex flex-col mb-8">
+                    {/* Button container with left alignment */}
+                    <div className="flex justify-start w-full mb-6">
+                        <Button
+                            onClick={() => navigate('/portfolio')}
+                            variant="ghost"
+                            className={clsx(
+                                "mb-6 group transition-colors duration-300 inline-flex items-center gap-1", // Using gap instead of mr-2
+                                isDark ? 'text-[#00FFFF] hover:text-[#9C27B0]' : 'text-blue-600 hover:text-purple-600'
+                            )}
+                        >
+                            <div className='flex items-center gap-3'>
+                                <FaArrowLeft className="group-hover:-translate-x-1 transition-transform duration-200" />
+                                <span>Back to Portfolio</span>
+                            </div>
+                        </Button>
+                    </div>
 
-                    <div className="text-center mb-8">
+                    {/* Title remains centered */}
+                    <div className="text-center -mt-12">
                         <h1 className={clsx(
                             "text-4xl font-bold mb-4 bg-gradient-to-r bg-clip-text text-transparent animate-gradient-x",
                             isDark ? 'from-[#00FFFF] to-[#9C27B0]' : 'from-blue-600 to-purple-600'
