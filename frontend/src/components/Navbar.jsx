@@ -150,8 +150,6 @@ const Navbar = ({ onToggleSidebar, sidebarCollapsed = false }) => {
         timeout: 5000
       });
 
-      // Debugging: log the response
-      console.log('Search response:', response.data);
 
       if (response.data.success && Array.isArray(response.data.users)) {
         const validUsers = response.data.users.filter(user => user.username);
@@ -169,7 +167,6 @@ const Navbar = ({ onToggleSidebar, sidebarCollapsed = false }) => {
 
   // Add this to your Navbar component to verify the search results
   useEffect(() => {
-    console.log('Current search results:', searchResults);
   }, [searchResults]);
 
   // Enhanced sidebar icon logic with better animations and icons

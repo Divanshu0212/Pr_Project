@@ -211,7 +211,7 @@ const PortfolioHome = ({ user: propUser }) => {
 
     const completionStatus = {
         basic: !!(user?.displayName && portfolioDetails?.jobTitle && portfolioDetails?.bio),
-        contact: !!(portfolioDetails?.email && portfolioDetails?.location),
+        contact: !!(user?.email && portfolioDetails?.location && portfolioDetails?.phone),
         social: !!(portfolioDetails?.socialLinks?.github || portfolioDetails?.socialLinks?.linkedin),
         skills: skills.length > 0,
         projects: pinnedProjects.length > 0,
@@ -291,7 +291,10 @@ const PortfolioHome = ({ user: propUser }) => {
                                 )}
                                 {portfolioDetails?.phone && (
                                     <span className="meta-item">
-                                        <MdPhone /> {portfolioDetails.phone}
+                                        <MdPhone />
+                                        <a href={`tel:${portfolioDetails.phone}`} className="phone-link">
+                                            {portfolioDetails.phone}
+                                        </a>
                                     </span>
                                 )}
                             </div>
@@ -365,7 +368,10 @@ const PortfolioHome = ({ user: propUser }) => {
                     <div className="completion-progress">
                         <div
                             className="progress-bar"
-                            style={{ width: `${completionPercentage}%` }}
+                            style={{ width: `${completionPercentage}%`, transition: 'width 0.5s ease' }}
+                            aria-valuenow={completionPercentage}
+                            aria-valuemin="0"
+                            aria-valuemax="100"
                         ></div>
                     </div>
                     <span className="completion-percentage">{completionPercentage}%</span>
@@ -543,16 +549,11 @@ const PortfolioHome = ({ user: propUser }) => {
                                                 <FaFacebook /> Facebook
                                             </a>
                                         )}
-                                        {portfolioDetails.socialLinks.website && (
-                                            <a href={portfolioDetails.socialLinks.website} className="social-link" target="_blank" rel="noopener noreferrer">
-                                                <FaGlobe /> Website
-                                            </a>
-                                        )}
                                     </div>
                                 </div>
                             )}
 
-                            
+
                         </div>
                     </div>
                 )}
