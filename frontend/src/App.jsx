@@ -148,8 +148,8 @@ const AnimatedRoutes = () => {
           <Route path="/portfolio/skills" element={<ProtectedRoute><DashboardLayout user={currentUser}><SkillManagement /></DashboardLayout></ProtectedRoute>} />
           <Route path="/portfolio/projects" element={<ProtectedRoute><DashboardLayout user={currentUser}><ProjectTracking /></DashboardLayout></ProtectedRoute>} /> {/* All projects list */}
           <Route path="/portfolio/projects/add" element={<ProtectedRoute><DashboardLayout user={currentUser}><ProjectForm /></DashboardLayout></ProtectedRoute>} />
-          <Route path="/portfolio/projects/edit/:projectId" element={<ProtectedRoute><DashboardLayout user={currentUser}><ProjectForm editMode={true} /></DashboardLayout></ProtectedRoute>} />
-          <Route path="/portfolio/projects/:projectId" element={<ProtectedRoute><DashboardLayout user={currentUser}><ProjectDetails /></DashboardLayout></ProtectedRoute>} />
+          <Route path="/portfolio/projects/edit/:id" element={<ProtectedRoute><DashboardLayout user={currentUser}><ProjectForm editMode={true} /></DashboardLayout></ProtectedRoute>} />
+          <Route path="/portfolio/projects/:id" element={<ProtectedRoute><DashboardLayout user={currentUser}><ProjectDetails /></DashboardLayout></ProtectedRoute>} />
           <Route path="/portfolio/certificates" element={<ProtectedRoute><CertificatesPage /></ProtectedRoute>} /> {/* New page */}
           <Route path="/portfolio/experience" element={<ProtectedRoute><ExperiencePage /></ProtectedRoute>} /> {/* New page */}
           <Route path="/portfolio/team" element={<ProtectedRoute><DashboardLayout user={currentUser}><TeamCollab /></DashboardLayout></ProtectedRoute>} />

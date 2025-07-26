@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { FaPlus, FaTrash, FaArrowLeft, FaSave, FaImage, FaCode, FaTasks, FaCheckCircle, FaExclamationCircle } from 'react-icons/fa'; // Added FaCheckCircle, FaExclamationCircle
 import { useTheme } from '../../context/ThemeContext';
 import '../../styles/animations.css';
+import SummaryApi from '../../config';
 
 const ProjectForm = ({ editMode = false }) => {
   const navigate = useNavigate();
@@ -34,27 +35,61 @@ const ProjectForm = ({ editMode = false }) => {
     return () => clearTimeout(timer);
   }, []);
 
+  const fetchProjectData = async (id) => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(SummaryApi.projects.single.url(id), {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch project');
+    }
+
+    const data = await response.json();
+    return data;
+  };
+
   useEffect(() => {
+    if (editMode && !id) {
+      setError('Project ID is missing');
+      setLoading(false);
+      return;
+    }
+
     if (editMode && id) {
       const fetchProject = async () => {
         setLoading(true);
         setError('');
         try {
-          // Mock API call - replace with your actual API
-          console.log('Fetching project:', id);
-          // Simulate loading
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          // In a real app, you'd set the fetched project data here:
-          // setProject(fetchedProjectData);
-          // if (fetchedProjectData.imageUrl) {
-          //   setPreview(fetchedProjectData.imageUrl);
-          // }
+          const data = await fetchProjectData(id);
+          console.log('Fetched project data:', data);
+
+          // Transform the fetched data to match your form state structure
+          setProject({
+            title: data.project.title || '',
+            description: data.project.description || '',
+            link: data.project.link || '',
+            technologies: data.project.technologies || [],
+            status: data.project.status || 'planned',
+            progress: data.project.progress || 0,
+            isPinned: data.project.isPinned || false,
+            tasks: data.project.tasks?.length ? data.project.tasks : [{ title: '', completed: false }]
+          });
+
+          if (data.project.image?.url) {
+            setPreview(data.project.image.url);
+          }
         } catch (err) {
-          setError('Failed to fetch project details');
+          console.error('Fetch error:', err);
+          setError(err.message || 'Failed to fetch project details');
         } finally {
           setLoading(false);
         }
       };
+
       fetchProject();
     }
   }, [editMode, id]);
@@ -128,46 +163,82 @@ const ProjectForm = ({ editMode = false }) => {
     }));
   };
 
+  // console.log(project);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    setSubmissionMessage('Saving project...'); // Initial submission message
+    setSubmissionMessage(editMode ? 'Updating project...' : 'Creating project...');
     setShowSubmissionStatus(true);
 
     try {
       // Validate required fields
       if (!project.title || !project.description || !project.link || project.technologies.length === 0) {
-        throw new Error('Please fill in all required fields (title, description, link, and at least one technology).');
+        throw new Error('Please fill in all required fields');
       }
 
-      // Mock API call - replace with your actual API
-      console.log('Submitting project:', project);
-      // Simulate network delay and processing
-      await new Promise(resolve => setTimeout(resolve, 2500)); // Increased delay for effect
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
 
-      // Simulate a successful response
-      setSubmissionMessage('Project saved successfully! Redirecting...');
-      // In a real app, you would handle the actual API call here, e.g.:
-      // const response = await fetch('/api/projects', { method: 'POST', body: JSON.stringify(project), headers: { 'Content-Type': 'application/json' } });
-      // if (!response.ok) throw new Error('API submission failed.');
-      // const result = await response.json();
+      // Append all project data
+      formData.append('title', project.title);
+      formData.append('description', project.description);
+      formData.append('link', project.link);
+      formData.append('technologies', JSON.stringify(project.technologies));
+      formData.append('status', project.status);
+      formData.append('progress', project.progress);
+      formData.append('isPinned', project.isPinned);
+      formData.append('tasks', JSON.stringify(project.tasks));
 
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Give time for user to read success message
-      navigate('/portfolio/projects'); // Navigate to the projects list
+      // Append image if it's a new file
+      if (image) {
+        formData.append('image', image);
+      }
+
+      const url = editMode
+        ? SummaryApi.projects.update.url(id) // Use the correct update endpoint
+        : SummaryApi.projects.add.url;   // Use the correct create endpoint
+
+      const method = editMode ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData
+      });
+
+      // Check response content type
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        throw new Error(text || 'Invalid server response');
+      }
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Request failed');
+      }
+
+      setSubmissionMessage(editMode
+        ? 'Project updated successfully! Redirecting...'
+        : 'Project created successfully! Redirecting...');
+
+      setTimeout(() => {
+        navigate('/portfolio/projects');
+      }, 1500);
     } catch (err) {
-      setError(err.message || 'Something went wrong while saving the project.');
-      setSubmissionMessage('Error: ' + (err.message || 'Failed to save project.'));
+      console.error('Submission error:', err);
+      setError(err.message || 'Something went wrong');
+      setSubmissionMessage('Error: ' + err.message);
     } finally {
       setLoading(false);
-      // Keep success/error message visible briefly before hiding
-      setTimeout(() => {
-        setShowSubmissionStatus(false);
-        setSubmissionMessage('');
-      }, error ? 4000 : 2000); // Keep error message longer
+      setTimeout(() => setShowSubmissionStatus(false), 4000);
     }
   };
-
   const themeClasses = {
     container: isDark
       ? 'min-h-screen bg-[rgb(var(--color-background-primary))] text-[rgb(var(--color-text-primary))]'
@@ -184,26 +255,37 @@ const ProjectForm = ({ editMode = false }) => {
       : 'bg-[rgb(var(--color-background-primary))] border-[rgb(var(--color-accent-primary))] text-[rgb(var(--color-accent-primary))]'
   };
 
+  if (loading && editMode) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[rgb(var(--color-accent-primary))] mx-auto mb-4"></div>
+          <p>Loading project details...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={themeClasses.container}>
-       {/* Animated Background Gradient */}
-    <div className="fixed inset-0 bg-gradient-to-br from-[rgb(var(--color-accent-primary))]/5 via-transparent to-[rgb(var(--color-highlight))]/5 animate-pulse" />
+      {/* Animated Background Gradient */}
+      <div className="fixed inset-0 bg-gradient-to-br from-[rgb(var(--color-accent-primary))]/5 via-transparent to-[rgb(var(--color-highlight))]/5 animate-pulse" />
 
-    <div className="relative z-10 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header Section with Animation */}
-        <div className={`transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-          {/* Changed to /portfolio/projects - Move the comment here */}
-          <button
-            onClick={() => navigate('/portfolio/projects')}
-            className="group flex items-center gap-2 mb-6 text-[rgb(var(--color-accent-primary))] hover:text-[rgb(var(--color-highlight))] transition-all duration-300 transform hover:scale-105"
-          >
-            <FaArrowLeft className="transition-transform group-hover:-translate-x-1" />
-            <span className="relative">
-              Back to Portfolio
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[rgb(var(--color-accent-primary))] to-[rgb(var(--color-highlight))] transition-all duration-300 group-hover:w-full" />
-            </span>
-          </button>
+      <div className="relative z-10 py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          {/* Header Section with Animation */}
+          <div className={`transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+            {/* Changed to /portfolio/projects - Move the comment here */}
+            <button
+              onClick={() => navigate('/portfolio/projects')}
+              className="group flex items-center gap-2 mb-6 text-[rgb(var(--color-accent-primary))] hover:text-[rgb(var(--color-highlight))] transition-all duration-300 transform hover:scale-105"
+            >
+              <FaArrowLeft className="transition-transform group-hover:-translate-x-1" />
+              <span className="relative">
+                Back to Portfolio
+                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-[rgb(var(--color-accent-primary))] to-[rgb(var(--color-highlight))] transition-all duration-300 group-hover:w-full" />
+              </span>
+            </button>
 
             <div className="mb-8">
               <h1 className="text-4xl font-bold bg-gradient-to-r from-[rgb(var(--color-accent-primary))] to-[rgb(var(--color-highlight))] bg-clip-text text-transparent animate-pulse">
@@ -293,6 +375,7 @@ const ProjectForm = ({ editMode = false }) => {
                       name="title"
                       value={project.title}
                       onChange={handleChange}
+                      disabled={loading}
                       required
                       className={`w-full px-4 py-3 ${themeClasses.input} rounded-lg outline-none transition-all duration-300 group-hover:shadow-md focus:shadow-lg`}
                       placeholder="Enter your project title"
@@ -309,6 +392,7 @@ const ProjectForm = ({ editMode = false }) => {
                       name="link"
                       value={project.link}
                       onChange={handleChange}
+                      disabled={loading}
                       required
                       className={`w-full px-4 py-3 ${themeClasses.input} rounded-lg outline-none transition-all duration-300 group-hover:shadow-md focus:shadow-lg`}
                       placeholder="https://your-project.com"
@@ -325,6 +409,7 @@ const ProjectForm = ({ editMode = false }) => {
                     name="description"
                     value={project.description}
                     onChange={handleChange}
+                    disabled={loading}
                     required
                     rows={4}
                     className={`w-full px-4 py-3 ${themeClasses.input} rounded-lg outline-none transition-all duration-300 group-hover:shadow-md focus:shadow-lg resize-none`}
@@ -393,6 +478,7 @@ const ProjectForm = ({ editMode = false }) => {
                       name="status"
                       value={project.status}
                       onChange={handleChange}
+                      disabled={loading}
                       className={`w-full px-4 py-3 ${themeClasses.input} rounded-lg outline-none transition-all duration-300 group-hover:shadow-md focus:shadow-lg`}
                     >
                       <option value="planned">🎯 Planned</option>
@@ -414,6 +500,7 @@ const ProjectForm = ({ editMode = false }) => {
                         max="100"
                         value={project.progress}
                         onChange={handleChange}
+                        disabled={loading}
                         className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer transition-all duration-300 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-[rgb(var(--color-accent-primary))] [&::-webkit-slider-thumb]:to-[rgb(var(--color-highlight))] [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:transition-transform [&::-webkit-slider-thumb]:hover:scale-110"
                       />
                       <div

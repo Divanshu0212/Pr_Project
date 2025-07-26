@@ -205,11 +205,10 @@ body.with-absolute-footer {
   width: 5px;
 }
 
-.social-links {
+.social-links-new {
   display: flex;
   gap: 0.8rem;
   margin-top: 1.2rem;
-  justify-content: center;
 }
 
 .social-icon {

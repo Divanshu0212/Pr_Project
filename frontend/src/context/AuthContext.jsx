@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [portfolioDetails, setPortfolioDetails] = useState({
     jobTitle: '',
     location: '',
+    phone: '',
     yearsOfExperience: 0,
     availability: 'available',
     bio: '',
@@ -75,7 +76,7 @@ export const AuthProvider = ({ children }) => {
         setLoading(false);
         return;
       }
-      
+
       const response = await fetch(SummaryApi.current_user.url, {
         method: 'GET',
         credentials: 'include',
@@ -109,7 +110,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-   const fetchPortfolioDetails = async () => {
+  const fetchPortfolioDetails = async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(SummaryApi.portfolioDetails.get.url, {
@@ -117,7 +118,7 @@ export const AuthProvider = ({ children }) => {
           'Authorization': `Bearer ${token}`
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         if (data.data) {
@@ -135,6 +136,7 @@ export const AuthProvider = ({ children }) => {
   const updatePortfolioDetails = async (updatedDetails) => {
     try {
       const token = localStorage.getItem('token');
+
       const response = await fetch(SummaryApi.portfolioDetails.update.url, {
         method: SummaryApi.portfolioDetails.update.method,
         headers: {
@@ -254,31 +256,31 @@ export const AuthProvider = ({ children }) => {
   const signInWithGithub = () => {
     window.open(SummaryApi.githubAuth.url || "http://localhost:5000/api/auth/github", "_self");
   };
-const handleOAuthCallback = async (token, user) => {
-  try {
-    if (token && user) {
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('token', token);
-      
-      setCurrentUser({
-        id: user._id,
-        username: user.username || 'User',
-        displayName: user.displayName || 'User',
-        email: user.email,
-      });
-      
-      setIsAuthenticated(true);
-      await fetchUserDetails(); 
-      return true;
-    } else {
-      throw new Error('Token verification failed');
+  const handleOAuthCallback = async (token, user) => {
+    try {
+      if (token && user) {
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('token', token);
+
+        setCurrentUser({
+          id: user._id,
+          username: user.username || 'User',
+          displayName: user.displayName || 'User',
+          email: user.email,
+        });
+
+        setIsAuthenticated(true);
+        await fetchUserDetails();
+        return true;
+      } else {
+        throw new Error('Token verification failed');
+      }
+    } catch (error) {
+      console.error('OAuth callback error:', error);
+      logout(); // Clear any existing auth state
+      return false;
     }
-  } catch (error) {
-    console.error('OAuth callback error:', error);
-    logout(); // Clear any existing auth state
-    return false;
-  }
-};
+  };
 
   const value = {
     currentUser,
