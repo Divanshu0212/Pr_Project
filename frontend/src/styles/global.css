@@ -539,51 +539,7 @@ select:focus {
 }
 
 
-/* ==========================================================================
-   THEME SYSTEM - COLOR PALETTES
-   ========================================================================== */
 
-:root {
-  /* ===== VIBRANT LIGHT THEME (UPDATED) ===== */
-
-  /* 1. Backgrounds: Create depth with an off-white base and pure white for cards. */
-  --color-background-primary: 249, 250, 251;   /* #F9FAFB - A very light, clean grey */
-  --color-background-secondary: 255, 255, 255; /* #FFFFFF - Pure white for cards & headers to make them pop */
-
-  /* 2. Text: Use a softer, more modern black for better readability. */
-  --color-text-primary: 17, 24, 39;          /* #111827 - A deep, soft black */
-  --color-text-secondary: 107, 114, 128;     /* #6B7280 */
-  --color-text-placeholder: 156, 163, 175;   /* #9CA3AF */
-
-  /* 3. Accents: A vibrant and cohesive palette for a modern, energetic feel. */
-  --color-accent-primary: 37, 99, 235;        /* #2563EB - A strong, confident blue */
-  --color-accent-secondary: 124, 58, 237;     /* #7C3AED - A rich, deep purple */
-  --color-highlight: 217, 70, 239;           /* #D946EF - An energetic fuchsia for highlights */
-  --color-accent-neutral: 229, 231, 235;      /* #E5E7EB - For borders and dividers */
-  --color-accent-error: 220, 38, 38;         /* #DC2626 */
-
-  /* 4. Gradients: Rebuilt with the new vibrant accents to bring the UI to life. */
-  --gradient-auth: linear-gradient(135deg, rgb(var(--color-accent-primary)) 0%, rgb(var(--color-highlight)) 100%);
-  --gradient-card-light: linear-gradient(145deg, #FFFFFF 0%, #F9FAFB 100%);
-  --gradient-card-dark: linear-gradient(145deg, #161B22 0%, #0D1117 100%); /* For dark mode context */
-  --gradient-mesh: radial-gradient(circle at 20% 80%, rgba(var(--color-accent-primary), 0.3) 0%, transparent 50%),
-                   radial-gradient(circle at 80% 20%, rgba(var(--color-highlight), 0.3) 0%, transparent 50%);
-  --gradient-hero: linear-gradient(135deg, rgba(var(--color-accent-primary), 0.1) 0%, rgba(var(--color-highlight), 0.1) 100%);
-}
-
-/* ===== DOPE DARK THEME (UNCHANGED) ===== */
-.dark {
-  --color-background-primary: 13, 17, 23;      /* #0D1117 */
-  --color-background-secondary: 22, 27, 34;    /* #161B22 */
-  --color-text-primary: 229, 229, 229;         /* #E5E5E5 */
-  --color-text-secondary: 160, 174, 192;      /* #A0AEC0 */
-  --color-text-placeholder: 113, 128, 150;     /* #718096 */
-  --color-accent-primary: 0, 255, 255;        /* #00FFFF (Cyan) */
-  --color-accent-secondary: 128, 90, 213;     /* #805AD5 */
-  --color-highlight: 156, 39, 176;          /* #9C27B0 (Purple) */
-  --color-accent-neutral: 45, 55, 72;         /* #2D3748 */
-  --color-accent-error: 229, 62, 62;          /* #E53E3E */
-}
 
 
 /* ==========================================================================
