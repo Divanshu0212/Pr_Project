@@ -119,7 +119,7 @@ const Footer = () => {
             Your all-in-one platform for portfolio management, resume building, and ATS optimization.
           </motion.p>
           <motion.div 
-            className="social-links"
+            className="social-links-new"
             variants={socialVariants}
           >
             {[

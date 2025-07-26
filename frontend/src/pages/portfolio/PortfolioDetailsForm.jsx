@@ -108,6 +108,19 @@ const PortfolioDetailsForm = ({ onClose }) => {
                             </div>
 
                             <div className="input-group">
+                                <label className={labelClasses}>Phone</label>
+                                <input
+                                    type="text"
+                                    name="phone"
+                                    value={localFormData.phone || ''} // Ensure default empty string
+                                    onChange={handleChange}
+                                    className={inputClasses}
+                                    placeholder="e.g., +1 (123) 456-7890"
+                                    pattern="[+]{0,1}[0-9\s\-\(\)]{8,20}"
+                                />
+                            </div>
+
+                            <div className="input-group">
                                 <label className={labelClasses}>Years of Experience</label>
                                 <input
                                     type="number"
@@ -224,20 +237,6 @@ const PortfolioDetailsForm = ({ onClose }) => {
                                         value={localFormData.socialLinks?.facebook || ''}
                                         onChange={handleSocialLinkChange}
                                         placeholder="Facebook Profile URL"
-                                        className={inputClasses}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="social-input-group">
-                                <div className="flex items-center space-x-3">
-                                    <FaGlobe className={`text-2xl ${isDark ? 'text-[rgb(var(--color-text-primary))]' : 'text-[rgb(var(--color-text-primary))]'}`} />
-                                    <input
-                                        type="url"
-                                        name="website"
-                                        value={localFormData.socialLinks?.website || ''}
-                                        onChange={handleSocialLinkChange}
-                                        placeholder="Personal Website URL"
                                         className={inputClasses}
                                     />
                                 </div>
