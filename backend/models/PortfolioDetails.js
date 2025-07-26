@@ -34,7 +34,11 @@ const portfolioDetailsSchema = new mongoose.Schema({
   bio: {
     type: String,
     default: ''
-  }
+  },
+  phone: {
+    type: String,
+    default: ''
+  },
 }, { timestamps: true });
 
 // In your PortfolioDetails model

@@ -23,11 +23,11 @@ exports.getPortfolioDetails = asyncHandler(async (req, res) => {
 // @route   PUT /api/portfolio-details
 // @access  Private
 exports.updateOrCreatePortfolioDetails = asyncHandler(async (req, res) => {
-    const { jobTitle, location, yearsOfExperience, socialLinks, availability, bio } = req.body;
-
+    const { jobTitle, location, phone, yearsOfExperience, socialLinks, availability, bio } = req.body;
+    
     const details = await PortfolioDetails.findOneAndUpdate(
         { user: req.user._id },
-        { jobTitle, location, yearsOfExperience, socialLinks, availability, bio },
+        { jobTitle, location, phone, yearsOfExperience, socialLinks, availability, bio },
         { new: true, upsert: true, runValidators: true } // runValidators ensures schema validation on upsert
     );
 
