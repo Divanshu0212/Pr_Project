@@ -265,7 +265,7 @@ const PortfolioHome = ({ user: propUser }) => {
                                 className="edit-image-btn"
                                 onClick={() => setIsEditingPic(true)}
                             >
-                                <FaCamera />
+                                <div><FaCamera size={14}/></div>
                             </button>
                         </div>
 

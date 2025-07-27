@@ -2,7 +2,7 @@
 
 .button {
   position: relative;
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   justify-content: center;
   white-space: nowrap;
@@ -20,13 +20,16 @@
 .button-content {
   position: relative;
   z-index: 2;
-  display: flex;
+  display: flex !important;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
+  flex-direction: row;
 }
 
 .button-text {
   display: inline-block;
+  white-space: nowrap;
 }
 
 /* === VARIANTS === */
@@ -164,6 +167,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+}
+
+.button-icon + .button-text {
+  margin-left: 0.5rem;
 }
 
 .button-icon svg {

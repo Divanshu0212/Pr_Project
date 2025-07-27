@@ -94,8 +94,9 @@ const ProjectDetails = () => {
                     const errorData = await response.json();
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
                 }
-                navigate('/portfolio'); // Navigate back to portfolio page
+                navigate('/portfolio/projects'); // Navigate back to portfolio page
             } catch (err) {
+                navigate('/portfolio/projects');
                 setError('Failed to delete project');
             }
         }

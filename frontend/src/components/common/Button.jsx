@@ -141,13 +141,13 @@ const Button = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {enableShine && (
+      {/* {enableShine && (
         <div 
           className="button-shine" 
           style={shineStyle}
           aria-hidden="true"
         />
-      )}
+      )} */}
       
       {isLoading ? (
         <div className="button-loader">
@@ -159,7 +159,7 @@ const Button = ({
         </div>
       ) : (
         <motion.span 
-          className="button-content"
+          className="button-content "
           variants={hoverVariants}
         >
           {icon && (
