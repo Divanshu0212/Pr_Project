@@ -87,8 +87,8 @@ const Home = () => {
   ];
 
   const quickLinks = [
-    { text: "Build Resume", path: "/resume-builder-home", icon: <FiFileText /> },
-    { text: "Manage Portfolio", path: "/portfolioHome", icon: <FiBriefcase /> },
+    { text: "Build Resume", path: "/resume", icon: <FiFileText /> },
+    { text: "Manage Portfolio", path: "/portfolio", icon: <FiBriefcase /> },
     { text: "Check ATS Score", path: "/ats", icon: <FiBarChart2 /> },
   ];
 
@@ -126,8 +126,10 @@ const Home = () => {
                   onClick={() => navigate(link.path)}
                   className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
                 >
-                  {link.icon}
-                  {link.text}
+                  <div className="flex items-center gap-2">
+                    {link.icon}
+                    {link.text}
+                  </div>
                 </Button>
               ))}
             </div>
@@ -180,7 +182,7 @@ const Home = () => {
                         <Button
                           variant="secondary"
                           size="small"
-                          onClick={() => navigate('/resume-builder-home')}
+                          onClick={() => navigate('/resume')}
                           className="w-full mt-4"
                         >
                           View Details
@@ -191,17 +193,17 @@ const Home = () => {
                     <Card className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                       <div className="flex justify-between items-center mb-4">
                         <div className="flex items-center gap-2">
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Portfolio Progress</h3>
+                          <h3 className="text-[calc(1.025rem)] font-semibold text-gray-900 dark:text-white">Portfolio Progress</h3>
                           <button
                             onClick={() => setShowProgressDialog(true)}
-                            className="text-gray-500 hover:text-blue-600 transition-colors"
+                            className="text-gray-500 hover:text-blue-600 transition-colors bg-transparent p-2 mr-2"
                           >
                             <FiHelpCircle className="w-4 h-4" />
                           </button>
                         </div>
                         <FiBriefcase className="text-2xl text-purple-600" />
                       </div>
-                      
+
                       {loading ? (
                         <div className="space-y-4">
                           <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
@@ -228,7 +230,7 @@ const Home = () => {
                           <Button
                             variant="secondary"
                             size="small"
-                            onClick={() => navigate('/portfolioHome')}
+                            onClick={() => navigate('/portfolio')}
                             className="w-full"
                           >
                             View Details
@@ -292,24 +294,33 @@ const Home = () => {
                   <div className="space-y-3">
                     <Button
                       variant="primary"
-                      onClick={() => navigate('/resume-builder-home')}
+                      onClick={() => navigate('/resume')}
                       className="w-full flex items-center justify-center gap-2"
                     >
-                      <FiPlusCircle /> New Resume
+                      <div className="flex items-center gap-2">
+                        <FiPlusCircle />
+                        <span>New Resume</span>
+                      </div>
                     </Button>
                     <Button
                       variant="primary"
-                      onClick={() => navigate('/portfolioHome')}
+                      onClick={() => navigate('/portfolio')}
                       className="w-full flex items-center justify-center gap-2"
                     >
-                      <FiEye /> View Portfolio
+                      <div className="flex items-center gap-2">
+                        <FiBriefcase />
+                        <span>View Portfolio</span>
+                      </div>
                     </Button>
                     <Button
                       variant="primary"
                       onClick={() => navigate('/ats')}
                       className="w-full flex items-center justify-center gap-2"
                     >
-                      <FiBarChart2 /> Analyze Resume
+                      <div className="flex items-center gap-2">
+                        <FiBarChart2 /> 
+                        <span>Analyze Resume</span>
+                      </div>
                     </Button>
                   </div>
                 </Card>
@@ -404,13 +415,13 @@ const Home = () => {
                   { name: 'Certificates', data: portfolioData.certificates?.length },
                   { name: 'Experiences', data: portfolioData.experiences?.length }
                 ].map((item, index) => (
-                  <div key={index}  className={`flex items-center gap-2 ${item.data ? 'text-green-600' : 'text-red-600'}`}>
+                  <div key={index} className={`flex items-center gap-2 ${item.data ? 'text-green-600' : 'text-red-600'}`}>
                     {item.data ? <IoCheckmarkCircle /> : <FiX />}
                     <span >{item.name} {item.name !== 'Portfolio Details' && `(${item.data || 0} added)`}</span>
                   </div>
                 ))}
               </div>
-              
+
               {getEmptySections().length > 0 && (
                 <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                   <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-2">Missing Sections</h4>

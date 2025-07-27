@@ -208,7 +208,7 @@
 .profile-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--spacing-md);
+  gap: var(--spacing-xs);
   margin-top: var(--spacing-md);
   font-size: 0.875rem;
 }

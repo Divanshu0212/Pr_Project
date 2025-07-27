@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { FaPlus, FaTrash, FaEdit, FaGripVertical, FaArrowLeft, FaStar } from 'react-icons/fa';
-import { MdClose, MdCheck } from 'react-icons/md';
+import { MdClose, MdCheck, MdDelete } from 'react-icons/md';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { AuthContext } from '../../context/AuthContext';
@@ -121,7 +121,7 @@ const SkillManagement = () => {
     const updateSkillMutation = useMutation(
         async (skillData) => {
             const token = localStorage.getItem('token');
-            const response = await fetch(SummaryApi.skills.update.url.replace(':id', skillData._id), {
+            const response = await fetch(SummaryApi.skills.update.url(skillData._id), {
                 method: SummaryApi.skills.update.method,
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -153,7 +153,7 @@ const SkillManagement = () => {
     const deleteSkillMutation = useMutation(
         async (id) => {
             const token = localStorage.getItem('token');
-            const response = await fetch(SummaryApi.skills.delete.url.replace(':id', id), {
+            const response = await fetch(SummaryApi.skills.delete.url(id), {
                 method: SummaryApi.skills.delete.method,
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -270,11 +270,11 @@ const SkillManagement = () => {
                             onClick={() => navigate('/portfolio')}
                             variant="ghost"
                             className={clsx(
-                                "mb-6 group transition-colors duration-300 inline-flex items-center gap-1", // Using gap instead of mr-2
+                                "mb-6 group transition-colors duration-300 inline-flex items-center gap-1 !bg-slate-600", // Using gap instead of mr-2
                                 isDark ? 'text-[#00FFFF] hover:text-[#9C27B0]' : 'text-blue-600 hover:text-purple-600'
                             )}
                         >
-                            <div className='flex items-center gap-3'>
+                            <div className='flex items-center gap-2'>
                                 <FaArrowLeft className="group-hover:-translate-x-1 transition-transform duration-200" />
                                 <span>Back to Portfolio</span>
                             </div>
@@ -344,7 +344,10 @@ const SkillManagement = () => {
                                 >
                                     {addSkillLoading ? 'Adding...' : (
                                         <>
-                                            <FaPlus className="mr-2" /> Add Skill
+                                            <div className='flex items-center'>
+                                                <FaPlus className="mr-2" />
+                                                <span>Add Skill</span>
+                                            </div>
                                         </>
                                     )}
                                 </Button>
@@ -552,7 +555,10 @@ const SkillManagement = () => {
                                 >
                                     {addSkillLoading ? 'Saving...' : (
                                         <>
-                                            <MdCheck className="mr-2" size={18} /> Save
+                                            <div className='flex items-center'>
+                                                <MdCheck className="mr-2" size={20} />
+                                                <span>Save</span>
+                                            </div>
                                         </>
                                     )}
                                 </Button>
@@ -564,7 +570,10 @@ const SkillManagement = () => {
                                     variant="outline"
                                     className="flex-1"
                                 >
-                                    Cancel
+                                    <div className='flex items-center'>
+                                        <MdDelete className="mr-2" size={20} />
+                                        <span>Delete</span>
+                                    </div>
                                 </Button>
                             </div>
                         </div>
