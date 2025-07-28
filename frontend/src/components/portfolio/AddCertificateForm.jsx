@@ -6,7 +6,7 @@ import { useTheme } from '../../context/ThemeContext';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
 
-const AddCertificateForm = ({ onClose, onSubmit, initialData = {}, isEditing = false }) => {
+const AddCertificateForm = ({ onClose, onSubmit, initialData = {}, isEditing = false, title }) => {
     const [formData, setFormData] = useState({
         name: initialData?.name || '',
         issuer: initialData?.issuer || '',
@@ -161,22 +161,22 @@ const AddCertificateForm = ({ onClose, onSubmit, initialData = {}, isEditing = f
     const errorColor = 'text-red-400';
 
     return (
-        <Modal onClose={handleClose} className={`add-cert-modal ${bgPrimary}`}>
-            <div className={`rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl ${bgPrimary}`}>
+        <Modal isOpen={true} onClose={handleClose} className={`add-cert-modal ${bgPrimary}`} title={isEditing ? 'Edit Certificate' : 'Add New Certificate'}>
+            {/* <div className={`rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl ${bgPrimary}`}> */}
                 {/* Header */}
-                <div className="flex justify-between items-center mb-6">
+                {/* <div className="flex justify-between items-center mb-6">
                     <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
                         {isEditing ? 'Edit Certificate' : 'Add New Certificate'}
                     </h2>
                     <Button
-                        variant="icon"
+                        variant="ghost"
                         onClick={handleClose}
                         className={`hover:${accent} transition-colors`}
                         aria-label="Close"
                     >
                         <FaTimes size={24} />
                     </Button>
-                </div>
+                </div> */}
 
                 {/* Global Error Message */}
                 {errors.submit && (
@@ -185,7 +185,7 @@ const AddCertificateForm = ({ onClose, onSubmit, initialData = {}, isEditing = f
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} className="max-h-[60vh]">
                     {/* Form Fields Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         {/* Certificate Name */}
@@ -360,10 +360,10 @@ const AddCertificateForm = ({ onClose, onSubmit, initialData = {}, isEditing = f
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row justify-end gap-3">
+                    <div className="flex flex-col sm:flex-row justify-end gap-3 py-5">
                         <Button
                             type="button"
-                            variant="secondary"
+                            variant="ghost"
                             onClick={handleClose}
                             className={`px-6 py-3 rounded-lg transition-all duration-200 ${bgSecondary} ${textPrimary} 
                                 hover:${highlight} border ${borderColor} hover:border-purple-400`}
@@ -373,7 +373,7 @@ const AddCertificateForm = ({ onClose, onSubmit, initialData = {}, isEditing = f
                         </Button>
                         <Button
                             type="submit"
-                            variant="gradient"
+                            variant="primary"
                             disabled={isLoading}
                             className={`px-6 py-3 font-medium rounded-lg flex items-center justify-center gap-2 
                                 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 
@@ -394,7 +394,7 @@ const AddCertificateForm = ({ onClose, onSubmit, initialData = {}, isEditing = f
                         </Button>
                     </div>
                 </form>
-            </div>
+            {/* </div> */}
         </Modal>
     );
 };

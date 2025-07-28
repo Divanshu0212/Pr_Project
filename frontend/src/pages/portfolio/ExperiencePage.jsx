@@ -6,13 +6,15 @@ import DashboardLayout from '../../components/layouts/DashboardLayout'; // Your 
 import ExperienceTab from '../../components/portfolio/ExperienceTab'; // Your ExperienceTab component
 import Button from '../../components/common/Button'; // Your Button component
 import { useTheme } from '../../context/ThemeContext'; // Your ThemeContext
+import { useAuth } from '../../hooks/useAuth';
 
 const ExperiencePage = () => {
     const navigate = useNavigate();
     const { isDark } = useTheme();
+    const {currentUser} = useAuth(); // Assuming you have currentUser in your ThemeContext
 
     return (
-        <DashboardLayout>
+        <DashboardLayout user={currentUser}>
             <div className={`min-h-screen p-8 ${isDark ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
                 <div className="max-w-6xl mx-auto">
                     {/* Back Button and Page Title */}
