@@ -759,7 +759,6 @@
 /* Component specific animations (certificates/experience cards use fadeInUp base) */
 .certificate-card,
 .experience-card {
-  opacity: 0;
   transform: translateY(30px);
   animation: fadeInUp 0.6s ease forwards;
 }

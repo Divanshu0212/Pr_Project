@@ -31,7 +31,7 @@ const Sidebar = ({ user, isOpen, onClose }) => {
                 { title: 'My Skills', path: '/portfolio/skills', icon: <FiBriefcase size={14} /> }, // Corrected: Skills management page
                 { title: 'My Certificates', path: '/portfolio/certificates', icon: <FiFileText size={14} /> }, // New: Certificates page
                 { title: 'My Experience', path: '/portfolio/experience', icon: <FiActivity size={14} /> }, // New: Experience page
-                { title: 'Team Collaboration', path: '/portfolio/team', icon: <FiUsers size={14} /> }
+                // { title: 'Team Collaboration', path: '/portfolio/team', icon: <FiUsers size={14} /> }
             ]
         },
         {

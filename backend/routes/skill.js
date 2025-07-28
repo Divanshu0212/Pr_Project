@@ -85,7 +85,7 @@ router.delete('/manage/:id', passport.authenticate('jwt', { session: false }), a
       throw new Error('Not authorized to delete this skill');
     }
 
-    await skill.remove();
+    await skill.deleteOne();
     res.json({ message: 'Skill removed' });
   } else {
     res.status(404);

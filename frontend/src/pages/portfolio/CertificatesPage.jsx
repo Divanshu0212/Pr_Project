@@ -25,10 +25,8 @@ const CertificatesPage = () => {
 
     // Fetch all certificates for the current user
     const { data: certificatesData, isLoading, isError, error, refetch } = useQuery(
-        ['certificates', currentUser?.uid], // Query key depends on user ID
+        'certificates', // Query key depends on user ID
         async () => {
-            if (!currentUser?.uid) return []; // Don't fetch if no user ID
-
             const token = localStorage.getItem('token');
             const response = await fetch(SummaryApi.certificates.get.url, {
                 method: SummaryApi.certificates.get.method,
@@ -39,43 +37,51 @@ const CertificatesPage = () => {
             });
 
             if (!response.ok) {
-                if (response.status === 404 || response.status === 204) {
-                    return []; // Treat 404/204 as empty list
-                }
                 const errorBody = await response.json();
                 throw new Error(errorBody.message || 'Failed to fetch certificates');
             }
             return response.json();
         },
         {
-            enabled: !!currentUser?.uid, // Only run query if currentUser.uid is available
             staleTime: 5 * 60 * 1000,
             cacheTime: 10 * 60 * 1000,
+            retry: 2
         }
     );
 
     // Mutation for adding/updating a certificate
     const certificateMutation = useMutation(
-        async ({ formData, certificateId }) => {
+        async ({ formData, isEditing, certificateId }) => {
             const token = localStorage.getItem('token');
-            const url = certificateId
-                ? `${SummaryApi.certificates.update.url}/${certificateId}`
+            const baseUrl = SummaryApi.baseUrl || ''; // Ensure you have this in your config
+            const endpoint = isEditing
+                ? `${SummaryApi.certificates.update.url(`${certificateId}`)}`
                 : SummaryApi.certificates.add.url;
-            const method = certificateId
+
+            const url = `${baseUrl}${endpoint}`;
+            const method = isEditing
                 ? SummaryApi.certificates.update.method
                 : SummaryApi.certificates.add.method;
 
             const response = await fetch(url, {
                 method,
-                headers: { 'Authorization': `Bearer ${token}` }, // Content-Type will be handled automatically by FormData
+                headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
             });
 
             if (!response.ok) {
-                const errorBody = await response.json();
-                throw new Error(errorBody.message || (certificateId ? 'Failed to update certificate' : 'Failed to add certificate'));
+                const errorText = await response.text();
+                let errorMessage = 'Failed to process certificate';
+                try {
+                    const errorBody = JSON.parse(errorText);
+                    errorMessage = errorBody.message || errorMessage;
+                } catch (e) {
+                    errorMessage = errorText || errorMessage;
+                }
+                throw new Error(errorMessage);
             }
-            return response.json();
+            const text = await response.text();
+            return text ? JSON.parse(text) : { success: true };
         },
         {
             onSuccess: () => {
@@ -118,7 +124,7 @@ const CertificatesPage = () => {
 
 
     const certificates = certificatesData?.certificates || []; // Access certificates array
-
+    
     const handleAddCertificate = () => {
         setEditingCertificate(null); // Clear any previous editing data
         setShowCertificateForm(true);
@@ -135,12 +141,21 @@ const CertificatesPage = () => {
         }
     };
 
-    const handleCertificateFormSubmit = (formDataFromModal, id) => {
-        certificateMutation.mutate({ formData: formDataFromModal, certificateId: id });
+    const handleCertificateFormSubmit = async (formData) => {
+        try {
+            const isEditing = !!editingCertificate;
+            await certificateMutation.mutateAsync({
+                formData,
+                isEditing,
+                certificateId: editingCertificate?._id
+            });
+        } catch (error) {
+            console.error('Form submission error:', error);
+        }
     };
 
     return (
-        <DashboardLayout>
+        <DashboardLayout user={currentUser}>
             <div className={`min-h-screen p-8 ${isDark ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
                 <div className="max-w-6xl mx-auto">
                     <div className="flex justify-between items-center mb-8 animate-fade-in-up">
@@ -152,14 +167,15 @@ const CertificatesPage = () => {
                         </button>
                         <Button
                             onClick={handleAddCertificate}
-                            className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 ${
-                                isDark
-                                    ? 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white shadow-lg hover:shadow-cyan-400/30'
-                                    : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-blue-500/30'
-                            }`}
+                            className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 ${isDark
+                                ? 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white shadow-lg hover:shadow-cyan-400/30'
+                                : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-blue-500/30'
+                                }`}
                             disabled={certificateMutation.isLoading}
                         >
-                            <FaPlus className="mr-2" /> Add Certificate
+                            <div className="flex items-center">
+                                <FaPlus className="mr-2" /> Add Certificate
+                            </div>
                         </Button>
                     </div>
 
@@ -188,13 +204,14 @@ const CertificatesPage = () => {
                             <p className="mb-6">Showcase your professional development and achievements by adding your certificates.</p>
                             <Button
                                 onClick={handleAddCertificate}
-                                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 ${
-                                    isDark
-                                        ? 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white shadow-lg hover:shadow-cyan-400/30'
-                                        : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-blue-500/30'
-                                }`}
+                                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:scale-105 ${isDark
+                                    ? 'bg-gradient-to-r from-cyan-500 to-purple-600 text-white shadow-lg hover:shadow-cyan-400/30'
+                                    : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-blue-500/30'
+                                    }`}
                             >
-                                <FaPlus className="mr-2" /> Add Your First Certificate
+                                <div className="flex items-center">
+                                    <FaPlus className="mr-2" /> Add Certificate
+                                </div>
                             </Button>
                         </Card>
                     ) : (
