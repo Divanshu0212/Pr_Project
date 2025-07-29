@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Optimizer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="resume-form-container">
+                    <h1 class="text-center mb-4">AI Resume Optimizer</h1>
+                    <p class="text-center mb-4">Fill in your resume details and we'll optimize it for your target job</p>
+                    
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width: 0%;" id="formProgress"></div>
+                    </div>
+                    
+                    <form id="resumeForm">
+                        <!-- Section 1: Personal Information -->
+                        <div class="form-section active" id="section1">
+                            <h3 class="mb-4">Personal Information</h3>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="name" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="name" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="phone">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="location" class="form-label">Location (City, State)</label>
+                                    <input type="text" class="form-control" id="location">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="linkedin" class="form-label">LinkedIn Profile URL</label>
+                                    <input type="url" class="form-control" id="linkedin">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="github" class="form-label">GitHub/Portfolio URL</label>
+                                    <input type="url" class="form-control" id="github">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-secondary" disabled>Previous</button>
+                                <button type="button" class="btn btn-primary" onclick="nextSection(1)">Next</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Section 2: Professional Summary -->
+                        <div class="form-section" id="section2">
+                            <h3 class="mb-4">Professional Summary</h3>
+                            <div class="mb-3">
+                                <label for="summary" class="form-label">Briefly describe your professional background and key skills (3-4 sentences)</label>
+                                <textarea class="form-control" id="summary" rows="4"></textarea>
+                            </div>
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-secondary" onclick="prevSection(2)">Previous</button>
+                                <button type="button" class="btn btn-primary" onclick="nextSection(2)">Next</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Section 3: Work Experience -->
+                        <div class="form-section" id="section3">
+                            <h3 class="mb-4">Work Experience</h3>
+                            <div id="workExperienceContainer">
+                                <!-- Work experience entries will be added here -->
+                            </div>
+                            <button type="button" class="btn btn-outline-primary mt-3" onclick="addWorkExperience()">
+                                <i class="bi bi-plus"></i> Add Work Experience
+                            </button>
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-secondary" onclick="prevSection(3)">Previous</button>
+                                <button type="button" class="btn btn-primary" onclick="nextSection(3)">Next</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Section 4: Education -->
+                        <div class="form-section" id="section4">
+                            <h3 class="mb-4">Education</h3>
+                            <div id="educationContainer">
+                                <!-- Education entries will be added here -->
+                            </div>
+                            <button type="button" class="btn btn-outline-primary mt-3" onclick="addEducation()">
+                                <i class="bi bi-plus"></i> Add Education
+                            </button>
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-secondary" onclick="prevSection(4)">Previous</button>
+                                <button type="button" class="btn btn-primary" onclick="nextSection(4)">Next</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Section 5: Skills -->
+                        <div class="form-section" id="section5">
+                            <h3 class="mb-4">Skills</h3>
+                            <div class="mb-3">
+                                <label class="form-label">Add your skills by category</label>
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <select class="form-select" id="skillCategory">
+                                            <option value="Technical">Technical</option>
+                                            <option value="Programming Languages">Programming Languages</option>
+                                            <option value="Frameworks">Frameworks</option>
+                                            <option value="Tools">Tools</option>
+                                            <option value="Soft Skills">Soft Skills</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <input type="text" class="form-control" id="newSkill" placeholder="Enter a skill">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-primary w-100" onclick="addSkill()">Add</button>
+                                    </div>
+                                </div>
+                                <div id="skillsDisplay">
+                                    <!-- Skills will be displayed here -->
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-secondary" onclick="prevSection(5)">Previous</button>
+                                <button type="button" class="btn btn-primary" onclick="nextSection(5)">Next</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Section 6: Projects -->
+                        <div class="form-section" id="section6">
+                            <h3 class="mb-4">Projects</h3>
+                            <div id="projectsContainer">
+                                <!-- Project entries will be added here -->
+                            </div>
+                            <button type="button" class="btn btn-outline-primary mt-3" onclick="addProject()">
+                                <i class="bi bi-plus"></i> Add Project
+                            </button>
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-secondary" onclick="prevSection(6)">Previous</button>
+                                <button type="button" class="btn btn-primary" onclick="nextSection(6)">Next</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Section 7: Additional Information -->
+                        <div class="form-section" id="section7">
+                            <h3 class="mb-4">Additional Information</h3>
+                            <div class="mb-3">
+                                <label for="certifications" class="form-label">Certifications (one per line)</label>
+                                <textarea class="form-control" id="certifications" rows="3" placeholder="AWS Certified Developer - Associate\nGoogle Analytics Certification"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="languages" class="form-label">Languages (comma separated)</label>
+                                <input type="text" class="form-control" id="languages" placeholder="English, Spanish, French">
+                            </div>
+                            <div class="mb-3">
+                                <label for="jobDescription" class="form-label">Target Job Description (optional - paste the job description you're applying for)</label>
+                                <textarea class="form-control" id="jobDescription" rows="5" placeholder="Paste the job description here to optimize your resume specifically for this role"></textarea>
+                            </div>
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-secondary" onclick="prevSection(7)">Previous</button>
+                                <button type="button" class="btn btn-success" onclick="submitResume()">Optimize My Resume</button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- Loading Spinner -->
+                    <div class="loading-spinner" id="loadingSpinner">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <h4 class="mt-3">Optimizing your resume...</h4>
+                        <p>This may take a moment as we analyze and enhance your content.</p>
+                    </div>
+                    
+                    <!-- Results Section -->
+                    <div id="resumeResult">
+                        <div class="row mt-4">
+                            <div class="col-md-4">
+                                <div class="card mb-4">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="mb-0">Resume Score</h5>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <div class="score-circle" id="scoreCircle">
+                                            85
+                                        </div>
+                                        <h5 id="scoreText">Good</h5>
+                                        <p class="text-muted" id="scoreDescription">Your resume is well-structured but could use some improvements.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="card">
+                                    <div class="card-header bg-primary text-white">
+                                        <h5 class="mb-0">Optimization Feedback</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="feedbackList">
+                                            <!-- Feedback items will be added here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <ul class="nav nav-tabs" id="resumeTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="preview-tab" data-bs-toggle="tab" data-bs-target="#preview" type="button" role="tab">Preview</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="original-tab" data-bs-toggle="tab" data-bs-target="#original" type="button" role="tab">Original Text</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="optimized-tab" data-bs-toggle="tab" data-bs-target="#optimized" type="button" role="tab">Optimized Text</button>
+                                    </li>
+                                </ul>
+                                <div class="tab-content p-3 border border-top-0" id="resumeTabContent">
+                                    <div class="tab-pane fade show active" id="preview" role="tabpanel">
+                                        <div class="resume-preview" id="resumePreview">
+                                            <!-- Resume HTML will be rendered here -->
+                                        </div>
+                                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-3">
+                                            <button class="btn btn-primary me-md-2" onclick="downloadPDF()">
+                                                <i class="bi bi-download"></i> Download PDF
+                                            </button>
+                                            <button class="btn btn-outline-secondary" onclick="startOver()">
+                                                <i class="bi bi-arrow-repeat"></i> Start Over
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade" id="original" role="tabpanel">
+                                        <pre id="originalResumeText"></pre>
+                                    </div>
+                                    <div class="tab-pane fade" id="optimized" role="tabpanel">
+                                        <pre id="optimizedResumeText"></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Work Experience Template -->
+    <template id="workExperienceTemplate">
+        <div class="work-experience mb-4 p-3 border rounded">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5>Work Experience #<span class="exp-number"></span></h5>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeWorkExperience(this)">Remove</button>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Company</label>
+                    <input type="text" class="form-control company" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Job Title</label>
+                    <input type="text" class="form-control position" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Start Date</label>
+                    <input type="text" class="form-control start-date" placeholder="MM/YYYY" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">End Date</label>
+                    <input type="text" class="form-control end-date" placeholder="MM/YYYY or Present">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Location</label>
+                    <input type="text" class="form-control location">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Responsibilities</label>
+                <div class="responsibilities-container">
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control responsibility">
+                        <button class="btn btn-outline-secondary" type="button" onclick="addResponsibility(this)">Add</button>
+                    </div>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Achievements (quantify when possible)</label>
+                <div class="achievements-container">
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control achievement">
+                        <button class="btn btn-outline-secondary" type="button" onclick="addAchievement(this)">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Education Template -->
+    <template id="educationTemplate">
+        <div class="education mb-4 p-3 border rounded">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5>Education #<span class="edu-number"></span></h5>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeEducation(this)">Remove</button>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Institution</label>
+                    <input type="text" class="form-control institution" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Degree</label>
+                    <input type="text" class="form-control degree" placeholder="e.g., Bachelor of Science" required>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Field of Study</label>
+                    <input type="text" class="form-control field-of-study" placeholder="e.g., Computer Science" required>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Graduation Date</label>
+                    <input type="text" class="form-control graduation-date" placeholder="MM/YYYY" required>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">GPA (optional)</label>
+                    <input type="text" class="form-control gpa" placeholder="e.g., 3.8">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Relevant Coursework (optional)</label>
+                <div class="coursework-container">
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control coursework">
+                        <button class="btn btn-outline-secondary" type="button" onclick="addCoursework(this)">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Project Template -->
+    <template id="projectTemplate">
+        <div class="project mb-4 p-3 border rounded">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5>Project #<span class="proj-number"></span></h5>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeProject(this)">Remove</button>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Project Name</label>
+                    <input type="text" class="form-control project-name" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Project URL (optional)</label>
+                    <input type="url" class="form-control project-url">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea class="form-control project-description" rows="2" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Technologies Used</label>
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control technology" placeholder="e.g., Python, React, AWS">
+                    <button class="btn btn-outline-secondary" type="button" onclick="addTechnology(this)">Add</button>
+                </div>
+                <div class="technologies-list mt-2"></div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Achievements (quantify when possible)</label>
+                <div class="project-achievements-container">
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control project-achievement">
+                        <button class="btn btn-outline-secondary" type="button" onclick="addProjectAchievement(this)">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sample JSON data
+        const resumeData = {
+            "personal_info": {
+                "name": "Divanshu Bhargava",
+                "email": "divanshubhargava026@gmail.com",
+                "phone": "+91-9359992426",
+                "location": "Jabalpur, India",
+                "github": "github.com/divanshu0212",
+                "linkedin": "linkedin.com/in/divanshu-bhargava"
+            },
+            "work_experience": [
+                {
+                    "company": "Self-Employed (Freelance)",
+                    "position": "Full Stack Developer",
+                    "start_date": "2024-01",
+                    "end_date": null,
+                    "location": "Remote",
+                    "responsibilities": [
+                        "Developed full-stack web applications using MERN stack with modern frameworks",
+                        "Collaborated with multiple clients to deliver custom software solutions",
+                        "Implemented AI-powered features using machine learning models",
+                        "Built scalable applications with JWT authentication and high uptime requirements",
+                        "Managed project timelines and client communication for multiple concurrent projects"
+                    ],
+                    "achievements": [
+                        "Developed 3+ full-stack web applications serving 500+ users, resulting in 40% improvement in client engagement and 25% increase in conversion rates",
+                        "Built scalable MERN stack applications with JWT authentication supporting 2,000+ concurrent users and 99.9% uptime",
+                        "Implemented AI-powered features using machine learning models, achieving 92% accuracy in prediction tasks and reducing processing time by 60%",
+                        "Collaborated with 5+ clients to deliver custom solutions within tight deadlines, maintaining 100% client satisfaction rate"
+                    ]
+                }
+            ],
+            "education": [
+                {
+                    "institution": "Indian Institute Of Information Technology Jabalpur",
+                    "degree": "Bachelor of Technology",
+                    "field_of_study": "Computer Science and Engineering",
+                    "graduation_date": "2027-05",
+                    "gpa": "8.1",
+                    "relevant_coursework": []
+                },
+                {
+                    "institution": "KRSD Public School",
+                    "degree": "CBSE Class XII",
+                    "field_of_study": "Science",
+                    "graduation_date": "2022-06",
+                    "gpa": "94.2%",
+                    "relevant_coursework": []
+                },
+                {
+                    "institution": "Rajiv International School",
+                    "degree": "CBSE Class X",
+                    "field_of_study": "General",
+                    "graduation_date": "2020-05",
+                    "gpa": "93.6%",
+                    "relevant_coursework": []
+                }
+            ],
+            "skills": {
+                "Programming Languages": ["Python", "JavaScript", "TypeScript", "C++", "Java", "SQL", "HTML5", "CSS3"],
+                "Frontend Technologies": ["React.js", "Next.js", "Redux", "Vue.js", "Tailwind CSS", "Bootstrap"],
+                "Backend Technologies": ["Node.js", "Express.js", "Django", "Django REST Framework"],
+                "Databases": ["PostgreSQL", "MySQL", "MongoDB", "SQLite"],
+                "Tools & DevOps": ["Git", "Docker", "AWS", "Linux", "RESTful APIs", "JWT", "Postman"],
+                "Machine Learning": ["Scikit-learn", "NumPy", "Pandas", "Matplotlib", "TensorFlow", "BERT", "VisionTransformer"],
+                "Core Concepts": ["Data Structures & Algorithms", "Object-Oriented Programming", "Database Management", "Operating Systems"]
+            },
+            "projects": [
+                {
+                    "name": "BigDocs - Healthcare Management System",
+                    "description": "Comprehensive healthcare platform with telemedicine, appointment scheduling, and AI-powered disease prediction across 7 core modules",
+                    "technologies": ["MERN Stack", "Machine Learning", "BERT", "AI/ML", "Healthcare APIs"],
+                    "achievements": [
+                        "Architected platform serving 1,000+ users with comprehensive healthcare functionalities",
+                        "Developed custom BERT-based ML model achieving 92% accuracy in disease prediction across 100+ conditions, reducing diagnosis time from 30 minutes to 3 seconds",
+                        "Implemented real-time appointment system supporting 50+ concurrent bookings, decreasing scheduling time by 75% and improving patient satisfaction by 60%",
+                        "Built secure telemedicine infrastructure with HD video quality and integrated prescription management processing 1,000+ daily medical records"
+                    ],
+                    "url": "github.com/divanshu0212/bigdocs"
+                },
+                {
+                    "name": "InternFlow - Professional Networking Platform",
+                    "description": "Career platform combining LinkedIn and job portal functionalities with intelligent matching algorithms",
+                    "technologies": ["MERN Stack", "JWT", "Natural Language Processing", "Machine Learning"],
+                    "achievements": [
+                        "Engineered platform connecting 10,000+ students with 500+ companies through intelligent matching algorithms",
+                        "Built advanced skill-based filtering system processing 25+ resume parameters against 1,000+ job postings, achieving 94% accuracy in candidate-role matching",
+                        "Developed automated resume parsing system generating 70+ detailed candidate profiles weekly, reducing recruiter screening time by 65%",
+                        "Created comprehensive company dashboard managing 200+ job postings and 150+ internship opportunities with real-time analytics tracking 12 key performance metrics"
+                    ],
+                    "url": "github.com/divanshu0212/internflow"
+                },
+                {
+                    "name": "Plant Z - AI Plant Healthcare Platform",
+                    "description": "Full-stack plant healthcare platform with AI-powered disease detection and personalized care recommendations",
+                    "technologies": ["MERN Stack", "Gemini API", "VisionTransformer", "AI/ML", "Computer Vision"],
+                    "achievements": [
+                        "Developed platform achieving 86% accuracy in plant disease detection through VisionTransformer ML model",
+                        "Implemented personalized plant care system with multilingual support and automated scheduling, reducing user plant mortality rate by 45%",
+                        "Built community platform with AI content moderation serving 500+ plant enthusiasts, facilitating knowledge sharing and peer-to-peer learning"
+                    ],
+                    "url": "github.com/divanshu0212/plantz"
+                }
+            ],
+            "certifications": [
+                "HackByte 3.0 Winner - Top 8 position among 120 elite teams",
+                "JEE Main 2023 - 98.83 percentile (AIR 13,679)"
+            ],
+            "languages": ["English", "Hindi"],
+            "additional_info": {
+                "coding_profiles": {
+                    "LeetCode": "divanshu0212 - 175+ problems solved",
+                    "CodeChef": "divanshu0212 - 100+ problems solved",
+                    "Codeforces": "divanshu0212 - 100+ problems solved"
+                }
+            }
+        };
+
+        // Global variables
+        let currentSection = 1;
+        const totalSections = 7;
+        let resumeId = null;
+        let originalResumeText = '';
+
+        // Initialize the form
+        document.addEventListener('DOMContentLoaded', function() {
+            populateForm();
+            updateProgress();
+        });
+
+        // Populate form with JSON data
+        function populateForm() {
+            // Personal Information
+            document.getElementById('name').value = resumeData.personal_info.name || '';
+            document.getElementById('email').value = resumeData.personal_info.email || '';
+            document.getElementById('phone').value = resumeData.personal_info.phone || '';
+            document.getElementById('location').value = resumeData.personal_info.location || '';
+            document.getElementById('linkedin').value = resumeData.personal_info.linkedin || '';
+            document.getElementById('github').value = resumeData.personal_info.github || '';
+
+            // Professional Summary
+            document.getElementById('summary').value = resumeData.professional_summary || '';
+
+            // Work Experience
+            const workContainer = document.getElementById('workExperienceContainer');
+            workContainer.innerHTML = '';
+            resumeData.work_experience.forEach((exp, index) => {
+                const template = document.getElementById('workExperienceTemplate').content.cloneNode(true);
+                template.querySelector('.exp-number').textContent = index + 1;
+                template.querySelector('.company').value = exp.company || '';
+                template.querySelector('.position').value = exp.position || '';
+                template.querySelector('.start-date').value = exp.start_date || '';
+                template.querySelector('.end-date').value = exp.end_date || '';
+                template.querySelector('.location').value = exp.location || '';
+
+                const respContainer = template.querySelector('.responsibilities-container');
+                respContainer.innerHTML = '';
+                exp.responsibilities.forEach(resp => {
+                    const div = document.createElement('div');
+                    div.className = 'd-flex align-items-center mb-2';
+                    div.innerHTML = `
+                        <span class="me-2">•</span>
+                        <span class="flex-grow-1">${resp}</span>
+                        <button class="btn btn-sm btn-outline-danger" onclick="this.parentElement.remove()">Remove</button>
+                    `;
+                    respContainer.appendChild(div);
+                });
+                respContainer.appendChild(createInputGroup('responsibility', addResponsibility));
+
+                const achContainer = template.querySelector('.achievements-container');
+                achContainer.innerHTML = '';
+                exp.achievements.forEach(ach => {
+                    const div = document.createElement('div');
+                    div.className = 'd-flex align-items-center mb-2';
+                    div.innerHTML = `
+                        <span class="me-2">•</span>
+                        <span class="flex-grow-1">${ach}</span>
+                        <button class="btn btn-sm btn-outline-danger" onclick="this.parentElement.remove()">Remove</button>
+                    `;
+                    achContainer.appendChild(div);
+                });
+                achContainer.appendChild(createInputGroup('achievement', addAchievement));
+
+                workContainer.appendChild(template);
+            });
+
+            // Education
+            const eduContainer = document.getElementById('educationContainer');
+            eduContainer.innerHTML = '';
+            resumeData.education.forEach((edu, index) => {
+                const template = document.getElementById('educationTemplate').content.cloneNode(true);
+                template.querySelector('.edu-number').textContent = index + 1;
+                template.querySelector('.institution').value = edu.institution || '';
+                template.querySelector('.degree').value = edu.degree || '';
+                template.querySelector('.field-of-study').value = edu.field_of_study || '';
+                template.querySelector('.graduation-date').value = edu.graduation_date || '';
+                template.querySelector('.gpa').value = edu.gpa || '';
+
+                const courseworkContainer = template.querySelector('.coursework-container');
+                courseworkContainer.innerHTML = '';
+                edu.relevant_coursework.forEach(course => {
+                    const div = document.createElement('div');
+                    div.className = 'd-flex align-items-center mb-2';
+                    div.innerHTML = `
+                        <span class="me-2">•</span>
+                        <span class="flex-grow-1">${course}</span>
+                        <button class="btn btn-sm btn-outline-danger" onclick="this.parentElement.remove()">Remove</button>
+                    `;
+                    courseworkContainer.appendChild(div);
+                });
+                courseworkContainer.appendChild(createInputGroup('coursework', addCoursework));
+
+                eduContainer.appendChild(template);
+            });
+
+            // Skills
+            const skillsDisplay = document.getElementById('skillsDisplay');
+            skillsDisplay.innerHTML = '';
+            Object.keys(resumeData.skills).forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'skill-category mb-3';
+                categoryDiv.dataset.category = category;
+                categoryDiv.innerHTML = `
+                    <h6>${category}</h6>
+                    <div class="skill-tags"></div>
+                `;
+                const skillTagsContainer = categoryDiv.querySelector('.skill-tags');
+                resumeData.skills[category].forEach(skill => {
+                    const skillTag = document.createElement('span');
+                    skillTag.className = 'skill-tag';
+                    skillTag.innerHTML = `
+                        ${skill}
+                        <span class="remove-skill" onclick="this.parentElement.remove()">×</span>
+                    `;
+                    skillTagsContainer.appendChild(skillTag);
+                });
+                skillsDisplay.appendChild(categoryDiv);
+            });
+
+            // Projects
+            const projContainer = document.getElementById('projectsContainer');
+            projContainer.innerHTML = '';
+            resumeData.projects.forEach((proj, index) => {
+                const template = document.getElementById('projectTemplate').content.cloneNode(true);
+                template.querySelector('.proj-number').textContent = index + 1;
+                template.querySelector('.project-name').value = proj.name || '';
+                template.querySelector('.project-url').value = proj.url || '';
+                template.querySelector('.project-description').value = proj.description || '';
+
+                const techList = template.querySelector('.technologies-list');
+                techList.innerHTML = '';
+                proj.technologies.forEach(tech => {
+                    const tag = document.createElement('span');
+                    tag.className = 'badge bg-secondary me-2 mb-2';
+                    tag.innerHTML = `
+                        ${tech}
+                        <span class="ms-1" onclick="this.parentElement.remove()" style="cursor:pointer">×</span>
+                    `;
+                    techList.appendChild(tag);
+                });
+
+                const achContainer = template.querySelector('.project-achievements-container');
+                achContainer.innerHTML = '';
+                proj.achievements.forEach(ach => {
+                    const div = document.createElement('div');
+                    div.className = 'd-flex align-items-center mb-2';
+                    div.innerHTML = `
+                        <span class="me-2">•</span>
+                        <span class="flex-grow-1">${ach}</span>
+                        <button class="btn btn-sm btn-outline-danger" onclick="this.parentElement.remove()">Remove</button>
+                    `;
+                    achContainer.appendChild(div);
+                });
+                achContainer.appendChild(createInputGroup('project-achievement', addProjectAchievement));
+
+                projContainer.appendChild(template);
+            });
+
+            // Certifications
+            document.getElementById('certifications').value = resumeData.certifications.join('\n') || '';
+
+            // Languages
+            document.getElementById('languages').value = resumeData.languages.join(', ') || '';
+        }
+
+        // Helper function to create input group
+        function createInputGroup(inputClass, addFunction) {
+            const div = document.createElement('div');
+            div.className = 'input-group mb-2';
+            div.innerHTML = `
+                <input type="text" class="form-control ${inputClass}">
+                <button class="btn btn-outline-secondary" type="button" onclick="${addFunction.name}(this)">Add</button>
+            `;
+            return div;
+        }
+
+        // Navigation functions
+        function nextSection(current) {
+            if (validateSection(current)) {
+                document.getElementById(`section${current}`).classList.remove('active');
+                currentSection = current + 1;
+                document.getElementById(`section${currentSection}`).classList.add('active');
+                updateProgress();
+                window.scrollTo(0, 0);
+            }
+        }
+
+        function prevSection(current) {
+            document.getElementById(`section${current}`).classList.remove('active');
+            currentSection = current - 1;
+            document.getElementById(`section${currentSection}`).classList.add('active');
+            updateProgress();
+            window.scrollTo(0, 0);
+        }
+
+        function updateProgress() {
+            const progress = (currentSection / totalSections) * 100;
+            document.getElementById('formProgress').style.width = `${progress}%`;
+        }
+
+        function validateSection(sectionNum) {
+            if (sectionNum === 1) {
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                if (!name || !email) {
+                    alert('Please fill in all required fields (Name and Email)');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Work Experience functions
+        function addWorkExperience() {
+            const container = document.getElementById('workExperienceContainer');
+            const template = document.getElementById('workExperienceTemplate').content.cloneNode(true);
+            const expCount = container.children.length + 1;
+            
+            template.querySelector('.exp-number').textContent = expCount;
+            container.appendChild(template);
+        }
+
+        function removeWorkExperience(button) {
+            const container = button.closest('.work-experience');
+            container.remove();
+            
+            const experiences = document.querySelectorAll('.work-experience');
+            experiences.forEach((exp, index) => {
+                exp.querySelector('.exp-number').textContent = index + 1;
+            });
+        }
+
+        function addResponsibility(button) {
+            const container = button.closest('.responsibilities-container');
+            const input = container.querySelector('.responsibility');
+            const value = input.value.trim();
+            
+            if (value) {
+                const div = document.createElement('div');
+                div.className = 'd-flex align-items-center mb-2';
+                div.innerHTML = `
+                    <span class="me-2">•</span>
+                    <span class="flex-grow-1">${value}</span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="this.parentElement.remove()">Remove</button>
+                `;
+                container.appendChild(div);
+                input.value = '';
+            }
+        }
+
+        function addAchievement(button) {
+            const container = button.closest('.achievements-container');
+            const input = container.querySelector('.achievement');
+            const value = input.value.trim();
+            
+            if (value) {
+                const div = document.createElement('div');
+                div.className = 'd-flex align-items-center mb-2';
+                div.innerHTML = `
+                    <span class="me-2">•</span>
+                    <span class="flex-grow-1">${value}</span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="this.parentElement.remove()">Remove</button>
+                `;
+                container.appendChild(div);
+                input.value = '';
+            }
+        }
+
+        // Education functions
+        function addEducation() {
+            const container = document.getElementById('educationContainer');
+            const template = document.getElementById('educationTemplate').content.cloneNode(true);
+            const eduCount = container.children.length + 1;
+            
+            template.querySelector('.edu-number').textContent = eduCount;
+            container.appendChild(template);
+        }
+
+        function removeEducation(button) {
+            const container = button.closest('.education');
+            container.remove();
+            
+            const educations = document.querySelectorAll('.education');
+            educations.forEach((edu, index) => {
+                edu.querySelector('.edu-number').textContent = index + 1;
+            });
+        }
+
+        function addCoursework(button) {
+            const container = button.closest('.coursework-container');
+            const input = container.querySelector('.coursework');
+            const value = input.value.trim();
+            
+            if (value) {
+                const div = document.createElement('div');
+                div.className = 'd-flex align-items-center mb-2';
+                div.innerHTML = `
+                    <span class="me-2">•</span>
+                    <span class="flex-grow-1">${value}</span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="this.parentElement.remove()">Remove</button>
+                `;
+                container.appendChild(div);
+                input.value = '';
+            }
+        }
+
+        // Skills functions
+        function addSkill() {
+            const category = document.getElementById('skillCategory').value;
+            const skillInput = document.getElementById('newSkill');
+            const skill = skillInput.value.trim();
+            
+            if (skill) {
+                const skillsDisplay = document.getElementById('skillsDisplay');
+                let categoryDiv = skillsDisplay.querySelector(`.skill-category[data-category="${category}"]`);
+                
+                if (!categoryDiv) {
+                    categoryDiv = document.createElement('div');
+                    categoryDiv.className = 'skill-category mb-3';
+                    categoryDiv.dataset.category = category;
+                    categoryDiv.innerHTML = `
+                        <h6>${category}</h6>
+                        <div class="skill-tags"></div>
+                    `;
+                    skillsDisplay.appendChild(categoryDiv);
+                }
+                
+                const skillTag = document.createElement('span');
+                skillTag.className = 'skill-tag';
+                skillTag.innerHTML = `
+                    ${skill}
+                    <span class="remove-skill" onclick="this.parentElement.remove()">×</span>
+                `;
+                
+                categoryDiv.querySelector('.skill-tags').appendChild(skillTag);
+                skillInput.value = '';
+            }
+        }
+
+        // Project functions
+        function addProject() {
+            const container = document.getElementById('projectsContainer');
+            const template = document.getElementById('projectTemplate').content.cloneNode(true);
+            const projCount = container.children.length + 1;
+            
+            template.querySelector('.proj-number').textContent = projCount;
+            container.appendChild(template);
+        }
+
+        function removeProject(button) {
+            const container = button.closest('.project');
+            container.remove();
+            
+            const projects = document.querySelectorAll('.project');
+            projects.forEach((proj, index) => {
+                proj.querySelector('.proj-number').textContent = index + 1;
+            });
+        }
+
+        function addTechnology(button) {
+            const container = button.closest('.project');
+            const input = container.querySelector('.technology');
+            const value = input.value.trim();
+            
+            if (value) {
+                const techList = container.querySelector('.technologies-list');
+                const techTags = value.split(',').map(t => t.trim()).filter(t => t);
+                
+                techTags.forEach(tech => {
+                    const tag = document.createElement('span');
+                    tag.className = 'badge bg-secondary me-2 mb-2';
+                    tag.innerHTML = `
+                        ${tech}
+                        <span class="ms-1" onclick="this.parentElement.remove()" style="cursor:pointer">×</span>
+                    `;
+                    techList.appendChild(tag);
+                });
+                
+                input.value = '';
+            }
+        }
+
+        function addProjectAchievement(button) {
+            const container = button.closest('.project-achievements-container');
+            const input = container.querySelector('.project-achievement');
+            const value = input.value.trim();
+            
+            if (value) {
+                const div = document.createElement('div');
+                div.className = 'd-flex align-items-center mb-2';
+                div.innerHTML = `
+                    <span class="me-2">•</span>
+                    <span class="flex-grow-1">${value}</span>
+                    <button class="btn btn-sm btn-outline-danger" onclick="this.parentElement.remove()">Remove</button>
+                `;
+                container.appendChild(div);
+                input.value = '';
+            }
+        }
+
+        // Form submission
+        function submitResume() {
+            if (!validateSection(7)) return;
+            
+            document.getElementById('resumeForm').style.display = 'none';
+            document.getElementById('loadingSpinner').style.display = 'block';
+            
+            const resumeData = {
+                personal_info: {
+                    name: document.getElementById('name').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    location: document.getElementById('location').value,
+                    linkedin: document.getElementById('linkedin').value,
+                    github: document.getElementById('github').value
+                },
+                professional_summary: document.getElementById('summary').value,
+                work_experience: [],
+                education: [],
+                skills: {},
+                projects: [],
+                certifications: document.getElementById('certifications').value.split('\n').filter(c => c.trim()),
+                languages: document.getElementById('languages').value.split(',').map(l => l.trim()).filter(l => l),
+                target_job_description: document.getElementById('jobDescription').value
+            };
+            
+            document.querySelectorAll('.work-experience').forEach(exp => {
+                const responsibilities = [];
+                exp.querySelectorAll('.responsibilities-container > div:not(.input-group)').forEach(resp => {
+                    responsibilities.push(resp.querySelector('span:nth-child(2)').textContent);
+                });
+                
+                const achievements = [];
+                exp.querySelectorAll('.achievements-container > div:not(.input-group)').forEach(ach => {
+                    achievements.push(ach.querySelector('span:nth-child(2)').textContent);
+                });
+                
+                resumeData.work_experience.push({
+                    company: exp.querySelector('.company').value,
+                    position: exp.querySelector('.position').value,
+                    start_date: exp.querySelector('.start-date').value,
+                    end_date: exp.querySelector('.end-date').value || null,
+                    location: exp.querySelector('.location').value || null,
+                    responsibilities: responsibilities,
+                    achievements: achievements
+                });
+            });
+            
+            document.querySelectorAll('.education').forEach(edu => {
+                const coursework = [];
+                edu.querySelectorAll('.coursework-container > div:not(.input-group)').forEach(course => {
+                    coursework.push(course.querySelector('span:nth-child(2)').textContent);
+                });
+                
+                resumeData.education.push({
+                    institution: edu.querySelector('.institution').value,
+                    degree: edu.querySelector('.degree').value,
+                    field_of_study: edu.querySelector('.field-of-study').value,
+                    graduation_date: edu.querySelector('.graduation-date').value,
+                    gpa: edu.querySelector('.gpa').value || null,
+                    relevant_coursework: coursework
+                });
+            });
+            
+            document.querySelectorAll('.skill-category').forEach(category => {
+                const categoryName = category.dataset.category;
+                const skills = [];
+                
+                category.querySelectorAll('.skill-tag').forEach(skill => {
+                    skills.push(skill.textContent.replace('×', '').trim());
+                });
+                
+                resumeData.skills[categoryName] = skills;
+            });
+            
+            document.querySelectorAll('.project').forEach(proj => {
+                const technologies = [];
+                proj.querySelectorAll('.technologies-list .badge').forEach(tech => {
+                    technologies.push(tech.textContent.replace('×', '').trim());
+                });
+                
+                const achievements = [];
+                proj.querySelectorAll('.project-achievements-container > div:not(.input-group)').forEach(ach => {
+                    achievements.push(ach.querySelector('span:nth-child(2)').textContent);
+                });
+                
+                resumeData.projects.push({
+                    name: proj.querySelector('.project-name').value,
+                    description: proj.querySelector('.project-description').value,
+                    technologies: technologies,
+                    achievements: achievements,
+                    url: proj.querySelector('.project-url').value || null
+                });
+            });
+            
+            originalResumeText = JSON.stringify(resumeData, null, 2);
+            
+            const requestData = {
+                resume_data: resumeData,
+                job_description: document.getElementById('jobDescription').value,
+                resume_format: "professional"
+            };
+            
+            fetch('http://0.0.0.0:8000/api/generate-resume', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                resumeId = data.resume_id;
+                displayResults(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('There was an error processing your resume. Please try again.');
+                document.getElementById('resumeForm').style.display = 'block';
+                document.getElementById('loadingSpinner').style.display = 'none';
+            });
+        }
+
+        function displayResults(data) {
+            document.getElementById('resumeForm').style.display = 'none';
+            document.getElementById('loadingSpinner').style.display = 'none';
+            document.getElementById('resumeResult').style.display = 'block';
+            
+            const scoreCircle = document.getElementById('scoreCircle');
+            scoreCircle.textContent = data.score;
+            
+            if (data.score >= 85) {
+                scoreCircle.className = 'score-circle score-excellent';
+                document.getElementById('scoreText').textContent = 'Excellent';
+                document.getElementById('scoreDescription').textContent = 'Your resume is well-optimized for the target position!';
+            } else if (data.score >= 70) {
+                scoreCircle.className = 'score-circle score-good';
+                document.getElementById('scoreText').textContent = 'Good';
+                document.getElementById('scoreDescription').textContent = 'Your resume is strong but could benefit from some improvements.';
+            } else if (data.score >= 50) {
+                scoreCircle.className = 'score-circle score-fair';
+                document.getElementById('scoreText').textContent = 'Fair';
+                document.getElementById('scoreDescription').textContent = 'Your resume needs several improvements to be competitive.';
+            } else {
+                scoreCircle.className = 'score-circle score-poor';
+                document.getElementById('scoreText').textContent = 'Needs Work';
+                document.getElementById('scoreDescription').textContent = 'Your resume requires significant optimization for the target role.';
+            }
+            
+            const feedbackList = document.getElementById('feedbackList');
+            feedbackList.innerHTML = '';
+            
+            if (data.feedback.impact_score < 70) {
+                addFeedbackItem('Impact', 
+                    `Your resume scored ${data.feedback.impact_score}/100 for impact. ` +
+                    'Try to add more quantified achievements with specific numbers and metrics.');
+            }
+            
+            if (data.feedback.keyword_score < 70) {
+                addFeedbackItem('Keywords', 
+                    `Your resume scored ${data.feedback.keyword_score}/100 for keyword matching. ` +
+                    'Include more relevant keywords from the job description.');
+            }
+            
+            if (data.feedback.formatting_score < 80) {
+                addFeedbackItem('Formatting', 
+                    `Your resume scored ${data.feedback.formatting_score}/100 for formatting. ` +
+                    'Ensure all sections are properly structured and easy to scan.');
+            }
+            
+            if (data.feedback.brevity_score < 70) {
+                addFeedbackItem('Brevity', 
+                    `Your resume scored ${data.feedback.brevity_score}/100 for conciseness. ` +
+                    (data.feedback.brevity_score < 50 ? 
+                        'Your resume is too short - add more details about your experience.' : 
+                        'Your resume could be more concise - remove unnecessary details.'));
+            }
+            
+            data.suggestions.forEach(suggestion => {
+                addFeedbackItem('Suggestion', suggestion);
+            });
+            
+            document.getElementById('resumePreview').innerHTML = data.html_content;
+            document.getElementById('originalResumeText').textContent = originalResumeText;
+            document.getElementById('optimizedResumeText').textContent = data.optimized_resume;
+            
+            window.scrollTo(0, 0);
+        }
+
+        function addFeedbackItem(title, content) {
+            const feedbackList = document.getElementById('feedbackList');
+            const div = document.createElement('div');
+            div.className = 'feedback-item';
+            div.innerHTML = `
+                <h6>${title}</h6>
+                <p>${content}</p>
+            `;
+            feedbackList.appendChild(div);
+        }
+
+        function downloadPDF() {
+            if (!resumeId) {
+                alert('No resume generated yet');
+                return;
+            }
+            
+            window.open(`http://0.0.0.0:8000/api/resume/${resumeId}/pdf`, '_blank');
+        }
+
+        function startOver() {
+            if (confirm('Are you sure you want to start over? All your current data will be lost.')) {
+                document.getElementById('resumeForm').reset();
+                document.getElementById('workExperienceContainer').innerHTML = '';
+                document.getElementById('educationContainer').innerHTML = '';
+                document.getElementById('projectsContainer').innerHTML = '';
+                document.getElementById('skillsDisplay').innerHTML = '';
+                
+                populateForm();
+                
+                document.getElementById('resumeResult').style.display = 'none';
+                document.getElementById('resumeForm').style.display = 'block';
+                currentSection = 1;
+                updateProgress();
+                
+                document.querySelectorAll('.form-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById('section1').classList.add('active');
+                
+                window.scrollTo(0, 0);
+            }
+        }
+    </script>
+</body>
+</html>
