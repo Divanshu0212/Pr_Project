@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { useQuery, useMutation, useQueryClient } from 'react-query'; // Import useMutation, useQueryClient
@@ -11,66 +11,53 @@ import Card from '../../components/common/Card';
 import Loader from '../../components/common/Loader'; // Assuming this is your Loader component
 import { AuthContext } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import SummaryApi from '../../config'; // Assuming SummaryApi has resumes endpoints
 
 const MyResumesPage = () => {
     const navigate = useNavigate();
     const { currentUser } = useContext(AuthContext);
     const { isDark } = useTheme();
-    const queryClient = useQueryClient(); // Initialize queryClient for cache invalidation
+    const queryClient = useQueryClient();
 
-    // Fetch all resumes for the current user
+    // Fetch all resumes for the current user from backend (Cloudinary)
     const { data: resumesData, isLoading, isError, error } = useQuery(
-        ['myResumes', currentUser?.uid], // Query key depends on user ID
+        ['myResumes', currentUser?.uid],
         async () => {
-            if (!currentUser?.uid) return []; // Don't fetch if no user ID
-
-            const token = localStorage.getItem('token'); // Get token from localStorage
-            const response = await fetch(SummaryApi.resumes.get.url, {
-                method: SummaryApi.resumes.get.method,
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
+            if (!currentUser?.uid) return [];
+            // Use full backend URL if running on a different port
+            const response = await fetch(`http://localhost:5000/api/my-resumes/${currentUser.uid}`);
             if (!response.ok) {
-                // If the backend returns 404 or empty, assume no resumes rather than an error
                 if (response.status === 404 || response.status === 204) {
                     return [];
                 }
                 const errorBody = await response.json();
-                throw new Error(errorBody.message || 'Failed to fetch resumes');
+                throw new Error(errorBody.detail || 'Failed to fetch resumes');
             }
-            return response.json();
+            const data = await response.json();
+            // data.resumes is an array of {resume_id, cloudinary_url, created_at, public_id}
+            return data.resumes;
         },
         {
-            enabled: !!currentUser?.uid, // Only run query if currentUser.uid is available
-            staleTime: 5 * 60 * 1000, // Data considered fresh for 5 minutes
-            cacheTime: 10 * 60 * 1000, // Data stays in cache for 10 minutes
+            enabled: !!currentUser?.uid,
+            staleTime: 5 * 60 * 1000,
+            cacheTime: 10 * 60 * 1000,
         }
     );
 
-    // Mutation for deleting a resume
+    // Mutation for deleting a resume from backend (Cloudinary)
     const deleteResumeMutation = useMutation(
         async (resumeId) => {
-            const token = localStorage.getItem('token');
-            const response = await fetch(SummaryApi.resumes.delete.url(resumeId), {
-                method: SummaryApi.resumes.delete.method,
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+            const response = await fetch(`/api/my-resume/${currentUser.uid}/${resumeId}`, {
+                method: 'DELETE',
             });
-
             if (!response.ok) {
                 const errorBody = await response.json();
-                throw new Error(errorBody.message || 'Failed to delete resume');
+                throw new Error(errorBody.detail || 'Failed to delete resume');
             }
             return response.json();
         },
         {
             onSuccess: () => {
-                queryClient.invalidateQueries(['myResumes']); // Invalidate cache to refetch resumes
+                queryClient.invalidateQueries(['myResumes']);
                 alert('Resume deleted successfully!');
             },
             onError: (err) => {
@@ -85,14 +72,22 @@ const MyResumesPage = () => {
         }
     };
 
-    // Placeholder for actual download logic
-    const handleDownloadPdf = (resumeId) => {
-        alert(`Downloading PDF for resume ID: ${resumeId}. (Implementation pending)`);
-        // In a real app: call backend API to generate/stream PDF
-        // window.open(`${SummaryApi.resumes.download.url(resumeId)}`, '_blank');
+    const handleDownloadPdf = (resumeId, url) => {
+        // Open the Cloudinary URL in a new tab for download
+        window.open(url, '_blank');
     };
 
     const resumes = resumesData || [];
+
+    useEffect(() => {
+        if (currentUser?.uid) {
+            if (resumesData && resumesData.length > 0) {
+                console.log('User resumes:', resumesData);
+            } else {
+                console.log('User resumes: 0');
+            }
+        }
+    }, [currentUser, resumesData]);
 
     return (
         <DashboardLayout>
@@ -114,7 +109,7 @@ const MyResumesPage = () => {
 
                     {isLoading ? (
                         <div className="flex justify-center items-center h-64">
-                            <Loader /> {/* Your Loader component */}
+                            <Loader />
                             <p className={`ml-4 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Loading your resumes...</p>
                         </div>
                     ) : isError ? (
@@ -146,33 +141,18 @@ const MyResumesPage = () => {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {resumes.map(resume => (
-                                <Card key={resume._id} className={`p-6 relative group transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-                                    <h2 className={`text-2xl font-semibold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>{resume.title || 'Untitled Resume'}</h2>
-                                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-4`}>Last Updated: {resume.last_updated ? format(new Date(resume.last_updated), 'MMM dd, yyyy') : 'N/A'}</p>
-
-                                    <div className={`inline-block px-3 py-1 text-xs rounded-full font-medium ${
-                                        resume.status === 'Optimized' ? 'bg-green-500/20 text-green-400' :
-                                        resume.status === 'Published' ? 'bg-blue-500/20 text-blue-400' :
-                                        'bg-gray-500/20 text-gray-400'
-                                    } mb-4`}>
-                                        {resume.status || 'Draft'}
-                                    </div>
-
+                                <Card key={resume.resume_id} className={`p-6 relative group transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                                    <h2 className={`text-2xl font-semibold mb-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>{resume.resume_id}</h2>
+                                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-4`}>Created: {resume.created_at ? format(new Date(resume.created_at), 'MMM dd, yyyy') : 'N/A'}</p>
                                     <div className="flex flex-wrap gap-3 mt-4">
-                                        <Link
-                                            to={`/resume/build/${resume._id}`}
-                                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 ${isDark ? 'bg-cyan-600/30 text-cyan-200 hover:bg-cyan-500/40' : 'bg-blue-200 text-blue-800 hover:bg-blue-300'}`}
-                                        >
-                                            <MdOutlineEdit size={16} /> Edit
-                                        </Link>
                                         <Button
-                                            onClick={() => handleDownloadPdf(resume._id)}
+                                            onClick={() => handleDownloadPdf(resume.resume_id, resume.cloudinary_url)}
                                             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 ${isDark ? 'bg-purple-600/30 text-purple-200 hover:bg-purple-500/40' : 'bg-purple-200 text-purple-800 hover:bg-purple-300'}`}
                                         >
                                             <FaDownload size={14} /> PDF
                                         </Button>
                                         <Button
-                                            onClick={() => handleDeleteResume(resume._id)}
+                                            onClick={() => handleDeleteResume(resume.resume_id)}
                                             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 ${isDark ? 'bg-red-600/30 text-red-200 hover:bg-red-500/40' : 'bg-red-200 text-red-800 hover:bg-red-300'}`}
                                             disabled={deleteResumeMutation.isLoading}
                                         >
