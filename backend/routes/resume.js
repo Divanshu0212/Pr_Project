@@ -35,5 +35,20 @@ router.put('/:id', auth, resumeController.updateResume);
 // @access  Private
 router.delete('/:id', auth, resumeController.deleteResume);
 
+// @route   POST /api/resumes/upload
+// @desc    Upload a resume PDF to Cloudinary
+// @access  Private
+router.post('/upload', auth, resumeController.uploadResumeToCloudinary);
+
+// @route   GET /api/resumes/cloudinary
+// @desc    List all resumes for the authenticated user from Cloudinary
+// @access  Private
+router.get('/cloudinary', auth, resumeController.listCloudinaryResumes);
+
+// @route   DELETE /api/resumes/cloudinary/:resumeId
+// @desc    Delete a resume from Cloudinary for the authenticated user
+// @access  Private
+router.delete('/cloudinary/:resumeId', auth, resumeController.deleteCloudinaryResume);
+
 
 module.exports = router;
