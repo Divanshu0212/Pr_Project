@@ -36,6 +36,14 @@ const ResumeSchema = new mongoose.Schema({
     previewUrl: { // URL to a static PDF preview if generated and stored externally
         type: String,
         trim: true
+    },
+    cloudinaryResumes: {
+        public_id: String,
+        url: String,
+        uploadedAt: {
+            type: Date,
+            default: Date.now
+        }
     }
 }, {
     timestamps: true, // Adds createdAt and updatedAt automatically

@@ -198,6 +198,18 @@ const SummaryApi = {
         default: {
             url: `${BACKEND_DOMAIN}/api/resumes/default-resume`,
             method: "GET"
+        },
+        upload: {
+            url: `${BACKEND_DOMAIN}/api/resumes/upload`,
+            method: "POST"
+        },
+        getResume: {
+            url: `${BACKEND_DOMAIN}/api/resumes/cloudinary`,
+            method: "GET"
+        },
+        deleteResume: {
+            url: (resumeId) => `${BACKEND_DOMAIN}/api/resumes/cloudinary/${resumeId}`,
+            method: "DELETE"
         }
     }
 };
