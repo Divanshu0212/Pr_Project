@@ -61,7 +61,7 @@ const DashboardLayout = ({ children, user }) => {
 
             <div className={`dashboard-content ${isSidebarOpen && !isMobile ? 'content-shifted' : ''}`}>
                 <Navbar user={user} onToggleSidebar={toggleSidebar} />
-                <main className="dashboard-main scroll-animate">
+                <main className="dashboard-main scroll-animate animate-in">
                     <div className="dashboard-container">
                         {children}
                     </div>

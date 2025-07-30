@@ -11,7 +11,7 @@ const uploadResume = require('../middleware/uploadResume'); // Import the Multer
 // This route uses 'auth' middleware for authentication,
 // and 'uploadResume.single('resumeFile')' to handle the file upload.
 // 'resumeFile' is the name of the field in the form data that contains the file.
-router.post('/analyze', auth, uploadResume.single('resumeFile'), atsController.analyzeResume);
+router.post('/analyze', auth, uploadResume, atsController.analyzeResume);
 
 // @route   GET /api/ats/history
 // @desc    Get a summary list of all ATS analyses for the authenticated user

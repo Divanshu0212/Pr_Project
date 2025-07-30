@@ -10,7 +10,9 @@ import axios from 'axios';
 import {
   FiMenu, FiX, FiUser, FiLogOut, FiBell, FiChevronDown,
   FiInfo, FiHelpCircle, FiTarget, FiSun, FiMoon, FiChevronRight,
-  FiChevronLeft, FiHome, FiSettings, FiSearch
+  FiChevronLeft, FiHome, FiSettings, FiSearch,
+  FiArrowLeft,
+  FiArrowRight
 } from 'react-icons/fi';
 
 import {
@@ -224,7 +226,7 @@ const Navbar = ({ onToggleSidebar, sidebarCollapsed = false }) => {
     // Add Home link if user is authenticated
     if (isAuthenticated) {
       return [
-        { to: '/', icon: RiHome3Line, label: 'Home' },
+        { to: '/home', icon: RiHome3Line, label: 'Home' },
         ...baseItems
       ];
     }
@@ -322,7 +324,7 @@ const Navbar = ({ onToggleSidebar, sidebarCollapsed = false }) => {
           {isAuthenticated && (
             <motion.form
               onSubmit={handleSearch}
-              className="search-container"
+              className="!rounded-lg search-container"
               initial={{ opacity: 0, width: 0 }}
               animate={{
                 opacity: searchOpen ? 1 : 0,
@@ -331,9 +333,10 @@ const Navbar = ({ onToggleSidebar, sidebarCollapsed = false }) => {
               transition={{ duration: 0.3 }}
             >
               {searchOpen && (
-                <motion.div className="search-input-wrapper">
+                <motion.div className="!rounded-full search-input-wrapper">
                   <motion.input
                     type="text"
+                    className='!rounded-lg'
                     placeholder="Search users..."
                     value={searchQuery}
                     onChange={(e) => {
@@ -347,8 +350,8 @@ const Navbar = ({ onToggleSidebar, sidebarCollapsed = false }) => {
                     transition={{ delay: 0.1 }}
                     autoFocus
                   />
-                  <button type="submit" className="search-submit-btn">
-                    <FiSearch />
+                  <button type="submit" className="ml-4 search-submit-btn">
+                    <FiArrowRight />
                   </button>
                 </motion.div>
               )}

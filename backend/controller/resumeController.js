@@ -2,7 +2,10 @@ const Resume = require('../models/Resume');
 const Joi = require('joi');
 const JoiDate = require('@joi/date');
 const mongoose = require('mongoose');
-const cloudinary = require('../config/cloudinary');
+const { cloudinary, validateConfig,
+    uploadResume,
+    deleteResume,
+    listUserResumes } = require('../config/cloudinaryResume');
 const fs = require('fs');
 const path = require('path');
 const { console } = require('inspector');
@@ -308,75 +311,80 @@ exports.getDefaultResume = (req, res) => {
 // @route   POST /api/resumes/upload
 // @desc    Upload a resume PDF to Cloudinary
 // @access  Private
+// @route   POST /api/resumes/upload
 exports.uploadResumeToCloudinary = async (req, res) => {
-    const userId = req.user.id;                                                 
-    // Expecting a PDF file upload (e.g., via multer middleware as req.file)
-    if (!req.file) {
-        return sendErrorResponse(res, 400, 'No file uploaded.');
-    }
-    const filePath = req.file.path;
-    const resumeId = req.body.resumeId || path.parse(filePath).name;
     try {
-        const uploadResult = await cloudinary.uploader.upload(filePath, {
-            resource_type: 'raw',
-            public_id: `resumes/${userId}/${resumeId}`,
-            tags: [userId, 'resume']
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'No file uploaded'
+            });
+        }
+
+        // Process the file buffer
+        const uploadResult = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    resource_type: 'raw',
+                    folder: `resumes/${req.user.id}`,
+                    public_id: req.body.resumeId || `resume_${Date.now()}`
+                },
+                (error, result) => {
+                    if (error) return reject(error);
+                    resolve(result);
+                }
+            );
+
+            uploadStream.end(req.file.buffer);
         });
-        // Optionally, delete local file after upload
-        fs.unlink(filePath, () => {});
+
         res.status(200).json({
             success: true,
-            message: 'Resume uploaded to Cloudinary.',
             url: uploadResult.secure_url,
             public_id: uploadResult.public_id
         });
+
     } catch (error) {
-        console.error('Cloudinary upload error:', error.message);
-        sendErrorResponse(res, 500, 'Cloudinary upload failed.');
+        console.error('Upload error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error during upload'
+        });
     }
 };
 
 // @route   GET /api/resumes/cloudinary
-// @desc    List all resumes for the authenticated user from Cloudinary
-// @access  Private
 exports.listCloudinaryResumes = async (req, res) => {
     const userId = req.user.id;
     try {
-        const resources = await cloudinary.api.resources({
-            type: 'upload',
-            resource_type: 'raw',
-            prefix: `resumes/${userId}/`
+        // Use the new listUserResumes function
+        const resumes = await listUserResumes(userId);
+        res.status(200).json({
+            success: true,
+            count: resumes.length,
+            resumes
         });
-        const resumes = resources.resources.map(res => ({
-            resume_id: res.public_id.split('/').pop(),
-            cloudinary_url: res.secure_url,
-            created_at: res.created_at,
-            public_id: res.public_id
-        }));
-        resumes.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-        res.status(200).json({ success: true, resumes });
     } catch (error) {
-        console.error('Cloudinary list error:', error.message);
-        sendErrorResponse(res, 500, 'Cloudinary list failed.');
+        console.error('List error:', error.message);
+        sendErrorResponse(res, 500, error.message);
     }
 };
 
 // @route   DELETE /api/resumes/cloudinary/:resumeId
-// @desc    Delete a resume from Cloudinary for the authenticated user
-// @access  Private
 exports.deleteCloudinaryResume = async (req, res) => {
     const userId = req.user.id;
     const { resumeId } = req.params;
-    const publicId = `resumes/${userId}/${resumeId}`;
+
     try {
-        const result = await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
-        if (result.result === 'ok') {
-            res.status(200).json({ success: true, message: 'Resume deleted from Cloudinary.' });
-        } else {
-            sendErrorResponse(res, 404, 'Resume not found on Cloudinary.');
+        // Use the new deleteResume function
+        const result = await deleteResume(`resumes/${userId}/${resumeId}`);
+
+        if (result.success) {
+            return res.status(200).json(result);
         }
+        sendErrorResponse(res, 404, result.message);
     } catch (error) {
-        console.error('Cloudinary delete error:', error.message);
-        sendErrorResponse(res, 500, 'Cloudinary delete failed.');
+        console.error('Delete error:', error.message);
+        sendErrorResponse(res, 500, error.message);
     }
 };

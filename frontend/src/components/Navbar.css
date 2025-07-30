@@ -883,6 +883,7 @@
   margin-top: 0.5rem;
   padding: 1rem;
   border-radius: 12px;
+  background: rgb(var(--color-accent-primary));
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
