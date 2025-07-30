@@ -1,54 +1,69 @@
 // backend/routes/resume.js
 const express = require('express');
 const router = express.Router();
+const passport = require('passport');
 const resumeController = require('../controller/resumeController');
-const auth = require('../middleware/auth'); // Assuming you have an authentication middleware
+const uploadResume = require('../middleware/uploadResume');
 
-// @route   GET /api/resumes/default-resume
-// @desc    Get a default/empty resume structure
-// @access  Public (No Auth required for template creation)
-// IMPORTANT: This static route MUST come BEFORE the dynamic /:id route.
+// Debugging logs to verify imports
+// console.log('resumeController type:', typeof resumeController.createResume);
+// console.log('uploadResume type:', typeof uploadResume.single);
+// console.log('resumeController:', resumeController);
+// console.log('Does createResume exist?', 'createResume' in resumeController);
+
+// Public route - no authentication needed
 router.get('/default-resume', resumeController.getDefaultResume);
 
-// @route   POST /api/resumes
-// @desc    Create a new resume
-// @access  Private
-router.post('/', auth, resumeController.createResume);
+// Protected routes - require JWT authentication
+router.post(
+    '/',
+    passport.authenticate('jwt', { session: false }),
+    uploadResume,
+    resumeController.createResume
+);
 
-// @route   GET /api/resumes
-// @desc    Get all resumes for the authenticated user
-// @access  Private
-router.get('/', auth, resumeController.getAllResumes);
+router.get(
+    '/',
+    passport.authenticate('jwt', { session: false }),
+    resumeController.getAllResumes
+);
 
-// @route   GET /api/resumes/:id
-// @desc    Get a single resume by ID for the authenticated user
-// @access  Private
-router.get('/:id', auth, resumeController.getResumeById);
+router.get(
+    '/:id',
+    passport.authenticate('jwt', { session: false }),
+    resumeController.getResumeById
+);
 
-// @route   PUT /api/resumes/:id
-// @desc    Update a resume by ID for the authenticated user
-// @access  Private
-router.put('/:id', auth, resumeController.updateResume);
+router.put(
+    '/:id',
+    passport.authenticate('jwt', { session: false }),
+    uploadResume,
+    resumeController.updateResume
+);
 
-// @route   DELETE /api/resumes/:id
-// @desc    Delete a resume by ID for the authenticated user
-// @access  Private
-router.delete('/:id', auth, resumeController.deleteResume);
+router.delete(
+    '/:id',
+    passport.authenticate('jwt', { session: false }),
+    resumeController.deleteResume
+);
 
-// @route   POST /api/resumes/upload
-// @desc    Upload a resume PDF to Cloudinary
-// @access  Private
-router.post('/upload', auth, resumeController.uploadResumeToCloudinary);
+router.post(
+    '/upload',
+    passport.authenticate('jwt', { session: false }),
+    uploadResume,
+    resumeController.uploadResumeToCloudinary
+);
 
-// @route   GET /api/resumes/cloudinary
-// @desc    List all resumes for the authenticated user from Cloudinary
-// @access  Private
-router.get('/cloudinary', auth, resumeController.listCloudinaryResumes);
+router.get(
+    '/cloudinary',
+    passport.authenticate('jwt', { session: false }),
+    resumeController.listCloudinaryResumes
+);
 
-// @route   DELETE /api/resumes/cloudinary/:resumeId
-// @desc    Delete a resume from Cloudinary for the authenticated user
-// @access  Private
-router.delete('/cloudinary/:resumeId', auth, resumeController.deleteCloudinaryResume);
-
+router.delete(
+    '/cloudinary/:resumeId',
+    passport.authenticate('jwt', { session: false }),
+    resumeController.deleteCloudinaryResume
+);
 
 module.exports = router;

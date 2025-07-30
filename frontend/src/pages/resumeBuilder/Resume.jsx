@@ -280,13 +280,13 @@ const ResumeOptimizer = () => {
             return SAMPLE_RESUME_DATA;
         }
     });
-    
+
     const [loading, setLoading] = useState(!!resumeId);
     const [optimizing, setOptimizing] = useState(false);
     const [optimizationResult, setOptimizationResult] = useState(null);
     const [error, setError] = useState(null);
     const [expandedSections, setExpandedSections] = useState({
-        personal: true, summary: true, education: true, experience: true, 
+        personal: true, summary: true, education: true, experience: true,
         projects: true, skills: true, certifications: false, additional: false
     });
     const [manualUploadBlob, setManualUploadBlob] = useState(null);
@@ -301,7 +301,7 @@ const ResumeOptimizer = () => {
                 try {
                     const response = await axios.get(SummaryApi.resumes.single.url(resumeId), { withCredentials: true });
                     let fetchedData = response.data.resume;
-                    
+
                     // Convert old format to new format if needed
                     if (!fetchedData.personal_info && fetchedData.name) {
                         fetchedData = {
@@ -323,7 +323,7 @@ const ResumeOptimizer = () => {
                             target_job_description: fetchedData.target_profession || ""
                         };
                     }
-                    
+
                     setResumeData(fetchedData);
                 } catch (err) {
                     console.error('ResumeOptimizer: Fetch error:', err);
@@ -349,7 +349,7 @@ const ResumeOptimizer = () => {
         setResumeData(prevData => {
             if (!prevData) return prevData;
             const newData = { ...prevData };
-            
+
             if (section === 'personal_info') {
                 newData.personal_info = { ...newData.personal_info, [field]: value };
             } else if (section === 'professional_summary') {
@@ -380,7 +380,7 @@ const ResumeOptimizer = () => {
                 }
                 newData.skills = newSkills;
             }
-            
+
             return newData;
         });
     };
@@ -417,19 +417,19 @@ const ResumeOptimizer = () => {
     const getNewItemTemplate = (section) => {
         switch (section) {
             case 'education':
-                return { 
-                    institution: '', degree: '', field_of_study: '', 
-                    graduation_date: '', gpa: '', relevant_coursework: [] 
+                return {
+                    institution: '', degree: '', field_of_study: '',
+                    graduation_date: '', gpa: '', relevant_coursework: []
                 };
             case 'work_experience':
-                return { 
-                    company: '', position: '', start_date: '', end_date: '', 
-                    location: '', responsibilities: [], achievements: [] 
+                return {
+                    company: '', position: '', start_date: '', end_date: '',
+                    location: '', responsibilities: [], achievements: []
                 };
             case 'projects':
-                return { 
-                    name: '', description: '', technologies: [], 
-                    achievements: [], url: '' 
+                return {
+                    name: '', description: '', technologies: [],
+                    achievements: [], url: ''
                 };
             default:
                 return {};
@@ -530,20 +530,42 @@ const ResumeOptimizer = () => {
     };
 
     // Helper to upload PDF to Node backend (which uploads to Cloudinary)
-    const uploadPdfToCloudinary = async (pdfBlob, resumeId) => {
-        const formData = new FormData();
-        formData.append('file', pdfBlob, `resume_${resumeId}.pdf`);
-        formData.append('resumeId', resumeId);
-        // Use the correct backend URL for your Node.js server
-        const response = await fetch('http://localhost:5000/api/resumes/upload', {
-            method: 'POST',
-            body: formData,
-            credentials: 'include',
-        });
-        if (!response.ok) {
-            throw new Error('Failed to upload PDF to Cloudinary');
+    // Updated uploadPdfToCloudinary function
+    const uploadPdfToCloudinary = async (file, resumeId) => {
+        try {
+            const formData = new FormData();
+            // Must match exactly with Multer's field name
+            formData.append('resume', file);
+
+            if (resumeId) {
+                formData.append('resumeId', resumeId);
+            }
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Please login to upload resumes');
+            }
+
+            const response = await fetch('http://localhost:5000/api/resumes/upload', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                    // Let browser set Content-Type automatically
+                },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Upload failed');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Upload error:', error);
+            throw error;
         }
-        return response.json();
     };
 
     // Manual upload handler for Cloudinary PDF upload
@@ -560,19 +582,42 @@ const ResumeOptimizer = () => {
         }
     };
 
-    // Handler for user-selected PDF file manual upload
+    // Updated handleUserFileManualUpload
     const handleUserFileManualUpload = async (event) => {
         setManualUploadError(null);
         const file = event.target.files[0];
-        if (!file) return;
+
+        if (!file) {
+            setManualUploadError('No file selected');
+            return;
+        }
+
+        // Validate file type
+        const validTypes = ['application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        if (!validTypes.includes(file.type)) {
+            setManualUploadError('Only PDF, DOC, and DOCX files are allowed');
+            return;
+        }
+
         try {
-            // You can optionally ask for a resumeId or generate one
-            const resumeId = prompt('Enter a Resume ID for this upload:', 'manual_' + Date.now());
-            if (!resumeId) throw new Error('Resume ID is required.');
-            await uploadPdfToCloudinary(file, resumeId);
-            alert('Resume uploaded to Cloudinary successfully!');
-        } catch (err) {
-            setManualUploadError('Manual upload failed: ' + err.message);
+            // Optional: Get resume ID or generate one
+            const resumeId = prompt('Enter resume identifier (or leave blank):') ||
+                `resume_${Date.now()}`;
+
+            const result = await uploadPdfToCloudinary(file, resumeId);
+            alert(`Resume uploaded successfully! URL: ${result.url}`);
+
+            // Reset file input
+            event.target.value = '';
+        } catch (error) {
+            setManualUploadError(error.message);
+            if (error.message.includes('401')) {
+                // Handle expired token
+                localStorage.removeItem('token');
+                navigate('/login');
+            }
         }
     };
 
@@ -584,6 +629,11 @@ const ResumeOptimizer = () => {
         setOptimizationResult(null);
 
         try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                setError('Please login to upload resumes');
+                return;
+            }
             if (!resumeData.personal_info.name || !resumeData.personal_info.email) {
                 throw new Error("Please fill in all required fields (Name and Email).");
             }
@@ -738,45 +788,45 @@ const ResumeOptimizer = () => {
                 {/* Personal Information */}
                 <Section title="Personal Information" icon={<User size={20} />} isExpanded={expandedSections.personal} onToggle={() => toggleSection('personal')} required>
                     <div className="form-grid">
-                        <InputField 
-                            label="Full Name" 
-                            value={resumeData.personal_info.name} 
-                            onChange={e => handleInputChange(e, 'personal_info', null, 'name')} 
-                            required 
-                            icon={<User size={16} />} 
+                        <InputField
+                            label="Full Name"
+                            value={resumeData.personal_info.name}
+                            onChange={e => handleInputChange(e, 'personal_info', null, 'name')}
+                            required
+                            icon={<User size={16} />}
                         />
-                        <InputField 
-                            label="Email Address" 
-                            type="email" 
-                            value={resumeData.personal_info.email} 
-                            onChange={e => handleInputChange(e, 'personal_info', null, 'email')} 
-                            required 
-                            icon={<Mail size={16} />} 
+                        <InputField
+                            label="Email Address"
+                            type="email"
+                            value={resumeData.personal_info.email}
+                            onChange={e => handleInputChange(e, 'personal_info', null, 'email')}
+                            required
+                            icon={<Mail size={16} />}
                         />
-                        <InputField 
-                            label="Phone Number" 
-                            type="tel" 
-                            value={resumeData.personal_info.phone} 
-                            onChange={e => handleInputChange(e, 'personal_info', null, 'phone')} 
-                            icon={<Phone size={16} />} 
+                        <InputField
+                            label="Phone Number"
+                            type="tel"
+                            value={resumeData.personal_info.phone}
+                            onChange={e => handleInputChange(e, 'personal_info', null, 'phone')}
+                            icon={<Phone size={16} />}
                         />
-                        <InputField 
-                            label="Location" 
-                            value={resumeData.personal_info.location} 
-                            onChange={e => handleInputChange(e, 'personal_info', null, 'location')} 
-                            icon={<Globe size={16} />} 
+                        <InputField
+                            label="Location"
+                            value={resumeData.personal_info.location}
+                            onChange={e => handleInputChange(e, 'personal_info', null, 'location')}
+                            icon={<Globe size={16} />}
                         />
-                        <InputField 
-                            label="LinkedIn Profile" 
-                            value={resumeData.personal_info.linkedin} 
-                            onChange={e => handleInputChange(e, 'personal_info', null, 'linkedin')} 
-                            icon={<Linkedin size={16} />} 
+                        <InputField
+                            label="LinkedIn Profile"
+                            value={resumeData.personal_info.linkedin}
+                            onChange={e => handleInputChange(e, 'personal_info', null, 'linkedin')}
+                            icon={<Linkedin size={16} />}
                         />
-                        <InputField 
-                            label="GitHub Profile" 
-                            value={resumeData.personal_info.github} 
-                            onChange={e => handleInputChange(e, 'personal_info', null, 'github')} 
-                            icon={<Github size={16} />} 
+                        <InputField
+                            label="GitHub Profile"
+                            value={resumeData.personal_info.github}
+                            onChange={e => handleInputChange(e, 'personal_info', null, 'github')}
+                            icon={<Github size={16} />}
                         />
                     </div>
                 </Section>
@@ -785,10 +835,10 @@ const ResumeOptimizer = () => {
                 <Section title="Professional Summary" icon={<User size={20} />} isExpanded={expandedSections.summary} onToggle={() => toggleSection('summary')}>
                     <div className="input-wrapper">
                         <label className="form-label">Professional Summary</label>
-                        <textarea 
-                            value={resumeData.professional_summary} 
-                            onChange={e => handleInputChange(e, 'professional_summary')} 
-                            className={`form-input ${isDark ? 'dark-input' : ''}`} 
+                        <textarea
+                            value={resumeData.professional_summary}
+                            onChange={e => handleInputChange(e, 'professional_summary')}
+                            className={`form-input ${isDark ? 'dark-input' : ''}`}
                             rows="4"
                             placeholder="Briefly describe your professional background and key skills (3-4 sentences)"
                         />
@@ -839,7 +889,7 @@ const ResumeOptimizer = () => {
                                     className="col-span-2"
                                 />
                             </div>
-                            
+
                             {/* Responsibilities */}
                             <div className="mb-4">
                                 <label className="form-label">Responsibilities</label>
@@ -954,7 +1004,7 @@ const ResumeOptimizer = () => {
                                     placeholder="e.g., 3.8"
                                 />
                             </div>
-                            
+
                             {/* Relevant Coursework */}
                             <div>
                                 <label className="form-label">Relevant Coursework (optional)</label>
@@ -1029,7 +1079,7 @@ const ResumeOptimizer = () => {
                                     />
                                 </div>
                             </div>
-                            
+
                             {/* Technologies */}
                             <div className="mb-4">
                                 <label className="form-label">Technologies Used</label>
@@ -1255,7 +1305,9 @@ const ResumeOptimizer = () => {
                             </>
                         ) : (
                             <>
-                                <Zap size={20} /> {isEditMode ? 'Update Resume' : 'Optimize My Resume'}
+                                <div className="flex items-center space-x-2 gap-3">
+                                    <Zap size={20} /> {isEditMode ? 'Update Resume' : 'Optimize My Resume'}
+                                </div>
                             </>
                         )}
                     </button>
@@ -1269,9 +1321,22 @@ const ResumeOptimizer = () => {
                             <Upload size={20} /> Manual Upload to Cloudinary
                         </button>
                     )}
-                    <label className="download-button bg-blue-500 hover:bg-blue-600 text-white ml-4 cursor-pointer" style={{ display: 'inline-block' }}>
-                        <input type="file" accept="application/pdf" style={{ display: 'none' }} onChange={handleUserFileManualUpload} />
-                        <Upload size={20} style={{ verticalAlign: 'middle' }} /> Manually Upload PDF
+
+                    <label
+                        htmlFor="resume-upload"
+                        className="download-button rounded-lg p-2 bg-blue-500 hover:bg-blue-600 text-white ml-4 cursor-pointer" style={{ display: 'inline-block' }}
+                    >
+                        <input
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            onChange={handleUserFileManualUpload}
+                            className="hidden"
+                            id="resume-upload"
+                        />
+                        <div className="flex items-center space-x-2">
+                            <Upload size={20} style={{ verticalAlign: 'middle' }} />
+                            <span>Upload Resume</span> 
+                        </div>
                     </label>
                 </div>
                 {manualUploadError && (
@@ -1288,17 +1353,16 @@ const ResumeOptimizer = () => {
                         <h3 className="result-title">🚀 Resume {isEditMode ? 'Updated' : 'Optimized'} Successfully!</h3>
                         {optimizationResult.score && (
                             <div className="score-display">
-                                <div className={`score-circle ${
-                                    optimizationResult.score >= 85 ? 'score-excellent' :
+                                <div className={`score-circle ${optimizationResult.score >= 85 ? 'score-excellent' :
                                     optimizationResult.score >= 70 ? 'score-good' :
-                                    optimizationResult.score >= 50 ? 'score-fair' : 'score-poor'
-                                }`}>
+                                        optimizationResult.score >= 50 ? 'score-fair' : 'score-poor'
+                                    }`}>
                                     {optimizationResult.score}
                                 </div>
                                 <p className="score-text">
                                     {optimizationResult.score >= 85 ? 'Excellent' :
-                                     optimizationResult.score >= 70 ? 'Good' :
-                                     optimizationResult.score >= 50 ? 'Fair' : 'Needs Work'}
+                                        optimizationResult.score >= 70 ? 'Good' :
+                                            optimizationResult.score >= 50 ? 'Fair' : 'Needs Work'}
                                 </p>
                             </div>
                         )}

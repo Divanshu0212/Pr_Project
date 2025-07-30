@@ -78,14 +78,14 @@ const LandingPage = ({ user }) => {
       title: 'Portfolio Manager',
       description: 'Showcase your projects, skills, and achievements in a beautiful, organized portfolio.',
       image: portfolioImg,
-      link: '/portfolioHome',
+      link: '/portfolio',
     },
     {
       icon: <FaUserTie className="feature-icon gradient-icon" />,
       title: 'Resume Generator', 
       description: 'Create professional, ATS-optimized resumes from your portfolio with just a few clicks.',
       image: resumeImg,
-      link: '/resume-builder-home',
+      link: '/resume',
     },
     {
       icon: <BsShieldCheck className="feature-icon gradient-icon" />,
