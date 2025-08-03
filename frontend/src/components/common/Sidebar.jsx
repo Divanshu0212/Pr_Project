@@ -50,7 +50,6 @@ const Sidebar = ({ user, isOpen, onClose }) => {
             icon: <FiActivity className="sidebar-icon-svg" />,
             subItems: [
                 { title: 'ATS Home', path: '/ats', icon: <FiHome size={14} /> }, // Direct link to ATS home
-                { title: 'Scan Resume', path: '/ats/scan', icon: <FiSearch size={14} /> }, // Corrected: main scan input
                 { title: 'Analysis History', path: '/ats/history', icon: <FiBarChart2 size={14} /> }, // New: Analysis history page
                 { title: 'Keyword Tool', path: '/ats/keywords', icon: <FiPieChart size={14} /> } // Corrected: keyword tool
             ]
