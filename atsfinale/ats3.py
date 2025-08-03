@@ -22,6 +22,9 @@ import logging
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+import aiohttp
+from urllib.parse import urlparse, parse_qs
+from typing import Tuple
 
 # Download required NLTK data
 def download_nltk_data():
@@ -141,6 +144,44 @@ class AdvancedATSAnalyzer:
         
         # Initialize model selection
         self.select_best_available_model()
+        
+        # Coding platforms configuration
+        self.coding_platforms = {
+            'leetcode': {
+                'base_url': 'https://leetcode.com/api/problems/all/',
+                'profile_pattern': r'leetcode\.com/([^/\s]+)',
+                'api_endpoint': 'https://leetcode.com/graphql'
+            },
+            'codeforces': {
+                'base_url': 'https://codeforces.com/api/',
+                'profile_pattern': r'codeforces\.com/profile/([^/\s]+)',
+                'api_endpoint': 'https://codeforces.com/api/user.info'
+            },
+            'codechef': {
+                'base_url': 'https://www.codechef.com/users/',
+                'profile_pattern': r'codechef\.com/users/([^/\s]+)',
+                'api_endpoint': 'https://www.codechef.com/api/rankings/PRACTICE'
+            }
+        }
+        
+        # Coding performance thresholds for job readiness assessment
+        self.job_readiness_thresholds = {
+            'entry_level': {
+                'leetcode': {'rating': 1200, 'problems_solved': 50, 'consistency_days': 30},
+                'codeforces': {'rating': 800, 'problems_solved': 50, 'contest_participation': 5},
+                'codechef': {'rating': 1400, 'problems_solved': 30, 'contest_participation': 3}
+            },
+            'mid_level': {
+                'leetcode': {'rating': 1600, 'problems_solved': 150, 'consistency_days': 60},
+                'codeforces': {'rating': 1200, 'problems_solved': 100, 'contest_participation': 10},
+                'codechef': {'rating': 1800, 'problems_solved': 80, 'contest_participation': 8}
+            },
+            'senior_level': {
+                'leetcode': {'rating': 2000, 'problems_solved': 300, 'consistency_days': 90},
+                'codeforces': {'rating': 1600, 'problems_solved': 200, 'contest_participation': 20},
+                'codechef': {'rating': 2200, 'problems_solved': 150, 'contest_participation': 15}
+            }
+        }
     
     def test_ollama_connection(self) -> bool:
         """Test if Ollama is accessible"""
@@ -1697,6 +1738,472 @@ async def compare_resumes(
         logger.error(f"Comparison failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Comparison failed: {str(e)}")
 
+# ==================== CODING PROFILES ANALYSIS ====================
+    
+    def extract_profile_links(self, text: str) -> Dict[str, List[str]]:
+        """Extract coding profile links from resume text"""
+        profiles = {
+            'leetcode': [],
+            'codeforces': [],
+            'codechef': []
+        }
+        
+        # Enhanced URL patterns to catch various formats
+        url_patterns = [
+            r'https?://[^\s<>"{}|\\^`\[\]]*',
+            r'www\.[^\s<>"{}|\\^`\[\]]*',
+            r'[a-zA-Z0-9.-]+\.com/[^\s<>"{}|\\^`\[\]]*'
+        ]
+        
+        all_urls = []
+        for pattern in url_patterns:
+            all_urls.extend(re.findall(pattern, text, re.IGNORECASE))
+        
+        # Remove duplicates while preserving order
+        seen = set()
+        unique_urls = []
+        for url in all_urls:
+            if url.lower() not in seen:
+                seen.add(url.lower())
+                unique_urls.append(url)
+        
+        # Extract platform-specific profiles
+        for url in unique_urls:
+            url_lower = url.lower()
+            
+            # LeetCode
+            if 'leetcode.com' in url_lower:
+                match = re.search(self.coding_platforms['leetcode']['profile_pattern'], url, re.IGNORECASE)
+                if match:
+                    username = match.group(1).strip('/')
+                    if username and username not in ['problems', 'contest', 'discuss', 'explore']:
+                        profiles['leetcode'].append({
+                            'username': username,
+                            'url': url,
+                            'clean_url': f"https://leetcode.com/{username}/"
+                        })
+            
+            # Codeforces
+            elif 'codeforces.com' in url_lower:
+                match = re.search(self.coding_platforms['codeforces']['profile_pattern'], url, re.IGNORECASE)
+                if match:
+                    username = match.group(1).strip('/')
+                    if username and username not in ['contests', 'problemset', 'gym']:
+                        profiles['codeforces'].append({
+                            'username': username,
+                            'url': url,
+                            'clean_url': f"https://codeforces.com/profile/{username}"
+                        })
+            
+            # CodeChef
+            elif 'codechef.com' in url_lower:
+                match = re.search(self.coding_platforms['codechef']['profile_pattern'], url, re.IGNORECASE)
+                if match:
+                    username = match.group(1).strip('/')
+                    if username and username not in ['ide', 'problems', 'contests']:
+                        profiles['codechef'].append({
+                            'username': username,
+                            'url': url,
+                            'clean_url': f"https://www.codechef.com/users/{username}"
+                        })
+        
+        return profiles
+    
+    async def fetch_leetcode_stats(self, username: str) -> Dict[str, Any]:
+        """Fetch LeetCode profile statistics"""
+        try:
+            # GraphQL query for LeetCode API
+            query = """
+            query getUserProfile($username: String!) {
+                matchedUser(username: $username) {
+                    username
+                    profile {
+                        realName
+                        ranking
+                    }
+                    submitStats: submitStatsGlobal {
+                        acSubmissionNum {
+                            difficulty
+                            count
+                            submissions
+                        }
+                    }
+                    userContestRanking(username: $username) {
+                        attendedContestsCount
+                        rating
+                        globalRanking
+                        topPercentage
+                    }
+                }
+            }
+            """
+            
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+                async with session.post(
+                    self.coding_platforms['leetcode']['api_endpoint'],
+                    json={'query': query, 'variables': {'username': username}},
+                    headers={'Content-Type': 'application/json'}
+                ) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        user_data = data.get('data', {}).get('matchedUser')
+                        
+                        if user_data:
+                            # Parse submission statistics
+                            submit_stats = user_data.get('submitStats', {}).get('acSubmissionNum', [])
+                            total_solved = sum(stat.get('count', 0) for stat in submit_stats)
+                            
+                            easy_solved = next((stat.get('count', 0) for stat in submit_stats if stat.get('difficulty') == 'Easy'), 0)
+                            medium_solved = next((stat.get('count', 0) for stat in submit_stats if stat.get('difficulty') == 'Medium'), 0)
+                            hard_solved = next((stat.get('count', 0) for stat in submit_stats if stat.get('difficulty') == 'Hard'), 0)
+                            
+                            # Contest ranking info
+                            contest_ranking = user_data.get('userContestRanking') or {}
+                            
+                            return {
+                                'platform': 'leetcode',
+                                'username': username,
+                                'total_solved': total_solved,
+                                'easy_solved': easy_solved,
+                                'medium_solved': medium_solved,
+                                'hard_solved': hard_solved,
+                                'contest_rating': contest_ranking.get('rating', 0),
+                                'contests_attended': contest_ranking.get('attendedContestsCount', 0),
+                                'global_ranking': contest_ranking.get('globalRanking', 0),
+                                'top_percentage': contest_ranking.get('topPercentage', 0),
+                                'profile_ranking': user_data.get('profile', {}).get('ranking', 0),
+                                'real_name': user_data.get('profile', {}).get('realName', ''),
+                                'status': 'success'
+                            }
+                    
+                    return {'platform': 'leetcode', 'username': username, 'status': 'error', 'message': 'Profile not found or private'}
+                    
+        except Exception as e:
+            return {'platform': 'leetcode', 'username': username, 'status': 'error', 'message': str(e)}
+    
+    async def fetch_codeforces_stats(self, username: str) -> Dict[str, Any]:
+        """Fetch Codeforces profile statistics"""
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+                # Get user info
+                async with session.get(f"{self.coding_platforms['codeforces']['api_endpoint']}?handles={username}") as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        if data.get('status') == 'OK' and data.get('result'):
+                            user_info = data['result'][0]
+                            
+                            # Get user submissions for problem count
+                            try:
+                                async with session.get(f"https://codeforces.com/api/user.status?handle={username}") as sub_response:
+                                    if sub_response.status == 200:
+                                        sub_data = await sub_response.json()
+                                        if sub_data.get('status') == 'OK':
+                                            submissions = sub_data.get('result', [])
+                                            
+                                            # Count unique solved problems
+                                            solved_problems = set()
+                                            for submission in submissions:
+                                                if submission.get('verdict') == 'OK':
+                                                    problem_id = f"{submission.get('problem', {}).get('contestId', '')}{submission.get('problem', {}).get('index', '')}"
+                                                    solved_problems.add(problem_id)
+                                            
+                                            problems_solved = len(solved_problems)
+                                        else:
+                                            problems_solved = 0
+                                    else:
+                                        problems_solved = 0
+                            except:
+                                problems_solved = 0
+                            
+                            return {
+                                'platform': 'codeforces',
+                                'username': username,
+                                'rating': user_info.get('rating', 0),
+                                'max_rating': user_info.get('maxRating', 0),
+                                'rank': user_info.get('rank', 'unrated'),
+                                'max_rank': user_info.get('maxRank', 'unrated'),
+                                'problems_solved': problems_solved,
+                                'contribution': user_info.get('contribution', 0),
+                                'country': user_info.get('country', ''),
+                                'organization': user_info.get('organization', ''),
+                                'first_name': user_info.get('firstName', ''),
+                                'last_name': user_info.get('lastName', ''),
+                                'status': 'success'
+                            }
+                    
+                    return {'platform': 'codeforces', 'username': username, 'status': 'error', 'message': 'Profile not found'}
+                    
+        except Exception as e:
+            return {'platform': 'codeforces', 'username': username, 'status': 'error', 'message': str(e)}
+    
+    async def fetch_codechef_stats(self, username: str) -> Dict[str, Any]:
+        """Fetch CodeChef profile statistics (limited due to API restrictions)"""
+        try:
+            # CodeChef doesn't have a public API, so we'll do basic profile validation
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+                profile_url = f"https://www.codechef.com/users/{username}"
+                
+                async with session.get(profile_url) as response:
+                    if response.status == 200:
+                        html_content = await response.text()
+                        
+                        # Basic parsing for publicly available info
+                        rating_match = re.search(r'rating["\s:]*(\d+)', html_content, re.IGNORECASE)
+                        rating = int(rating_match.group(1)) if rating_match else 0
+                        
+                        problems_match = re.search(r'problems["\s:]*(\d+)', html_content, re.IGNORECASE)
+                        problems_solved = int(problems_match.group(1)) if problems_match else 0
+                        
+                        return {
+                            'platform': 'codechef',
+                            'username': username,
+                            'rating': rating,
+                            'problems_solved': problems_solved,
+                            'profile_url': profile_url,
+                            'status': 'success',
+                            'note': 'Limited data due to API restrictions'
+                        }
+                    else:
+                        return {'platform': 'codechef', 'username': username, 'status': 'error', 'message': 'Profile not found'}
+                        
+        except Exception as e:
+            return {'platform': 'codechef', 'username': username, 'status': 'error', 'message': str(e)}
+    
+    def assess_job_readiness(self, profile_stats: List[Dict[str, Any]], target_level: str = 'entry_level') -> Dict[str, Any]:
+        """Assess job readiness based on coding profile statistics"""
+        assessment = {
+            'overall_score': 0,
+            'readiness_level': 'Not Ready',
+            'platform_assessments': {},
+            'recommendations': [],
+            'strengths': [],
+            'areas_for_improvement': [],
+            'target_level': target_level
+        }
+        
+        if target_level not in self.job_readiness_thresholds:
+            target_level = 'entry_level'
+        
+        thresholds = self.job_readiness_thresholds[target_level]
+        platform_scores = []
+        
+        for stats in profile_stats:
+            if stats.get('status') != 'success':
+                continue
+                
+            platform = stats['platform']
+            if platform not in thresholds:
+                continue
+                
+            platform_threshold = thresholds[platform]
+            platform_assessment = {
+                'platform': platform,
+                'score': 0,
+                'meets_requirements': False,
+                'details': {}
+            }
+            
+            # Platform-specific assessment
+            if platform == 'leetcode':
+                rating_score = min(stats.get('contest_rating', 0) / platform_threshold['rating'], 1.0) * 40
+                problems_score = min(stats.get('total_solved', 0) / platform_threshold['problems_solved'], 1.0) * 40
+                consistency_score = 20  # Placeholder - would need activity data
+                
+                platform_assessment['score'] = rating_score + problems_score + consistency_score
+                platform_assessment['details'] = {
+                    'rating': stats.get('contest_rating', 0),
+                    'required_rating': platform_threshold['rating'],
+                    'problems_solved': stats.get('total_solved', 0),
+                    'required_problems': platform_threshold['problems_solved'],
+                    'contests_attended': stats.get('contests_attended', 0)
+                }
+                
+                if (stats.get('contest_rating', 0) >= platform_threshold['rating'] and 
+                    stats.get('total_solved', 0) >= platform_threshold['problems_solved']):
+                    platform_assessment['meets_requirements'] = True
+                    
+            elif platform == 'codeforces':
+                rating_score = min(stats.get('rating', 0) / platform_threshold['rating'], 1.0) * 50
+                problems_score = min(stats.get('problems_solved', 0) / platform_threshold['problems_solved'], 1.0) * 30
+                contribution_score = min(stats.get('contribution', 0) / 50, 1.0) * 20
+                
+                platform_assessment['score'] = rating_score + problems_score + contribution_score
+                platform_assessment['details'] = {
+                    'rating': stats.get('rating', 0),
+                    'required_rating': platform_threshold['rating'],
+                    'problems_solved': stats.get('problems_solved', 0),
+                    'required_problems': platform_threshold['problems_solved'],
+                    'rank': stats.get('rank', 'unrated')
+                }
+                
+                if (stats.get('rating', 0) >= platform_threshold['rating'] and 
+                    stats.get('problems_solved', 0) >= platform_threshold['problems_solved']):
+                    platform_assessment['meets_requirements'] = True
+                    
+            elif platform == 'codechef':
+                rating_score = min(stats.get('rating', 0) / platform_threshold['rating'], 1.0) * 60
+                problems_score = min(stats.get('problems_solved', 0) / platform_threshold['problems_solved'], 1.0) * 40
+                
+                platform_assessment['score'] = rating_score + problems_score
+                platform_assessment['details'] = {
+                    'rating': stats.get('rating', 0),
+                    'required_rating': platform_threshold['rating'],
+                    'problems_solved': stats.get('problems_solved', 0),
+                    'required_problems': platform_threshold['problems_solved']
+                }
+                
+                if (stats.get('rating', 0) >= platform_threshold['rating'] and 
+                    stats.get('problems_solved', 0) >= platform_threshold['problems_solved']):
+                    platform_assessment['meets_requirements'] = True
+            
+            assessment['platform_assessments'][platform] = platform_assessment
+            platform_scores.append(platform_assessment['score'])
+        
+        # Calculate overall assessment
+        if platform_scores:
+            assessment['overall_score'] = sum(platform_scores) / len(platform_scores)
+            
+            # Determine readiness level
+            if assessment['overall_score'] >= 80:
+                assessment['readiness_level'] = 'Excellent - Ready for Senior Roles'
+            elif assessment['overall_score'] >= 65:
+                assessment['readiness_level'] = 'Good - Ready for Mid-Level Roles'
+            elif assessment['overall_score'] >= 50:
+                assessment['readiness_level'] = 'Fair - Ready for Entry-Level Roles'
+            elif assessment['overall_score'] >= 30:
+                assessment['readiness_level'] = 'Developing - Continue Practice'
+            else:
+                assessment['readiness_level'] = 'Beginner - Needs Significant Improvement'
+        
+        # Generate recommendations
+        assessment['recommendations'] = self.generate_coding_recommendations(assessment)
+        
+        return assessment
+    
+    def generate_coding_recommendations(self, assessment: Dict[str, Any]) -> List[str]:
+        """Generate personalized coding practice recommendations"""
+        recommendations = []
+        
+        for platform, platform_assessment in assessment['platform_assessments'].items():
+            score = platform_assessment['score']
+            details = platform_assessment['details']
+            
+            if platform == 'leetcode':
+                if details.get('rating', 0) < 1400:
+                    recommendations.append("🎯 Focus on LeetCode Easy and Medium problems to build rating")
+                if details.get('problems_solved', 0) < 100:
+                    recommendations.append("📚 Solve more LeetCode problems - aim for 2-3 problems daily")
+                if details.get('contests_attended', 0) < 5:
+                    recommendations.append("🏆 Participate in LeetCode weekly contests for rating boost")
+                    
+            elif platform == 'codeforces':
+                if details.get('rating', 0) < 1000:
+                    recommendations.append("🚀 Practice Codeforces problems rated 800-1200 to improve rating")
+                if details.get('problems_solved', 0) < 50:
+                    recommendations.append("⚡ Solve more Codeforces problems - focus on implementation and math")
+                    
+            elif platform == 'codechef':
+                if details.get('rating', 0) < 1600:
+                    recommendations.append("🧠 Participate in CodeChef contests to improve rating")
+                if details.get('problems_solved', 0) < 50:
+                    recommendations.append("🔧 Practice CodeChef problems in different categories")
+        
+        # General recommendations based on overall score
+        overall_score = assessment['overall_score']
+        if overall_score < 30:
+            recommendations.extend([
+                "📖 Start with basic programming concepts and data structures",
+                "⏰ Dedicate 1-2 hours daily to coding practice",
+                "🎯 Focus on one platform initially to build momentum"
+            ])
+        elif overall_score < 60:
+            recommendations.extend([
+                "🔄 Practice consistently across multiple platforms",
+                "📊 Focus on weak areas identified in the assessment",
+                "👥 Join coding communities for motivation and learning"
+            ])
+        
+        return recommendations
+    
+    async def analyze_coding_profiles(self, resume_text: str) -> Dict[str, Any]:
+        """Main function to analyze coding profiles from resume"""
+        
+        # Extract profile links
+        profile_links = self.extract_profile_links(resume_text)
+        
+        analysis_result = {
+            'profiles_found': profile_links,
+            'profile_statistics': [],
+            'job_readiness_assessment': None,
+            'summary': {
+                'total_profiles': 0,
+                'accessible_profiles': 0,
+                'total_problems_solved': 0,
+                'average_rating': 0,
+                'platforms_with_good_activity': []
+            }
+        }
+        
+        # Fetch statistics for each platform
+        all_tasks = []
+        
+        for platform, profiles in profile_links.items():
+            for profile in profiles:
+                username = profile['username']
+                
+                if platform == 'leetcode':
+                    all_tasks.append(self.fetch_leetcode_stats(username))
+                elif platform == 'codeforces':
+                    all_tasks.append(self.fetch_codeforces_stats(username))
+                elif platform == 'codechef':
+                    all_tasks.append(self.fetch_codechef_stats(username))
+        
+        # Execute all API calls concurrently
+        if all_tasks:
+            try:
+                profile_stats = await asyncio.gather(*all_tasks, return_exceptions=True)
+                
+                # Filter successful results
+                successful_stats = []
+                for stat in profile_stats:
+                    if isinstance(stat, dict) and stat.get('status') == 'success':
+                        successful_stats.append(stat)
+                        analysis_result['summary']['accessible_profiles'] += 1
+                        
+                        # Update summary statistics
+                        if stat['platform'] == 'leetcode':
+                            analysis_result['summary']['total_problems_solved'] += stat.get('total_solved', 0)
+                            if stat.get('contest_rating', 0) > 0:
+                                analysis_result['summary']['average_rating'] += stat.get('contest_rating', 0)
+                        elif stat['platform'] == 'codeforces':
+                            analysis_result['summary']['total_problems_solved'] += stat.get('problems_solved', 0)
+                            if stat.get('rating', 0) > 0:
+                                analysis_result['summary']['average_rating'] += stat.get('rating', 0)
+                        elif stat['platform'] == 'codechef':
+                            analysis_result['summary']['total_problems_solved'] += stat.get('problems_solved', 0)
+                            if stat.get('rating', 0) > 0:
+                                analysis_result['summary']['average_rating'] += stat.get('rating', 0)
+                
+                analysis_result['profile_statistics'] = profile_stats
+                
+                # Calculate average rating
+                if analysis_result['summary']['accessible_profiles'] > 0:
+                    analysis_result['summary']['average_rating'] /= analysis_result['summary']['accessible_profiles']
+                
+                # Assess job readiness
+                if successful_stats:
+                    analysis_result['job_readiness_assessment'] = self.assess_job_readiness(successful_stats)
+                
+            except Exception as e:
+                logger.error(f"Error fetching profile statistics: {e}")
+        
+        # Count total profiles found
+        analysis_result['summary']['total_profiles'] = sum(len(profiles) for profiles in profile_links.values())
+        
+        return analysis_result
+    
+    # ==================== END CODING PROFILES ANALYSIS ====================
+    
 if __name__ == "__main__":
     import uvicorn
     

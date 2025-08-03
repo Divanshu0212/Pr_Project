@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import PropTypes from 'prop-types';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
-import { ChevronDown, ChevronUp, Plus, X, Download, Zap, Award, User, Mail, Phone, Globe, Github, Linkedin, GraduationCap, Briefcase, Code, Trophy, Target, Upload } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, X, Download, Zap, Award, User, Mail, Phone, Globe, Github, Linkedin, GraduationCap, Briefcase, Code, Trophy, ExternalLink } from 'lucide-react';
 import '../../styles/pages/BuildResume.css';
 import SummaryApi from '../../config';
 
@@ -269,7 +269,7 @@ const ResumeOptimizer = () => {
     const { isDark } = useTheme();
     const { resumeId } = useParams();
     const navigate = useNavigate();
-    const [isEditMode, setIsEditMode] = useState(!!resumeId);
+    const [isEditMode] = useState(!!resumeId);
 
     // Updated data structure to use sample data as default
     const [resumeData, setResumeData] = useState(() => {
@@ -289,9 +289,7 @@ const ResumeOptimizer = () => {
         personal: true, summary: true, education: true, experience: true,
         projects: true, skills: true, certifications: false, additional: false
     });
-    const [manualUploadBlob, setManualUploadBlob] = useState(null);
-    const [manualUploadResumeId, setManualUploadResumeId] = useState(null);
-    const [manualUploadError, setManualUploadError] = useState(null);
+
 
     useEffect(() => {
         const fetchResumeData = async () => {
@@ -529,94 +527,55 @@ const ResumeOptimizer = () => {
         });
     };
 
-    // Helper to upload PDF to Node backend (which uploads to Cloudinary)
-    // Updated uploadPdfToCloudinary function
-    const uploadPdfToCloudinary = async (file, resumeId) => {
+    // Function to upload resume to Cloudinary and MongoDB
+    const uploadResumeToCloudinaryAndDB = async (optimizationData) => {
         try {
+            // First, get the PDF from the optimization service
+            const pdfResponse = await fetch(`http://0.0.0.0:8000/api/resume/${optimizationData.resume_id}/pdf`);
+            if (!pdfResponse.ok) {
+                throw new Error('Failed to fetch PDF from optimization service');
+            }
+
+            const pdfBlob = await pdfResponse.blob();
+            
+            // Create FormData for the PDF upload
             const formData = new FormData();
-            // Must match exactly with Multer's field name
-            formData.append('resume', file);
+            formData.append('resume', pdfBlob, `${resumeData.personal_info.name.replace(/\s+/g, '_')}_resume.pdf`);
+            formData.append('resumeId', optimizationData.resume_id);
+            formData.append('resumeData', JSON.stringify({
+                ...resumeData,
+                optimizationScore: optimizationData.score,
+                optimizedContent: optimizationData.optimized_resume,
+                resumeId: optimizationData.resume_id,
+                feedback: optimizationData.feedback,
+                suggestions: optimizationData.suggestions
+            }));
 
-            if (resumeId) {
-                formData.append('resumeId', resumeId);
-            }
+            // Upload to Cloudinary and save to MongoDB
+            const uploadResponse = await axios.post(
+                SummaryApi.resumes.upload.url,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                    withCredentials: true
+                }
+            );
 
-            const token = localStorage.getItem('token');
-            if (!token) {
-                throw new Error('Please login to upload resumes');
-            }
-
-            const response = await fetch('http://localhost:5000/api/resumes/upload', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                    // Let browser set Content-Type automatically
-                },
-                credentials: 'include'
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Upload failed');
-            }
-
-            return await response.json();
+            return uploadResponse.data;
         } catch (error) {
-            console.error('Upload error:', error);
-            throw error;
-        }
-    };
-
-    // Manual upload handler for Cloudinary PDF upload
-    const handleManualUpload = async () => {
-        setManualUploadError(null);
-        try {
-            if (!manualUploadBlob || !manualUploadResumeId) throw new Error('No PDF to upload.');
-            await uploadPdfToCloudinary(manualUploadBlob, manualUploadResumeId);
-            setManualUploadBlob(null);
-            setManualUploadResumeId(null);
-            alert('Resume uploaded to Cloudinary successfully!');
-        } catch (err) {
-            setManualUploadError('Manual upload failed: ' + err.message);
-        }
-    };
-
-    // Updated handleUserFileManualUpload
-    const handleUserFileManualUpload = async (event) => {
-        setManualUploadError(null);
-        const file = event.target.files[0];
-
-        if (!file) {
-            setManualUploadError('No file selected');
-            return;
-        }
-
-        // Validate file type
-        const validTypes = ['application/pdf',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-        if (!validTypes.includes(file.type)) {
-            setManualUploadError('Only PDF, DOC, and DOCX files are allowed');
-            return;
-        }
-
-        try {
-            // Optional: Get resume ID or generate one
-            const resumeId = prompt('Enter resume identifier (or leave blank):') ||
-                `resume_${Date.now()}`;
-
-            const result = await uploadPdfToCloudinary(file, resumeId);
-            alert(`Resume uploaded successfully! URL: ${result.url}`);
-
-            // Reset file input
-            event.target.value = '';
-        } catch (error) {
-            setManualUploadError(error.message);
-            if (error.message.includes('401')) {
-                // Handle expired token
-                localStorage.removeItem('token');
-                navigate('/login');
+            console.error('Upload to Cloudinary/MongoDB failed:', error);
+            
+            // Provide more specific error messages
+            if (error.response?.status === 401) {
+                throw new Error('Authentication failed. Please log in again.');
+            } else if (error.response?.status === 403) {
+                throw new Error('Access denied. Please check your permissions.');
+            } else if (error.response?.data?.message) {
+                throw new Error(error.response.data.message);
+            } else {
+                throw new Error('Failed to upload resume to portfolio.');
             }
         }
     };
@@ -654,6 +613,7 @@ const ResumeOptimizer = () => {
                     data: requestData,
                     withCredentials: true
                 });
+                setOptimizationResult(response.data);
             } else {
                 // Create new resume using HTML backend endpoint
                 response = await fetch('http://0.0.0.0:8000/api/generate-resume', {
@@ -674,29 +634,35 @@ const ResumeOptimizer = () => {
                     throw new Error(errorMessage);
                 }
 
-                const data = await response.json();
-                setOptimizationResult(data);
+                const optimizationData = await response.json();
+                setOptimizationResult(optimizationData);
 
-                // --- Cloudinary upload logic ---
-                if (data && data.resume_id && data.pdf_available) {
-                    const pdfResponse = await fetch(`http://0.0.0.0:8000/api/resume/${data.resume_id}/pdf`);
-                    if (!pdfResponse.ok) throw new Error('Failed to fetch PDF from backend');
-                    const pdfBlob = await pdfResponse.blob();
-                    try {
-                        await uploadPdfToCloudinary(pdfBlob, data.resume_id);
-                    } catch (err) {
-                        setManualUploadBlob(pdfBlob);
-                        setManualUploadResumeId(data.resume_id);
-                        setManualUploadError('Resume optimized, but failed to upload to Cloudinary. You can try manual upload below.');
-                    }
+                // Upload the resume to Cloudinary and MongoDB
+                try {
+                    const uploadResult = await uploadResumeToCloudinaryAndDB(optimizationData);
+                    console.log('Resume uploaded successfully:', uploadResult);
+                    
+                    // Update the optimization result with upload information
+                    setOptimizationResult(prev => ({
+                        ...prev,
+                        uploadSuccess: true,
+                        cloudinaryUrl: uploadResult.url,
+                        mongodbId: uploadResult.databaseId,
+                        cloudinaryPublicId: uploadResult.public_id,
+                        uploadMessage: 'Resume saved to your portfolio successfully!'
+                    }));
+                } catch (uploadError) {
+                    console.error('Upload failed, but optimization succeeded:', uploadError);
+                    // Don't throw here - show the optimization result but warn about upload failure
+                    setOptimizationResult(prev => ({
+                        ...prev,
+                        uploadSuccess: false,
+                        uploadError: `Resume optimized successfully, but failed to save to portfolio: ${uploadError.message}. You can still download the PDF.`
+                    }));
                 }
 
-                // Show success message (do not navigate away)
                 return;
             }
-
-            setOptimizationResult(response.data);
-            // Do not navigate away after update
 
         } catch (err) {
             console.error('ResumeOptimizer: Operation error:', err);
@@ -1191,7 +1157,7 @@ const ResumeOptimizer = () => {
                     onAdd={handleAddSkillCategory}
                     addLabel="Add Skill Category"
                 >
-                    {Object.keys(resumeData.skills || {}).map((category, catIndex) => (
+                    {Object.keys(resumeData.skills || {}).map((category) => (
                         <FormCard key={category} onRemove={() => handleRemoveSkillCategory(category)}>
                             <InputField
                                 label="Skill Category"
@@ -1284,7 +1250,7 @@ const ResumeOptimizer = () => {
                             />
                         </div>
                         <div className="input-wrapper col-span-2">
-                            <label className="form-label">Target Job Description (optional - paste the job description you're applying for)</label>
+                            <label className="form-label">Target Job Description (optional - paste the job description you&apos;re applying for)</label>
                             <textarea
                                 value={resumeData.target_job_description}
                                 onChange={e => handleInputChange(e, 'target_job_description')}
@@ -1312,45 +1278,49 @@ const ResumeOptimizer = () => {
                         )}
                     </button>
                     {optimizationResult && (
-                        <button type="button" className="download-button" onClick={downloadPDF}>
-                            <Download size={20} /> Download PDF
-                        </button>
+                        <>
+                            <button type="button" className="download-button" onClick={downloadPDF}>
+                                <Download size={20} /> Download PDF
+                            </button>
+                            {optimizationResult.uploadSuccess && optimizationResult.mongodbId && (
+                                <button 
+                                    type="button" 
+                                    className="portfolio-button" 
+                                    onClick={() => navigate('/portfolio')}
+                                >
+                                    <ExternalLink size={20} /> View in Portfolio
+                                </button>
+                            )}
+                        </>
                     )}
-                    {manualUploadBlob && manualUploadResumeId && (
-                        <button type="button" className="download-button bg-yellow-500 hover:bg-yellow-600 text-white ml-4" onClick={handleManualUpload}>
-                            <Upload size={20} /> Manual Upload to Cloudinary
-                        </button>
-                    )}
-
-                    <label
-                        htmlFor="resume-upload"
-                        className="download-button rounded-lg p-2 bg-blue-500 hover:bg-blue-600 text-white ml-4 cursor-pointer" style={{ display: 'inline-block' }}
-                    >
-                        <input
-                            type="file"
-                            accept=".pdf,.doc,.docx"
-                            onChange={handleUserFileManualUpload}
-                            className="hidden"
-                            id="resume-upload"
-                        />
-                        <div className="flex items-center space-x-2">
-                            <Upload size={20} style={{ verticalAlign: 'middle' }} />
-                            <span>Upload Resume</span> 
-                        </div>
-                    </label>
                 </div>
-                {manualUploadError && (
-                    <div className="error-alert slide-in bg-yellow-100 border-yellow-400 text-yellow-800 mt-4">
-                        <div className="error-content">
-                            <X size={20} />
-                            <span>{manualUploadError}</span>
-                        </div>
-                    </div>
-                )}
 
                 {optimizationResult && (
                     <div className="optimization-result slide-in">
                         <h3 className="result-title">🚀 Resume {isEditMode ? 'Updated' : 'Optimized'} Successfully!</h3>
+                        
+                        {/* Upload Status Messages */}
+                        {optimizationResult.uploadSuccess && (
+                            <div className={`upload-status-message success ${isDark ? 'bg-green-900/30 border-green-700 text-green-300' : 'bg-green-100 border-green-400 text-green-800'}`}>
+                                <div className="flex items-center">
+                                    <span className="mr-2">✅</span>
+                                    <span>{optimizationResult.uploadMessage}</span>
+                                </div>
+                                {optimizationResult.cloudinaryUrl && (
+                                    <p className="text-sm mt-1">Your resume is now saved in your portfolio.</p>
+                                )}
+                            </div>
+                        )}
+                        
+                        {optimizationResult.uploadSuccess === false && optimizationResult.uploadError && (
+                            <div className={`upload-status-message warning ${isDark ? 'bg-yellow-900/30 border-yellow-700 text-yellow-300' : 'bg-yellow-100 border-yellow-400 text-yellow-800'}`}>
+                                <div className="flex items-center">
+                                    <span className="mr-2">⚠️</span>
+                                    <span>{optimizationResult.uploadError}</span>
+                                </div>
+                            </div>
+                        )}
+
                         {optimizationResult.score && (
                             <div className="score-display">
                                 <div className={`score-circle ${optimizationResult.score >= 85 ? 'score-excellent' :

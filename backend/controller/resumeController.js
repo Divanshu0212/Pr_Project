@@ -16,58 +16,79 @@ const logger = require('../utils/logger');
 const customJoi = Joi.extend(JoiDate);
 
 // Joi schema for validating individual resume elements
+// Joi schema for education - flexible for both formats
 const educationSchema = customJoi.object({
-    institution: customJoi.string().trim().min(3).max(255).required(),
-    degree: customJoi.string().trim().min(2).max(255).required(),
-    field: customJoi.string().trim().min(2).max(255).optional(),
-    date_range: customJoi.string().trim().min(4).max(50).required(), // Keep as string, or use customJoi.date() for stricter validation
-    gpa: customJoi.string().trim().min(1).max(10).optional()
+    institution: customJoi.string().trim().min(1).max(255).required(),
+    degree: customJoi.string().trim().min(1).max(255).required(),
+    field: customJoi.string().trim().min(1).max(255).optional(),
+    field_of_study: customJoi.string().trim().min(1).max(255).optional(), // New format
+    date_range: customJoi.string().trim().min(1).max(50).optional(), // Old format
+    graduation_date: customJoi.string().trim().min(1).max(50).optional(), // New format
+    gpa: customJoi.string().trim().min(1).max(10).optional(),
+    relevant_coursework: customJoi.array().items(customJoi.string().trim().max(100)).optional()
 });
 
 const experienceSchema = customJoi.object({
-    company: customJoi.string().trim().min(2).max(255).required(),
-    position: customJoi.string().trim().min(2).max(255).required(),
-    date_range: customJoi.string().trim().min(4).max(50).required(),
-    description: customJoi.array().items(customJoi.string().trim().min(5).max(500)).min(1).required()
+    company: customJoi.string().trim().min(1).max(255).required(),
+    position: customJoi.string().trim().min(1).max(255).required(),
+    date_range: customJoi.string().trim().min(1).max(50).optional(), // Old format
+    start_date: customJoi.string().trim().min(1).max(50).optional(), // New format
+    end_date: customJoi.string().trim().min(1).max(50).optional(), // New format
+    location: customJoi.string().trim().max(255).optional(), // New format
+    description: customJoi.array().items(customJoi.string().trim().min(1).max(1000)).optional(), // Old format
+    responsibilities: customJoi.array().items(customJoi.string().trim().min(1).max(1000)).optional(), // New format
+    achievements: customJoi.array().items(customJoi.string().trim().min(1).max(1000)).optional() // New format
 });
 
 const projectSchema = customJoi.object({
-    name: customJoi.string().trim().min(2).max(255).required(),
-    description: customJoi.array().items(customJoi.string().trim().min(5).max(500)).min(1).required(),
+    name: customJoi.string().trim().min(1).max(255).required(),
+    description: customJoi.alternatives().try(
+        customJoi.array().items(customJoi.string().trim().min(1).max(1000)), // Old format
+        customJoi.string().trim().min(1).max(1000) // New format
+    ).optional(),
     link: customJoi.string().trim().uri().optional(),
-    technologies: customJoi.array().items(customJoi.string().trim().max(100)).min(1).max(50).optional()
+    url: customJoi.string().trim().uri().optional(), // New format
+    technologies: customJoi.array().items(customJoi.string().trim().max(100)).optional(),
+    achievements: customJoi.array().items(customJoi.string().trim().min(1).max(1000)).optional() // New format
 });
 
 const skillCategorySchema = customJoi.object({
-    category: customJoi.string().trim().min(2).max(100).required(),
+    category: customJoi.string().trim().min(1).max(100).required(),
     skills: customJoi.array().items(customJoi.string().trim().min(1).max(100)).min(1).required()
 });
 
 const achievementSchema = customJoi.object({
-    title: customJoi.string().trim().min(2).max(255).required(),
-    description: customJoi.string().trim().min(5).max(500).optional()
+    title: customJoi.string().trim().min(1).max(255).required(),
+    description: customJoi.string().trim().min(1).max(500).optional()
 });
 
 const codingProfileSchema = customJoi.object({
-    platform: customJoi.string().trim().min(2).max(100).required(),
+    platform: customJoi.string().trim().min(1).max(100).required(),
     url: customJoi.string().trim().uri().required()
 });
 
-// Joi schema for the entire resumeData JSON structure
+// Joi schema for the entire resumeData JSON structure - flexible for both formats
 const resumeDataSchema = customJoi.object({
     name: customJoi.string().trim().max(255).optional().allow(''),
     email: customJoi.string().trim().email().max(255).optional().allow(''),
     phone: customJoi.string().trim().max(50).optional().allow(''),
-    linkedin: customJoi.string().trim().uri().optional().allow(''),
-    github: customJoi.string().trim().uri().optional().allow(''),
-    portfolio: customJoi.string().trim().uri().optional().allow(''),
-    target_profession: customJoi.string().trim().max(255).optional().allow(''),
+    location: customJoi.string().trim().max(255).optional().allow(''), // New format
+    linkedin: customJoi.string().trim().max(500).optional().allow(''),
+    github: customJoi.string().trim().max(500).optional().allow(''),
+    portfolio: customJoi.string().trim().max(500).optional().allow(''),
+    target_profession: customJoi.string().trim().max(2000).optional().allow(''),
+    professional_summary: customJoi.string().trim().max(2000).optional().allow(''), // New format
     education: customJoi.array().items(educationSchema).optional(),
     experiences: customJoi.array().items(experienceSchema).optional(),
     projects: customJoi.array().items(projectSchema).optional(),
-    skills: customJoi.array().items(skillCategorySchema).optional(),
+    skills: customJoi.alternatives().try(
+        customJoi.array().items(skillCategorySchema), // Old format
+        customJoi.object().pattern(customJoi.string(), customJoi.array().items(customJoi.string())) // New format: object with category keys
+    ).optional(),
     achievements: customJoi.array().items(achievementSchema).optional(),
-    coding_profiles: customJoi.array().items(codingProfileSchema).optional()
+    coding_profiles: customJoi.array().items(codingProfileSchema).optional(),
+    certifications: customJoi.array().items(customJoi.string()).optional(), // New format
+    languages: customJoi.array().items(customJoi.string()).optional() // New format
 }).required();
 
 // Helper for sending consistent error responses
@@ -105,6 +126,35 @@ exports.createResume = async (req, res) => {
             title,
             resumeData: JSON.stringify(validatedResumeData), // Store validated data as string
         });
+
+        // Handle file upload if present
+        if (req.file) {
+            try {
+                const uploadResult = await new Promise((resolve, reject) => {
+                    const uploadStream = cloudinary.uploader.upload_stream(
+                        {
+                            resource_type: 'raw',
+                            folder: `resumes/${userId}`,
+                            public_id: `${title}_${Date.now()}`
+                        },
+                        (error, result) => {
+                            if (error) return reject(error);
+                            resolve(result);
+                        }
+                    );
+                    uploadStream.end(req.file.buffer);
+                });
+
+                newResume.cloudinaryResumes = {
+                    public_id: uploadResult.public_id,
+                    url: uploadResult.secure_url,
+                    uploadedAt: new Date()
+                };
+            } catch (uploadError) {
+                console.error('File upload error:', uploadError);
+                // Continue without file upload - don't fail the entire resume creation
+            }
+        }
 
         // The pre-save hook in the model will handle encryption of PII in resumeData
         await newResume.save();
@@ -265,6 +315,27 @@ exports.deleteResume = async (req, res) => {
     }
 
     try {
+        // Find the resume first to get Cloudinary info
+        const resume = await Resume.findOne({ _id: id, userId });
+
+        if (!resume) {
+            return sendErrorResponse(res, 404, 'Resume not found or not authorized.');
+        }
+
+        // Delete from Cloudinary if exists
+        if (resume.cloudinaryResumes && resume.cloudinaryResumes.public_id) {
+            try {
+                await cloudinary.uploader.destroy(resume.cloudinaryResumes.public_id, {
+                    resource_type: 'raw'
+                });
+                console.log(`Deleted Cloudinary file: ${resume.cloudinaryResumes.public_id}`);
+            } catch (cloudinaryError) {
+                console.error('Error deleting from Cloudinary:', cloudinaryError);
+                // Continue with database deletion even if Cloudinary deletion fails
+            }
+        }
+
+        // Delete from database
         const result = await Resume.deleteOne({ _id: id, userId });
 
         if (result.deletedCount === 0) {
@@ -312,6 +383,8 @@ exports.getDefaultResume = (req, res) => {
 // @desc    Upload a resume PDF to Cloudinary
 // @access  Private
 // @route   POST /api/resumes/upload
+// @desc    Upload a resume PDF to Cloudinary and save metadata to database
+// @access  Private
 exports.uploadResumeToCloudinary = async (req, res) => {
     try {
         if (!req.file) {
@@ -321,13 +394,16 @@ exports.uploadResumeToCloudinary = async (req, res) => {
             });
         }
 
-        // Process the file buffer
+        const userId = req.user.id;
+        const resumeId = req.body.resumeId || `resume_${Date.now()}`;
+
+        // Process the file buffer and upload to Cloudinary
         const uploadResult = await new Promise((resolve, reject) => {
             const uploadStream = cloudinary.uploader.upload_stream(
                 {
                     resource_type: 'raw',
-                    folder: `resumes/${req.user.id}`,
-                    public_id: req.body.resumeId || `resume_${Date.now()}`
+                    folder: `resumes/${userId}`,
+                    public_id: resumeId.length === 24 ? `resume_${Date.now()}` : resumeId // Use timestamp for ObjectIds
                 },
                 (error, result) => {
                     if (error) return reject(error);
@@ -338,17 +414,88 @@ exports.uploadResumeToCloudinary = async (req, res) => {
             uploadStream.end(req.file.buffer);
         });
 
+        let resume;
+
+        // Check if resumeId is a valid MongoDB ObjectId (existing resume)
+        if (mongoose.Types.ObjectId.isValid(resumeId) && resumeId.length === 24) {
+            // This is an existing resume - update it
+            resume = await Resume.findOne({ _id: resumeId, userId: userId });
+            
+            if (!resume) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Resume not found or not authorized'
+                });
+            }
+
+            // Update existing resume with Cloudinary info
+            resume.cloudinaryResumes = {
+                public_id: uploadResult.public_id,
+                url: uploadResult.secure_url,
+                uploadedAt: new Date()
+            };
+            await resume.save();
+        } else {
+            // Check if a resume with this title already exists for this user
+            const existingResume = await Resume.findOne({ 
+                userId: userId, 
+                title: resumeId 
+            });
+
+            if (existingResume) {
+                // Update existing resume with Cloudinary info
+                existingResume.cloudinaryResumes = {
+                    public_id: uploadResult.public_id,
+                    url: uploadResult.secure_url,
+                    uploadedAt: new Date()
+                };
+                await existingResume.save();
+                resume = existingResume;
+            } else {
+                // Create new resume entry in database
+                const newResume = new Resume({
+                    userId: userId,
+                    title: resumeId,
+                    resumeData: JSON.stringify({
+                        name: "",
+                        email: "",
+                        phone: "",
+                        linkedin: "",
+                        github: "",
+                        portfolio: "",
+                        target_profession: "",
+                        education: [],
+                        experiences: [],
+                        projects: [],
+                        skills: [],
+                        achievements: [],
+                        coding_profiles: []
+                    }),
+                    cloudinaryResumes: {
+                        public_id: uploadResult.public_id,
+                        url: uploadResult.secure_url,
+                        uploadedAt: new Date()
+                    }
+                });
+                resume = await newResume.save();
+            }
+        }
+
         res.status(200).json({
             success: true,
+            message: 'Resume uploaded successfully',
             url: uploadResult.secure_url,
-            public_id: uploadResult.public_id
+            public_id: uploadResult.public_id,
+            resumeId: resumeId,
+            databaseId: resume._id
         });
 
     } catch (error) {
         console.error('Upload error:', error);
         res.status(500).json({
             success: false,
-            message: 'Server error during upload'
+            message: 'Server error during upload',
+            error: error.message
         });
     }
 };

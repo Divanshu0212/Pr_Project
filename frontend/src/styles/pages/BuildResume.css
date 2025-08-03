@@ -873,6 +873,174 @@
   margin: 0;
 }
 
+/* Upload Status Message Styles */
+.upload-status-message {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid;
+  margin-bottom: 16px;
+  animation: slideIn 0.3s ease-out;
+}
+
+.upload-status-message.success {
+  border-color: #10b981;
+  background-color: rgba(16, 185, 129, 0.1);
+}
+
+.upload-status-message.warning {
+  border-color: #f59e0b;
+  background-color: rgba(245, 158, 11, 0.1);
+}
+
+.upload-status-message.error {
+  border-color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* Dark mode upload status messages */
+.dark .upload-status-message.success {
+  background-color: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  color: #86efac;
+}
+
+.dark .upload-status-message.warning {
+  background-color: rgba(245, 158, 11, 0.2);
+  border-color: #f59e0b;
+  color: #fbbf24;
+}
+
+.dark .upload-status-message.error {
+  background-color: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #fca5a5;
+}
+
+/* Optimization Result Styles (if not already present) */
+.optimization-result {
+  background: rgba(var(--color-background-secondary), 0.8);
+  border: 1px solid rgba(var(--color-accent-primary), 0.3);
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 24px;
+  animation: slideIn 0.5s ease-out;
+}
+
+.result-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: rgb(var(--color-text-primary));
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.score-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.score-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 8px;
+}
+
+.score-excellent {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.score-good {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+
+.score-fair {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.score-poor {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.score-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgb(var(--color-text-primary));
+}
+
+.result-message {
+  color: rgb(var(--color-text-primary));
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.result-id {
+  font-size: 0.875rem;
+  color: rgba(var(--color-text-primary), 0.7);
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.suggestions-list {
+  margin-top: 20px;
+}
+
+.suggestions-list h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: rgb(var(--color-text-primary));
+  margin-bottom: 12px;
+}
+
+.suggestions-list ul {
+  list-style: none;
+  padding: 0;
+}
+
+.suggestions-list li {
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  background: rgba(var(--color-accent-primary), 0.1);
+  border-radius: 6px;
+  color: rgb(var(--color-text-primary));
+  border-left: 3px solid rgb(var(--color-accent-primary));
+}
+
+/* Portfolio Button Styles */
+.portfolio-button {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 12px;
+}
+
+.portfolio-button:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+}
+
+.portfolio-button:active {
+  transform: translateY(0);
+}
+
 /* Utility Classes */
 .slide-in {
   animation: slideIn 0.6s ease-out;
@@ -942,5 +1110,27 @@
   .add-btn {
     background: #333;
     color: white;
+  }
+}
+
+/* Form Actions Container */
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+@media (max-width: 768px) {
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .portfolio-button {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
   }
 }

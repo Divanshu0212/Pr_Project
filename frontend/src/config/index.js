@@ -153,24 +153,36 @@ const SummaryApi = {
     },
     ats: {
         analyze: {
-            url: `${BACKEND_DOMAIN}/api/ats/analyze`,
+            url: "http://localhost:8001/analyze",
             method: "POST"
         },
-        getAnalysis: {
-            url: (id) => `${BACKEND_DOMAIN}/api/ats/analysis/${id}`,
+        analyzeText: {
+            url: "http://localhost:8001/analyze-text",
+            method: "POST"
+        },
+        health: {
+            url: "http://localhost:8001/health",
             method: "GET"
         },
-        getAllAnalyses: {
-            url: `${BACKEND_DOMAIN}/api/ats/analyses`,
+        models: {
+            url: "http://localhost:8001/models",
             method: "GET"
         },
-        deleteAnalysis: {
-            url: (id) => `${BACKEND_DOMAIN}/api/ats/analysis/${id}`,
-            method: "DELETE"
+        batchAnalyze: {
+            url: "http://localhost:8001/batch-analyze",
+            method: "POST"
         },
-        updateAnalysis: {
-            url: (id) => `${BACKEND_DOMAIN}/api/ats/analysis/${id}`,
-            method: "PUT"
+        compare: {
+            url: "http://localhost:8001/compare",
+            method: "POST"
+        },
+        keywords: {
+            url: (industry) => `http://localhost:8001/keywords/${industry}`,
+            method: "GET"
+        },
+        analytics: {
+            url: "http://localhost:8001/analytics",
+            method: "GET"
         }
     },
     resumes: {

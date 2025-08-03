@@ -20,10 +20,6 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.config.cloudinary_api import cloudinary
-import cloudinary.uploader
-import cloudinary.api
-
 os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY","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")
 os.environ["LANGCHAIN_TRACING_V2"] = os.getenv("LANGCHAIN_TRACING_V2", "true")
 os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT", "Resume")
@@ -1131,22 +1127,7 @@ async def generate_resume(request: ResumeRequest):
         # Try to generate PDF
         pdf_path = html_generator.generate_resume_pdf(html_content, resume_id)
         pdf_available = pdf_path is not None
-        # --- Cloudinary Upload ---
-        user_id = request.resume_data.personal_info.get("user_id") or request.resume_data.personal_info.get("id")
-        cloudinary_url = None
-        cloudinary_public_id = None
-        if pdf_available and user_id:
-            try:
-                upload_result = cloudinary.uploader.upload(
-                    pdf_path,
-                    resource_type="raw",
-                    public_id=f"resumes/{user_id}/{resume_id}",
-                    tags=[str(user_id), "resume"]
-                )
-                cloudinary_url = upload_result["secure_url"]
-                cloudinary_public_id = upload_result["public_id"]
-            except Exception as e:
-                print(f"Cloudinary upload failed: {e}")
+        
         # Create response
         response = ResumeResponse(
             resume_id=resume_id,
@@ -1157,16 +1138,14 @@ async def generate_resume(request: ResumeRequest):
             html_content=html_content,
             pdf_available=pdf_available
         )
+        
         # Store resume data
         resume_store[resume_id] = {
             "request": request.dict(),
             "response": response.dict(),
             "html_content": html_content,
             "pdf_path": pdf_path,
-            "created_at": datetime.now().isoformat(),
-            "cloudinary_url": cloudinary_url,
-            "cloudinary_public_id": cloudinary_public_id,
-            "user_id": user_id
+            "created_at": datetime.now().isoformat()
         }
         return response
     except Exception as e:
@@ -1174,43 +1153,56 @@ async def generate_resume(request: ResumeRequest):
 
 @app.get("/api/my-resumes/{user_id}")
 async def list_user_resumes(user_id: str):
-    """List all resumes for a user from Cloudinary"""
+    """List all resumes for a user from local storage"""
     try:
-        # List resources from Cloudinary with prefix or tag
-        resources = cloudinary.api.resources(
-            type="upload",
-            resource_type="raw",
-            prefix=f"resumes/{user_id}/"
-        )
-        resumes = []
-        for res in resources.get("resources", []):
-            resumes.append({
-                "resume_id": res["public_id"].split("/")[-1],
-                "cloudinary_url": res["secure_url"],
-                "created_at": res["created_at"],
-                "public_id": res["public_id"]
-            })
-        resumes.sort(key=lambda x: x["created_at"], reverse=True)
-        return {"resumes": resumes, "total": len(resumes)}
+        # Filter resumes by user_id from local storage
+        user_resumes = []
+        for resume_id, data in resume_store.items():
+            stored_user_id = data.get("request", {}).get("resume_data", {}).get("personal_info", {}).get("user_id") or \
+                           data.get("request", {}).get("resume_data", {}).get("personal_info", {}).get("id")
+            if stored_user_id == user_id:
+                user_resumes.append({
+                    "resume_id": resume_id,
+                    "created_at": data["created_at"],
+                    "score": data["response"]["score"],
+                    "pdf_available": data["response"]["pdf_available"]
+                })
+        
+        user_resumes.sort(key=lambda x: x["created_at"], reverse=True)
+        return {"resumes": user_resumes, "total": len(user_resumes)}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Cloudinary error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error listing resumes: {str(e)}")
 
 @app.delete("/api/my-resume/{user_id}/{resume_id}")
 async def delete_user_resume(user_id: str, resume_id: str):
-    """Delete a user's resume from Cloudinary"""
-    public_id = f"resumes/{user_id}/{resume_id}"
+    """Delete a user's resume from local storage"""
     try:
-        result = cloudinary.uploader.destroy(public_id, resource_type="raw")
-        if result.get("result") == "ok":
-            # Optionally, remove from in-memory store if present
-            for rid, data in list(resume_store.items()):
-                if data.get("cloudinary_public_id") == public_id:
-                    del resume_store[rid]
-            return {"message": f"Resume {resume_id} deleted from Cloudinary"}
-        else:
-            raise Exception(result)
+        if resume_id not in resume_store:
+            raise HTTPException(status_code=404, detail="Resume not found")
+        
+        stored_resume = resume_store[resume_id]
+        stored_user_id = stored_resume.get("request", {}).get("resume_data", {}).get("personal_info", {}).get("user_id") or \
+                        stored_resume.get("request", {}).get("resume_data", {}).get("personal_info", {}).get("id")
+        
+        if stored_user_id != user_id:
+            raise HTTPException(status_code=403, detail="Not authorized to delete this resume")
+        
+        # Delete PDF file if it exists
+        pdf_path = stored_resume.get("pdf_path")
+        if pdf_path and os.path.exists(pdf_path):
+            try:
+                os.remove(pdf_path)
+            except OSError as e:
+                print(f"Warning: Could not delete PDF file {pdf_path}: {e}")
+        
+        # Remove from memory store
+        del resume_store[resume_id]
+        
+        return {"message": f"Resume {resume_id} deleted successfully"}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Cloudinary delete error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error deleting resume: {str(e)}")
         
 @app.get("/api/resume/{resume_id}/pdf")
 async def download_resume_pdf(resume_id: str):

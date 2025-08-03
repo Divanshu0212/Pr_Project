@@ -54,8 +54,8 @@ const TemplateGallery = lazy(() => import('./pages/resume/TemplateGallery'));
 const MyResumesPage = lazy(() => import('./pages/resume/MyResumesPage')); // NEW: Create this page
 
 // --- ATS Optimizer Module ---
-const AtsHome = lazy(() => import('./pages/ats/AtsHome'));
 const AtsTracker = lazy(() => import('./pages/ats/AtsTracker')); // Main scan input page
+const AtsResults = lazy(() => import('./pages/ats/AtsResults')); // Analysis results page
 const AnalysisView = lazy(() => import('./pages/ats/AnalysisView')); // Detailed report page (modified to fetch by ID)
 const KeywordAnalysis = lazy(() => import('./pages/ats/KeywordAnalysis'));
 const AtsHistoryPage = lazy(() => import('./pages/ats/AtsHistoryPage')); // NEW: Create this page
@@ -162,9 +162,9 @@ const AnimatedRoutes = () => {
           <Route path="/resume/my-resumes" element={<ProtectedRoute><MyResumesPage /></ProtectedRoute>} /> {/* New page */}
 
           {/* ATS Optimizer Module */}
-          <Route path="/ats" element={<ProtectedRoute><DashboardLayout user={currentUser}><AtsHome /></DashboardLayout></ProtectedRoute>} /> {/* ATS Home */}
+          <Route path="/ats" element={<ProtectedRoute><AtsTracker /></ProtectedRoute>} /> {/* Main ATS page with upload */}
 
-          <Route path="/ats/scan" element={<ProtectedRoute><AtsTracker /></ProtectedRoute>} /> {/* Main scan input */}
+          <Route path="/ats/results" element={<ProtectedRoute><AtsResults /></ProtectedRoute>} /> {/* Analysis results page */}
           <Route path="/ats/analysis/:analysisId" element={<ProtectedRoute><DashboardLayout user={currentUser}><AnalysisView /></DashboardLayout></ProtectedRoute>} /> {/* Detailed report (fetches by ID) */}
           <Route path="/ats/history" element={<ProtectedRoute><AtsHistoryPage /></ProtectedRoute>} /> {/* New page */}
           <Route path="/ats/keywords" element={<ProtectedRoute><DashboardLayout user={currentUser}><KeywordAnalysis /></DashboardLayout></ProtectedRoute>} />

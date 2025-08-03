@@ -10,25 +10,25 @@ import ErrorMessage from '../../components/ats/ErrorMessage';
 import { useTheme } from '../../context/ThemeContext';
 import SummaryApi from '../../config/index';
 
-// Backend analysis function using the config
+// Backend analysis function using FastAPI directly
 const analyzeResumeOnBackend = async (file, jobDescription) => {
     const formData = new FormData();
     formData.append('resume', file);
-    formData.append('jobDescription', jobDescription);
+    formData.append('job_description', jobDescription);
 
     const response = await fetch(SummaryApi.ats.analyze.url, {
         method: SummaryApi.ats.analyze.method,
         body: formData,
-        credentials: 'include', // Include cookies for authentication
+        // Remove credentials since FastAPI doesn't need authentication for this endpoint
     });
 
     if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData?.message || `Analysis failed: ${response.status} ${response.statusText}`);
+        throw new Error(errorData?.detail || `Analysis failed: ${response.status} ${response.statusText}`);
     }
 
     const result = await response.json();
-    return result.analysisId || result.id; // Handle different response structures
+    return result; // Return the full analysis result from FastAPI
 };
 
 const AtsTracker = () => {
@@ -86,8 +86,8 @@ const AtsTracker = () => {
             return;
         }
 
-        // File size validation (5MB limit)
-        const maxSizeInMB = 5;
+        // File size validation (10MB limit to match backend)
+        const maxSizeInMB = 10;
         if (resumeFile.size > maxSizeInMB * 1024 * 1024) {
             setError(`File size must be less than ${maxSizeInMB}MB`);
             return;
@@ -98,11 +98,14 @@ const AtsTracker = () => {
 
         try {
             console.log('Starting analysis for:', resumeFile.name);
-            const analysisId = await analyzeResumeOnBackend(resumeFile, jobDescription);
-            console.log('Analysis completed with ID:', analysisId);
+            const analysisResult = await analyzeResumeOnBackend(resumeFile, jobDescription);
+            console.log('Analysis completed:', analysisResult);
             
-            // Navigate to the detailed analysis results page
-            navigate(`/ats/analysis/${analysisId}`);
+            // Store analysis result in localStorage for the results page
+            localStorage.setItem('atsAnalysisResult', JSON.stringify(analysisResult));
+            
+            // Navigate to the analysis results page
+            navigate('/ats/results');
         } catch (err) {
             console.error('Analysis error:', err);
             setError(err.message || 'Failed to analyze resume. Please try again.');
