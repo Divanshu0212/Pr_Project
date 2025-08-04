@@ -1,61 +1,32 @@
-/* Dashboard Layout - Fixed sidebar pushing issue */
-
+/* Dashboard Layout Styles */
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
   position: relative;
-  background: linear-gradient(135deg, 
-    rgb(var(--color-background-primary)) 0%, 
-    rgb(var(--color-background-secondary)) 100%);
-  overflow-x: hidden;
+  background: var(--color-background);
+  transition: all 0.3s ease;
 }
 
 .dashboard-content {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
-  width: 100%;
-  /* FIXED: Removed transition to prevent shifting animation */
-  position: relative;
-  /* FIXED: Always reserve space for sidebar */
-  margin-left: 16rem;
-}
-
-.dashboard-content::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at 20% 80%, rgba(49, 130, 206, 0.05) 0%, transparent 50%),
-              radial-gradient(circle at 80% 20%, rgba(128, 90, 213, 0.05) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* FIXED: Removed content-shifted class since we always reserve space */
-/* .dashboard-content.content-shifted {
-  margin-left: 16rem;
-  width: calc(100% - 16rem);
-} */
-
-.dashboard-main {
-  flex: 1 0 auto;
-  background: rgba(var(--color-background-secondary), 0.8);
-  backdrop-filter: blur(10px);
-  padding: 2rem;
-  overflow-y: auto;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
   position: relative;
   z-index: 1;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.6s ease;
 }
 
-.dashboard-main.animate-in {
-  opacity: 1;
-  transform: translateY(0);
+.content-shifted {
+  margin-left: 280px;
+}
+
+.dashboard-main {
+  flex: 1;
+  padding: 20px;
+  background: var(--color-background);
+  min-height: calc(100vh - 140px);
+  position: relative;
 }
 
 .dashboard-container {
@@ -64,61 +35,11 @@
   width: 100%;
 }
 
-/* Enhanced cards with gradient effects */
-.dashboard-main .card,
-.dashboard-main .panel {
-  border: 1px solid rgba(var(--color-accent-neutral), 0.2);
-  border-radius: 16px;
-  background: linear-gradient(145deg, 
-    rgba(var(--color-background-primary), 0.9) 0%, 
-    rgba(var(--color-background-secondary), 0.7) 100%);
-  backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  overflow: hidden;
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-.dashboard-main .card::before,
-.dashboard-main .panel::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, 
-    transparent, 
-    rgba(var(--color-accent-primary), 0.1), 
-    transparent);
-  transition: left 0.6s ease;
-}
-
-.dashboard-main .card.animate-in,
-.dashboard-main .panel.animate-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.dashboard-main .card:hover,
-.dashboard-main .panel:hover {
-  border-color: rgba(var(--color-accent-primary), 0.4);
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(var(--color-accent-primary), 0.15);
-}
-
-.dashboard-main .card:hover::before,
-.dashboard-main .panel:hover::before {
-  left: 100%;
-}
-
-/* Scroll animations */
+/* Scroll Animation Classes */
 .scroll-animate {
   opacity: 0;
   transform: translateY(30px);
-  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .scroll-animate.animate-in {
@@ -126,52 +47,130 @@
   transform: translateY(0);
 }
 
-/* Gradient text effects */
-.gradient-text {
-  background: linear-gradient(135deg, 
-    rgb(var(--color-accent-primary)) 0%,
-    rgb(var(--color-accent-secondary)) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: gradient-shift 3s ease-in-out infinite;
-}
-
-@keyframes gradient-shift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
-/* Focus states */
-.dashboard-main a:focus-visible,
-.dashboard-main button:focus-visible,
-.dashboard-main input:focus-visible,
-.dashboard-main select:focus-visible,
-.dashboard-main textarea:focus-visible {
-  outline: 2px solid rgb(var(--color-accent-primary));
-  outline-offset: 3px;
-  border-radius: 8px;
-  box-shadow: 0 0 0 4px rgba(var(--color-accent-primary), 0.2);
-}
-
-/* Responsive */
+/* Responsive Design */
 @media (max-width: 1024px) {
-  .dashboard-content {
-    margin-left: 5rem;
+  .content-shifted {
+    margin-left: 0;
+  }
+  
+  .dashboard-main {
+    padding: 15px;
   }
 }
 
 @media (max-width: 768px) {
-  .dashboard-content {
-    margin-left: 0 !important;
-  }
-  
   .dashboard-main {
-    padding: 1.5rem 1rem;
+    padding: 10px;
+    min-height: calc(100vh - 120px);
   }
   
-  .dashboard-main .card,
-  .dashboard-main .panel {
-    border-radius: 12px;
+  .dashboard-container {
+    padding: 0 5px;
   }
+}
+
+@media (max-width: 480px) {
+  .dashboard-main {
+    padding: 8px;
+  }
+  
+  .scroll-animate {
+    transform: translateY(20px);
+  }
+}
+
+/* Dark Mode Support */
+.dashboard-layout.dark {
+  background: var(--color-background-dark);
+}
+
+.dashboard-layout.dark .dashboard-main {
+  background: var(--color-background-dark);
+  color: var(--color-text-dark);
+}
+
+/* Performance Optimizations */
+.dashboard-layout * {
+  box-sizing: border-box;
+}
+
+/* Focus States for Accessibility */
+.dashboard-layout:focus-within {
+  outline: none;
+}
+
+/* Loading States */
+.dashboard-content.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .dashboard-layout {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-content,
+  .dashboard-main,
+  .scroll-animate {
+    transition: none;
+  }
+  
+  .scroll-animate {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/*
+ * Modal Background Effects
+ * These styles activate when a modal is open, applying blur and interaction blocking
+ * to the entire dashboard layout when the .modal-is-open class is added to the body
+ */
+body.modal-is-open .dashboard-layout {
+  /* Apply a blur effect to the entire layout */
+  filter: blur(5px);
+  
+  /* Disable pointer events to prevent interaction with the background */
+  pointer-events: none;
+
+  /* Optional: a subtle scale down can enhance the focus effect */
+  transform: scale(0.99);
+
+  /* Ensure a smooth transition */
+  transition: filter 0.3s ease-out, transform 0.3s ease-out, opacity 0.3s ease-out;
+  
+  /* Slightly reduce opacity for additional modal focus */
+  opacity: 0.6;
+}
+
+/* Ensure the modal portal itself is not affected by the blur */
+body.modal-is-open #modal-root {
+  filter: none;
+  pointer-events: auto;
+  transform: none;
+  opacity: 1;
+}
+
+/* Additional enhancement: dim the background slightly */
+body.modal-is-open .dashboard-layout::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.1);
+  z-index: -1;
+  transition: opacity 0.3s ease-out;
+}
+
+/* Prevent any scrolling on the body when modal is open */
+body.modal-is-open {
+  overflow: hidden;
+  height: 100vh;
 }
