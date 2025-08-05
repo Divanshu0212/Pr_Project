@@ -188,7 +188,7 @@ const Sidebar = ({ user, isOpen, onClose }) => {
                                                 <li key={subItem.path} className="sidebar-subitem">
                                                     <Link
                                                         to={subItem.path}
-                                                        className={`sidebar-sublink ${isActive(subItem.path) ? 'active' : ''}`}
+                                                        className={`sidebar-sublink ${location.pathname === subItem.path ? 'active' : ''}`}
                                                         // Close sidebar on click on mobile
                                                         onClick={onClose}
                                                     >

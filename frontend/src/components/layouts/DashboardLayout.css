@@ -15,6 +15,7 @@
   transition: margin-left 0.3s ease;
   position: relative;
   z-index: 1;
+  margin-left: 18rem;
 }
 
 .content-shifted {
@@ -59,6 +60,10 @@
 }
 
 @media (max-width: 768px) {
+  .dashboard-content {
+    margin-left: 0;
+  }
+  
   .dashboard-main {
     padding: 10px;
     min-height: calc(100vh - 120px);
