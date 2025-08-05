@@ -15,7 +15,7 @@ const SummaryApi = {
     },
     logout_user: {
         url: `${BACKEND_DOMAIN}/api/auth/logout`,
-        method: "get"
+        method: "post"
     },
     googleAuth: {
         url: `${BACKEND_DOMAIN}/api/auth/google`

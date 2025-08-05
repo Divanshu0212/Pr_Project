@@ -43,6 +43,32 @@ export const useAuth = () => {
         }
 
         return response.data;
+    },
+
+    logout: async () => {
+      try {
+        const response = await axios.post(SummaryApi.logout_user.url, {}, {
+          withCredentials: true,
+        });
+
+        // Clear local storage
+        localStorage.removeItem('token');
+        localStorage.removeItem('isAuthenticated');
+
+        // Update auth state
+        context.setIsAuthenticated(false);
+        context.setCurrentUser(null);
+
+        return response.data;
+      } catch (error) {
+        // Even if the API call fails, we should still clear local state
+        localStorage.removeItem('token');
+        localStorage.removeItem('isAuthenticated');
+        context.setIsAuthenticated(false);
+        context.setCurrentUser(null);
+        
+        throw error;
+      }
     }
   };
 

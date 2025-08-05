@@ -76,7 +76,7 @@
   bottom: 0;
   background: linear-gradient(45deg, 
     rgba(var(--color-accent-primary), 0.05) 0%,
-    rgba(var(--color-highlight), 0.05) 100%
+    rgba(var(--color-accent-secondary), 0.05) 100%
   );
   opacity: 0;
   transition: opacity 0.3s ease;
@@ -142,7 +142,7 @@
 .category-button.active {
   background: linear-gradient(135deg, 
     rgba(var(--color-accent-primary), 0.15) 0%,
-    rgba(var(--color-highlight), 0.15) 100%
+    rgba(var(--color-accent-secondary), 0.15) 100%
   );
   border-color: rgb(var(--color-accent-primary));
   color: rgb(var(--color-accent-primary));
@@ -174,7 +174,7 @@
   height: 2px;
   background: linear-gradient(90deg, 
     rgb(var(--color-accent-primary)) 0%,
-    rgb(var(--color-highlight)) 100%
+    rgb(var(--color-accent-secondary)) 100%
   );
   background-size: 200% 100%;
   animation: gradientShift 3s ease infinite;
