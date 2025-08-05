@@ -1,10 +1,29 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { useLocation } from 'react-router-dom';
 import Navbar from '../Navbar';
 import Footer from '../Footer';
 import './MainLayout.css';
 
 const MainLayout = ({ children, user }) => {
+  const location = useLocation();
+
+  // Portfolio theme management - adds/removes portfolio-theme class based on route
+  useEffect(() => {
+    const isPortfolioPage = location.pathname.startsWith('/portfolio');
+    
+    if (isPortfolioPage) {
+      document.body.classList.add('portfolio-theme');
+    } else {
+      document.body.classList.remove('portfolio-theme');
+    }
+
+    // Cleanup function to ensure class is removed when component unmounts
+    return () => {
+      document.body.classList.remove('portfolio-theme');
+    };
+  }, [location.pathname]);
+
   // Scroll animation observer
   useEffect(() => {
     const observer = new IntersectionObserver(

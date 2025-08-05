@@ -1,20 +1,22 @@
-/* Enhanced Global CSS with Theme System */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+/* Enhanced Global CSS with Unified Theme System */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Orbitron:wght@400;500;600;700;800&display=swap');
 
 /* ==========================================================================
-   THEME SYSTEM - COLOR PALETTES
+   THEME SYSTEM - UNIFIED COLOR PALETTES
    ========================================================================== */
 
 :root {
-  /* ===== VIBRANT LIGHT THEME (UPDATED) ===== */
-
+  /* ===== PRIMARY LIGHT THEME ===== */
+  
   /* 1. Backgrounds: Create depth with an off-white base and pure white for cards. */
   --color-background-primary: 249, 250, 251;   /* #F9FAFB - A very light, clean grey */
   --color-background-secondary: 255, 255, 255; /* #FFFFFF - Pure white for cards & headers to make them pop */
+  --color-background-tertiary: 243, 244, 246;  /* #F3F4F6 - Slightly darker for subtle variations */
 
   /* 2. Text: Use a softer, more modern black for better readability. */
   --color-text-primary: 17, 24, 39;          /* #111827 - A deep, soft black */
   --color-text-secondary: 107, 114, 128;     /* #6B7280 */
+  --color-text-muted: 156, 163, 175;         /* #9CA3AF */
   --color-text-placeholder: 156, 163, 175;   /* #9CA3AF */
 
   /* 3. Accents: A vibrant and cohesive palette for a modern, energetic feel. */
@@ -22,31 +24,124 @@
   --color-accent-secondary: 124, 58, 237;     /* #7C3AED - A rich, deep purple */
   --color-highlight: 217, 70, 239;           /* #D946EF - An energetic fuchsia for highlights */
   --color-accent-neutral: 229, 231, 235;      /* #E5E7EB - For borders and dividers */
+  --color-border: 229, 231, 235;             /* #E5E7EB */
+  
+  /* 4. Status Colors */
+  --color-success: 34, 197, 94;              /* #22C55E */
+  --color-warning: 245, 158, 11;             /* #F59E0B */
+  --color-error: 220, 38, 38;                /* #DC2626 */
   --color-accent-error: 220, 38, 38;         /* #DC2626 */
 
-  /* 4. Gradients: Rebuilt with the new vibrant accents to bring the UI to life. */
+  /* 5. Gradients: Rebuilt with the new vibrant accents to bring the UI to life. */
   --gradient-auth: linear-gradient(135deg, rgb(var(--color-accent-primary)) 0%, rgb(var(--color-highlight)) 100%);
   --gradient-card-light: linear-gradient(145deg, #FFFFFF 0%, #F9FAFB 100%);
   --gradient-card-dark: linear-gradient(145deg, #161B22 0%, #0D1117 100%); /* For dark mode context */
   --gradient-mesh: radial-gradient(circle at 20% 80%, rgba(var(--color-accent-primary), 0.3) 0%, transparent 50%),
                    radial-gradient(circle at 80% 20%, rgba(var(--color-highlight), 0.3) 0%, transparent 50%);
   --gradient-hero: linear-gradient(135deg, rgba(var(--color-accent-primary), 0.1) 0%, rgba(var(--color-highlight), 0.1) 100%);
+  --gradient-primary: linear-gradient(135deg, rgba(var(--color-accent-primary), 0.1) 0%, rgba(var(--color-accent-secondary), 0.1) 50%, rgba(var(--color-highlight), 0.1) 100%);
+  --gradient-accent: linear-gradient(135deg, rgb(var(--color-accent-primary)) 0%, rgb(var(--color-accent-secondary)) 50%, rgb(var(--color-highlight)) 100%);
+
+  /* 6. Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* 7. Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* 8. Border radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
 }
 
-/* ===== DOPE DARK THEME (UNCHANGED) ===== */
+/* ===== DEFAULT DARK THEME (CYAN ACCENTS) ===== */
 .dark {
   --color-background-primary: 13, 17, 23;      /* #0D1117 */
   --color-background-secondary: 22, 27, 34;    /* #161B22 */
+  --color-background-tertiary: 30, 41, 59;     /* #1E293B */
   --color-text-primary: 229, 229, 229;         /* #E5E5E5 */
-  --color-text-secondary: 160, 174, 192;      /* #A0AEC0 */
+  --color-text-secondary: 160, 174, 192;       /* #A0AEC0 */
+  --color-text-muted: 113, 128, 150;           /* #718096 */
   --color-text-placeholder: 113, 128, 150;     /* #718096 */
-  --color-accent-primary: 0, 255, 255;        /* #00FFFF (Cyan) */
-  --color-accent-secondary: 128, 90, 213;     /* #805AD5 */
-  --color-highlight: 156, 39, 176;          /* #9C27B0 (Purple) */
-  --color-accent-neutral: 45, 55, 72;         /* #2D3748 */
-  --color-accent-error: 229, 62, 62;          /* #E53E3E */
+  --color-accent-primary: 0, 255, 255;         /* #00FFFF (Cyan) */
+  --color-accent-secondary: 128, 90, 213;      /* #805AD5 */
+  --color-highlight: 156, 39, 176;             /* #9C27B0 (Purple) */
+  --color-accent-neutral: 45, 55, 72;          /* #2D3748 */
+  --color-border: 45, 55, 72;                  /* #2D3748 */
+  --color-accent-error: 229, 62, 62;           /* #E53E3E */
+  --color-success: 34, 197, 94;                /* #22C55E */
+  --color-warning: 245, 158, 11;               /* #F59E0B */
+  --color-error: 229, 62, 62;                  /* #E53E3E */
+
+  /* Dark mode gradients */
+  --gradient-auth: linear-gradient(135deg, rgb(var(--color-accent-primary)) 0%, rgb(var(--color-highlight)) 100%);
+  --gradient-card-light: linear-gradient(145deg, #161B22 0%, #0D1117 100%);
+  --gradient-card-dark: linear-gradient(145deg, #161B22 0%, #0D1117 100%);
+  --gradient-mesh: radial-gradient(circle at 20% 80%, rgba(var(--color-accent-primary), 0.2) 0%, transparent 50%),
+                   radial-gradient(circle at 80% 20%, rgba(var(--color-highlight), 0.2) 0%, transparent 50%);
+  --gradient-hero: linear-gradient(135deg, rgba(var(--color-accent-primary), 0.05) 0%, rgba(var(--color-highlight), 0.05) 100%);
+  --gradient-primary: linear-gradient(135deg, rgba(var(--color-accent-primary), 0.1) 0%, rgba(var(--color-accent-secondary), 0.1) 50%, rgba(var(--color-highlight), 0.1) 100%);
+  --gradient-accent: linear-gradient(135deg, rgb(var(--color-accent-primary)) 0%, rgb(var(--color-accent-secondary)) 50%, rgb(var(--color-highlight)) 100%);
+
+  /* Dark mode shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
 }
 
+/* ===== SPECIAL PORTFOLIO DARK THEME (PINKISH-PURPLE ACCENTS) ===== */
+body.portfolio-theme.dark {
+  /* Portfolio-specific dark background colors */
+  --color-background-primary: 8, 11, 21;       /* #080B15 - Deep space blue */
+  --color-background-secondary: 15, 20, 35;    /* #0F1423 - Slightly lighter */
+  --color-background-tertiary: 22, 28, 45;     /* #161C2D - Card backgrounds */
+
+  /* Portfolio-specific text colors */
+  --color-text-primary: 248, 250, 252;         /* #F8FAFC - Crisp white */
+  --color-text-secondary: 148, 163, 184;       /* #94A3B8 - Soft gray */
+  --color-text-muted: 100, 116, 139;           /* #64748B - Muted gray */
+  --color-text-placeholder: 100, 116, 139;     /* #64748B */
+
+  /* Portfolio-specific accent colors (pinkish-purple theme) */
+  --color-accent-primary: 99, 102, 241;        /* #6366F1 - Indigo */
+  --color-accent-secondary: 139, 92, 246;      /* #8B5CF6 - Purple */
+  --color-highlight: 34, 197, 94;              /* #22C55E - Green highlight */
+  --color-accent-neutral: 30, 41, 59;          /* #1E293B - Dark borders */
+  --color-border: 30, 41, 59;                  /* #1E293B */
+
+  /* Portfolio-specific status colors */
+  --color-success: 34, 197, 94;                /* #22C55E */
+  --color-warning: 245, 158, 11;               /* #F59E0B */
+  --color-error: 239, 68, 68;                  /* #EF4444 */
+  --color-accent-error: 239, 68, 68;           /* #EF4444 */
+
+  /* Portfolio-specific gradients */
+  --gradient-auth: linear-gradient(135deg, rgb(var(--color-accent-primary)) 0%, rgb(var(--color-accent-secondary)) 100%);
+  --gradient-card-light: linear-gradient(145deg, rgba(var(--color-background-secondary), 0.8) 0%, rgba(var(--color-background-tertiary), 0.8) 100%);
+  --gradient-card-dark: linear-gradient(145deg, rgba(var(--color-background-secondary), 0.8) 0%, rgba(var(--color-background-tertiary), 0.8) 100%);
+  --gradient-mesh: radial-gradient(circle at 20% 80%, rgba(var(--color-accent-primary), 0.2) 0%, transparent 50%),
+                   radial-gradient(circle at 80% 20%, rgba(var(--color-accent-secondary), 0.2) 0%, transparent 50%);
+  --gradient-hero: linear-gradient(135deg, rgba(var(--color-accent-primary), 0.05) 0%, rgba(var(--color-accent-secondary), 0.05) 100%);
+  --gradient-primary: linear-gradient(135deg, rgba(var(--color-accent-primary), 0.1) 0%, rgba(var(--color-accent-secondary), 0.1) 50%, rgba(var(--color-highlight), 0.1) 100%);
+  --gradient-accent: linear-gradient(135deg, rgb(var(--color-accent-primary)) 0%, rgb(var(--color-accent-secondary)) 50%, rgb(var(--color-highlight)) 100%);
+
+  /* Portfolio-specific shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+}
 
 /* ==========================================================================
    GLOBAL STYLES & RESETS
@@ -60,6 +155,8 @@
 
 html {
   scroll-behavior: smooth;
+  /* Always show vertical scrollbar to prevent layout shifts */
+  overflow-y: scroll;
 }
 
 body {
@@ -69,9 +166,11 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Compensates for scrollbar width to prevent layout shifts */
+  margin-right: calc(100vw - 100%);
 }
 
-/* Enhanced scrollbar styling (now fully theme-aware) */
+/* Enhanced scrollbar styling (theme-aware) */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -95,40 +194,9 @@ body {
 *:focus-visible {
   outline: 2px solid rgb(var(--color-accent-primary));
   outline-offset: 2px;
-  border-radius: 2px; /* Optional: adds a slight curve to the outline */
+  border-radius: 2px;
 }
 
-/* ==========================================================================
-   COMPONENT BASE STYLES
-   ========================================================================== */
-
-
-/* Use this class on Cards, Modals, Forms, etc. for consistent styling */
-.panel {
-  /* Use the secondary background color. In light mode this is #FFFFFF, in dark it's #161B22. */
-  background-color: rgb(var(--color-background-secondary));
-  
-  /* The key fix: A subtle border that is visible in light mode and soft in dark mode. */
-  border: 1px solid rgb(var(--color-accent-neutral));
-  
-  /* A consistent, modern border radius for all components. */
-  border-radius: 1rem; /* 16px */
-  
-  /* A very subtle shadow to "lift" the panel off the page, enhancing the boundary. */
-  box-shadow: 0 4px 6px -1px rgba(var(--color-text-primary), 0.05), 
-              0 2px 4px -2px rgba(var(--color-text-primary), 0.05);
-
-  /* Ensure smooth transitions for hover effects, etc. */
-  transition: all 0.3s ease;
-}
-
-/* Optional: Enhance the shadow on hover for a nice interactive feel */
-.panel:hover {
-  /* This uses your existing .hover-lift logic, but as a direct style */
-  transform: translateY(-4px);
-  box-shadow: 0 10px 15px -3px rgba(var(--color-text-primary), 0.07), 
-              0 4px 6px -4px rgba(var(--color-text-primary), 0.07);
-}
 /* Button focus styles */
 button:focus,
 input:focus,
@@ -138,8 +206,28 @@ select:focus {
   outline-offset: 2px;
 }
 
+/* ==========================================================================
+   COMPONENT BASE STYLES
+   ========================================================================== */
 
-/* DOPE TEXT ANIMATIONS */
+/* Universal panel class for consistent styling across components */
+.panel {
+  background-color: rgb(var(--color-background-secondary));
+  border: 1px solid rgb(var(--color-accent-neutral));
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.panel:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ==========================================================================
+   TEXT ANIMATIONS
+   ========================================================================== */
+
 .text-gradient {
   background: linear-gradient(135deg, rgb(var(--color-accent-primary)), rgb(var(--color-accent-secondary)));
   -webkit-background-clip: text;
@@ -172,8 +260,6 @@ select:focus {
   100% { background-position: 200% 0; }
 }
 
-
-/* Typewriter effect */
 .typewriter {
   overflow: hidden;
   border-right: 3px solid rgb(var(--color-accent-primary));
@@ -191,7 +277,6 @@ select:focus {
   51%, 100% { border-color: rgb(var(--color-accent-primary)); }
 }
 
-/* Glitch text effect */
 .text-glitch {
   position: relative;
   animation: glitch 2s infinite;
@@ -237,7 +322,6 @@ select:focus {
   23%, 100% { transform: translate(0); }
 }
 
-/* Neon glow text */
 .text-neon {
   color: rgb(var(--color-accent-primary));
   text-shadow:
@@ -265,7 +349,6 @@ select:focus {
   }
 }
 
-/* Bouncy text */
 .text-bounce {
   animation: bounce-text 1s infinite;
 }
@@ -276,7 +359,6 @@ select:focus {
   60% { transform: translateY(-5px); }
 }
 
-/* Morphing text */
 .text-morph {
   background: linear-gradient(-45deg,
     rgb(var(--color-accent-primary)),
@@ -297,7 +379,10 @@ select:focus {
   100% { background-position: 0% 50%; }
 }
 
-/* SCROLL ANIMATIONS */
+/* ==========================================================================
+   SCROLL ANIMATIONS
+   ========================================================================== */
+
 .animate-on-scroll {
   opacity: 0;
   transform: translateY(50px);
@@ -363,20 +448,17 @@ select:focus {
 .stagger-children > *:nth-child(7) { transition-delay: 0.7s; }
 .stagger-children > *:nth-child(8) { transition-delay: 0.8s; }
 
-/* ENHANCED HOVER EFFECTS */
+/* ==========================================================================
+   HOVER EFFECTS
+   ========================================================================== */
+
 .hover-lift {
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .hover-lift:hover {
   transform: translateY(-8px) scale(1.02);
-  /* Use rgba with variables for dynamic shadow color based on text */
-  box-shadow: 0 20px 40px rgba(var(--color-text-primary), 0.15);
-}
-
-.dark .hover-lift:hover {
-  /* For dark mode, you likely want a darker shadow color for lifted elements */
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-xl);
 }
 
 .hover-glow {
@@ -407,7 +489,6 @@ select:focus {
   opacity: 1;
 }
 
-/* Magnetic hover effect */
 .hover-magnetic {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
@@ -417,7 +498,6 @@ select:focus {
   transform: scale(1.05);
 }
 
-/* Button ripple effect */
 .btn-ripple {
   position: relative;
   overflow: hidden;
@@ -431,7 +511,7 @@ select:focus {
   width: 0;
   height: 0;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3); /* This ripple color is fixed for both themes; consider variable for dynamic ripple */
+  background: rgba(255, 255, 255, 0.3);
   transform: translate(-50%, -50%);
   transition: width 0.6s, height 0.6s;
 }
@@ -441,7 +521,10 @@ select:focus {
   height: 300px;
 }
 
-/* LOADING ANIMATIONS */
+/* ==========================================================================
+   LOADING ANIMATIONS
+   ========================================================================== */
+
 .skeleton {
   background: linear-gradient(
     90deg,
@@ -468,7 +551,10 @@ select:focus {
   }
 }
 
-/* CARD ANIMATIONS */
+/* ==========================================================================
+   CARD ANIMATIONS
+   ========================================================================== */
+
 .card-hover {
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
@@ -476,13 +562,7 @@ select:focus {
 
 .card-hover:hover {
   transform: translateY(-12px) scale(1.02);
-  /* Use rgba with variables for dynamic shadow color based on text */
-  box-shadow: 0 25px 50px rgba(var(--color-text-primary), 0.15);
-}
-
-.dark .card-hover:hover {
-  /* For dark mode, you likely want a darker shadow color for lifted elements */
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-xl);
 }
 
 .card-hover::after {
@@ -492,7 +572,6 @@ select:focus {
   left: 0;
   right: 0;
   bottom: 0;
-  /* Use gradient variables directly here if they vary by theme */
   background: linear-gradient(135deg, rgba(var(--color-accent-primary), 0.1), rgba(var(--color-accent-secondary), 0.1));
   opacity: 0;
   transition: opacity 0.4s ease;
@@ -504,7 +583,6 @@ select:focus {
   opacity: 1;
 }
 
-/* Glass morphism effect */
 .glass {
   background: rgba(var(--color-background-primary), 0.1);
   backdrop-filter: blur(20px);
@@ -512,7 +590,6 @@ select:focus {
   border: 1px solid rgba(var(--color-accent-neutral), 0.2);
 }
 
-/* Floating animation */
 .float {
   animation: float 6s ease-in-out infinite;
 }
@@ -522,7 +599,137 @@ select:focus {
   50% { transform: translateY(-20px); }
 }
 
-/* Utility classes */
+/* ==========================================================================
+   SIDEBAR LAYOUT STABILIZATION
+   ========================================================================== */
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar-container {
+  width: 280px;
+  flex-shrink: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.sidebar-container.hidden {
+  transform: translateX(-100%);
+}
+
+.main-content-area {
+  flex: 1;
+  min-width: 0;
+  transition: margin-left 0.3s ease;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 280px;
+  z-index: 1000;
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  background: rgb(var(--color-background-secondary));
+  box-shadow: var(--shadow-lg);
+}
+
+.sidebar-overlay.open {
+  transform: translateX(0);
+}
+
+.main-content-overlay {
+  width: 100%;
+  min-height: 100vh;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.main-content-overlay.sidebar-open {
+  transform: translateX(280px);
+}
+
+.app-grid-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: 100vh;
+  transition: grid-template-columns 0.3s ease;
+}
+
+.app-grid-layout.sidebar-hidden {
+  grid-template-columns: 0 1fr;
+}
+
+.sidebar-grid {
+  overflow: hidden;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-hidden .sidebar-grid {
+  opacity: 0;
+}
+
+.page-with-sidebar {
+  margin-left: 280px;
+  transition: margin-left 0.3s ease;
+}
+
+.sidebar-hidden .page-with-sidebar {
+  margin-left: 0;
+}
+
+.layout-container {
+  position: relative;
+  overflow-x: hidden;
+}
+
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
+
+.sidebar-wrapper {
+  width: 280px;
+  flex-shrink: 0;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-wrapper.collapsed {
+  width: 0;
+  overflow: hidden;
+}
+
+.content-wrapper {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.sidebar-backdrop.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ==========================================================================
+   UTILITY CLASSES
+   ========================================================================== */
+
 .text-balance {
   text-wrap: balance;
 }
@@ -538,231 +745,50 @@ select:focus {
   pointer-events: none;
 }
 
-
-
-
-
-/* ==========================================================================
-   GLOBAL STYLES & RESETS
-   ========================================================================== */
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: rgb(var(--color-background-primary));
-  color: rgb(var(--color-text-primary));
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Enhanced scrollbar styling (now fully theme-aware) */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: rgb(var(--color-background-secondary));
-}
-::-webkit-scrollbar-thumb {
-  background: rgb(var(--color-accent-neutral));
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgb(var(--color-accent-primary));
-}
-
-/* Selection & Focus styling */
-::selection {
-  background: rgba(var(--color-accent-primary), 0.2);
-  color: rgb(var(--color-text-primary));
-}
-*:focus-visible {
-  outline: 2px solid rgb(var(--color-accent-primary));
-  outline-offset: 2px;
-  border-radius: 2px; /* Optional: adds a slight curve to the outline */
-}
-
-
-/* ==========================================================================
-   ANIMATION & UTILITY CLASSES (UNCHANGED)
-   ========================================================================== */
-
-/* DOPE TEXT ANIMATIONS */
-/* ... All your existing animation classes from .text-gradient to .float remain here ... */
-.text-gradient {
-  background: linear-gradient(135deg, rgb(var(--color-accent-primary)), rgb(var(--color-accent-secondary)));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: gradient-flow 3s ease-in-out infinite;
-}
-
-@keyframes gradient-flow {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
-.text-shimmer {
-  background: linear-gradient(
-    90deg,
-    rgb(var(--color-text-secondary)) 0%,
-    rgb(var(--color-accent-primary)) 50%,
-    rgb(var(--color-text-secondary)) 100%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: shimmer 2s linear infinite;
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-/* (The rest of your animation keyframes and utility classes follow) */
-/* ... .typewriter, .text-glitch, .text-neon, etc. ... */
-/* ... .animate-on-scroll classes ... */
-/* ... .hover-lift, .hover-glow, etc. ... */
-/* ... .skeleton, .pulse-loader, .card-hover, etc. ... */
-
-/* Theme transition */
-* {
-  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 300ms;
-}
-
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
 .toggle-icon {
-    /* ... other styles ... */
-    border-right: 2px solid currentColor;
-    border-bottom: 2px solid currentColor;
-    /* ... other styles ... */
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
 }
 
-/* ===== SIDEBAR LAYOUT STABILIZATION ===== */
-/* Add this to your global.css to prevent layout shifts */
-
-/* SOLUTION 1: Reserve Fixed Space for Sidebar (Recommended) */
-.app-layout {
-  display: flex;
-  min-height: 100vh;
+/* Phone link styling */
+.phone-link {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s;
 }
 
-.sidebar-container {
-  /* Fixed width that matches your sidebar */
-  width: 280px; /* Adjust to match your sidebar width */
-  flex-shrink: 0; /* Prevent shrinking */
-  transition: transform 0.3s ease, opacity 0.3s ease;
+.phone-link:hover {
+  color: rgb(var(--color-accent-primary));
+  text-decoration: underline;
 }
 
-/* When sidebar is hidden, keep the space but hide visually */
-.sidebar-container.hidden {
-  transform: translateX(-100%);
-  /* Alternative: use visibility instead of transform */
-  /* visibility: hidden; */
+.clickable {
+  cursor: pointer;
 }
 
-.main-content-area {
-  flex: 1;
-  min-width: 0; /* Prevents flex item from overflowing */
-  transition: margin-left 0.3s ease; /* Smooth transition if needed */
-}
-
-/* ===== ALTERNATIVE SOLUTIONS ===== */
-
-/* SOLUTION 2: Overlay Sidebar (No Layout Shift) */
-.app-layout-overlay {
-  position: relative;
-  min-height: 100vh;
-}
-
-.sidebar-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100vh;
-  width: 280px; /* Match your sidebar width */
-  z-index: 1000;
-  transform: translateX(-100%);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  background: var(--sidebar-bg, #ffffff);
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.sidebar-overlay.open {
-  transform: translateX(0);
-}
-
-.main-content-overlay {
+/* Phone input styling */
+input[type="tel"] {
   width: 100%;
-  min-height: 100vh;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0.75rem;
+  border: 1px solid rgb(var(--color-border));
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  background: rgb(var(--color-background-secondary));
+  color: rgb(var(--color-text-primary));
 }
 
-/* Optional: Push content when sidebar opens */
-.main-content-overlay.sidebar-open {
-  transform: translateX(280px); /* Match sidebar width */
+/* Animation performance improvements */
+.sidebar-container, .sidebar-overlay, .sidebar-grid {
+  will-change: transform;
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
-/* SOLUTION 3: CSS Grid Layout */
-.app-grid-layout {
-  display: grid;
-  grid-template-columns: 280px 1fr; /* Sidebar width, remaining space */
-  min-height: 100vh;
-  transition: grid-template-columns 0.3s ease;
-}
+/* ==========================================================================
+   RESPONSIVE DESIGN
+   ========================================================================== */
 
-.app-grid-layout.sidebar-hidden {
-  grid-template-columns: 0 1fr; /* Collapse sidebar column */
-}
-
-.sidebar-grid {
-  overflow: hidden;
-  transition: opacity 0.3s ease;
-}
-
-.sidebar-hidden .sidebar-grid {
-  opacity: 0;
-}
-
-/* ===== SCROLLBAR COMPENSATION ===== */
-/* Prevents layout shift when scrollbar appears/disappears */
-html {
-  overflow-y: scroll; /* Always show vertical scrollbar */
-}
-
-/* Alternative: Use margin to compensate for scrollbar */
-body {
-  margin-right: calc(100vw - 100%); /* Compensates for scrollbar width */
-}
-
-/* ===== RESPONSIVE HANDLING ===== */
 @media (max-width: 768px) {
-  /* On mobile, always use overlay approach */
   .sidebar-container, .sidebar-grid {
     position: fixed;
     top: 0;
@@ -780,85 +806,128 @@ body {
     width: 100%;
     margin-left: 0;
   }
-  
-  /* Backdrop for mobile sidebar */
-  .sidebar-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-  }
-  
-  .sidebar-backdrop.active {
-    opacity: 1;
-    visibility: visible;
+
+  .profile-meta .meta-item {
+    display: block;
+    margin-bottom: 0.5rem;
   }
 }
 
-/* ===== ANIMATION PERFORMANCE ===== */
-/* Improve animation performance */
-.sidebar-container, .sidebar-overlay, .sidebar-grid {
-  will-change: transform;
-  backface-visibility: hidden;
-  perspective: 1000px;
+/* ==========================================================================
+   THEME TRANSITIONS
+   ========================================================================== */
+
+* {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
 }
 
-/* ===== LAYOUT SPECIFIC FIXES ===== */
-/* If you're using specific layout classes, update them: */
+/* ==========================================================================
+   ACCESSIBILITY & PERFORMANCE
+   ========================================================================== */
 
-/* For pages with sidebar */
-.page-with-sidebar {
-  margin-left: 280px; /* Reserve space for sidebar */
-  transition: margin-left 0.3s ease;
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
-.sidebar-hidden .page-with-sidebar {
-  margin-left: 0;
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  :root {
+    --color-text-primary: 0, 0, 0;
+    --color-text-secondary: 64, 64, 64;
+    --color-border: 128, 128, 128;
+  }
+  
+  .dark {
+    --color-text-primary: 255, 255, 255;
+    --color-text-secondary: 220, 220, 220;
+    --color-border: 180, 180, 180;
+  }
 }
 
-/* Prevent content jumping during transitions */
-.layout-container {
-  position: relative;
-  overflow-x: hidden; /* Prevent horizontal scroll during transitions */
-}
+/* ==========================================================================
+   PORTFOLIO-SPECIFIC STYLES
+   ========================================================================== */
 
-/* ===== EXAMPLE USAGE CLASSES ===== */
-/* Use these classes in your React components */
-
-/* Main app container */
-.app-container {
+/* Bio and completion layout for portfolio pages */
+.bio-completion-container {
   display: flex;
-  min-height: 100vh;
+  gap: var(--spacing-2xl);
+  margin: var(--spacing-2xl) 0;
+  align-items: start;
+}
+
+.bio-section {
+  flex: 2;
+  background: rgba(var(--color-background-secondary), 0.8);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(var(--color-accent-primary), 0.2);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-xl);
   position: relative;
+  transition: all 0.3s ease;
 }
 
-/* Sidebar wrapper */
-.sidebar-wrapper {
-  width: 280px;
-  flex-shrink: 0;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+.bio-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-accent);
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
 }
 
-.sidebar-wrapper.collapsed {
-  width: 0;
-  overflow: hidden;
+.bio-section:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+  border-color: rgba(var(--color-accent-primary), 0.3);
 }
 
-/* Content wrapper */
-.content-wrapper {
+.completion-card {
   flex: 1;
-  min-width: 0;
-  position: relative;
+  min-width: 280px;
+  max-width: 350px;
+  height: fit-content;
 }
 
-/* ===== DEBUGGING HELPERS ===== */
-/* Uncomment these to debug layout issues */
+.bio-section h3 {
+  margin-bottom: var(--spacing-md);
+  color: rgb(var(--color-text-primary));
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+}
+
+.empty-bio-text {
+  color: rgb(var(--color-text-secondary));
+  margin-bottom: var(--spacing-md);
+  font-style: italic;
+}
+
+/* Portfolio-specific responsive adjustments */
+@media (max-width: 768px) {
+  .bio-completion-container {
+    flex-direction: column;
+  }
+  
+  .completion-card {
+    max-width: 100%;
+  }
+}
+
+/* ==========================================================================
+   DEBUGGING HELPERS (Commented out by default)
+   ========================================================================== */
 
 /*
 .app-container { border: 2px solid red !important; }

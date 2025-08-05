@@ -1,39 +1,5 @@
-/* PublicPortfolio.css */
-:root {
-  /* Light Theme Colors */
-  --color-background-primary: 255, 255, 255;
-  --color-background-secondary: 247, 250, 252;
-  --color-text-primary: 26, 32, 44;
-  --color-text-secondary: 102, 102, 102;
-  --color-text-placeholder: 176, 176, 176;
-  --color-accent-primary: 49, 130, 206;
-  --color-accent-secondary: 128, 90, 213;
-  --color-accent-neutral: 226, 232, 240;
-  --color-accent-error: 229, 62, 62;
-  --color-highlight: 156, 39, 176;
-
-  /* Gradients */
-  --gradient-auth: linear-gradient(135deg, #3182CE 0%, #805AD5 100%);
-  --gradient-card-light: linear-gradient(145deg, #F7FAFC 0%, #FFFFFF 100%);
-  --gradient-hero: linear-gradient(135deg, rgba(49, 130, 206, 0.1) 0%, rgba(128, 90, 213, 0.1) 100%);
-  --gradient-text: linear-gradient(135deg, #00FFFF 0%, #9C27B0 100%);
-}
-
-/* Dark Theme Colors */
-.dark {
-  --color-background-primary: 13, 17, 23;
-  --color-background-secondary: 22, 27, 34;
-  --color-text-primary: 229, 229, 229;
-  --color-text-secondary: 160, 174, 192;
-  --color-text-placeholder: 113, 128, 150;
-  --color-accent-primary: 0, 255, 255;
-  --color-accent-secondary: 128, 90, 213;
-  --color-accent-neutral: 74, 85, 104;
-  --color-highlight: 156, 39, 176;
-
-  --gradient-card-light: linear-gradient(145deg, #161B22 0%, #0D1117 100%);
-  --gradient-hero: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, rgba(156, 39, 176, 0.1) 100%);
-}
+/* PublicPortfolio.css - Cleaned Version */
+/* Variables removed - now inheriting from global.css */
 
 /* Base Styles */
 .public-portfolio {
