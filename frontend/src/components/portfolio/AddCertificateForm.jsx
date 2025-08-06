@@ -150,136 +150,101 @@ const AddCertificateForm = ({ onClose, onSubmit, initialData = {}, isEditing = f
         onClose();
     };
 
-    // Theme-based classes
-    const bgPrimary = isDark ? 'bg-[#161B22]' : 'bg-white';
-    const bgSecondary = isDark ? 'bg-[#0D1117]' : 'bg-[#F7FAFC]';
-    const textPrimary = isDark ? 'text-[#E5E5E5]' : 'text-[#1A202C]';
-    const textSecondary = isDark ? 'text-[#8B949E]' : 'text-[#718096]';
-    const accent = isDark ? 'text-[#00FFFF]' : 'text-[#3182CE]';
-    const highlight = isDark ? 'text-[#9C27B0]' : 'text-[#805AD5]';
-    const borderColor = isDark ? 'border-gray-700' : 'border-gray-300';
-    const errorColor = 'text-red-400';
-
     return (
-        <Modal isOpen={true} onClose={handleClose} className={`add-cert-modal ${bgPrimary}`} title={isEditing ? 'Edit Certificate' : 'Add New Certificate'}>
-            {/* <div className={`rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl ${bgPrimary}`}> */}
-                {/* Header */}
-                {/* <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-500 bg-clip-text text-transparent">
-                        {isEditing ? 'Edit Certificate' : 'Add New Certificate'}
-                    </h2>
-                    <Button
-                        variant="ghost"
-                        onClick={handleClose}
-                        className={`hover:${accent} transition-colors`}
-                        aria-label="Close"
-                    >
-                        <FaTimes size={24} />
-                    </Button>
-                </div> */}
-
+        <Modal isOpen={true} onClose={handleClose} className="certificate-form-modal" title={isEditing ? 'Edit Certificate' : 'Add New Certificate'}>
+            <div className="certificate-form-container">
                 {/* Global Error Message */}
                 {errors.submit && (
-                    <div className={`mb-4 p-3 rounded-lg bg-red-900/20 border border-red-500 ${errorColor}`}>
+                    <div className="form-error-banner">
                         {errors.submit}
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="max-h-[60vh]">
+                <form onSubmit={handleSubmit} className="certificate-form">
                     {/* Form Fields Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div className="form-fields-grid">
                         {/* Certificate Name */}
-                        <div>
-                            <label className={`block mb-2 ${textPrimary} font-medium`}>
-                                Certificate Name <span className="text-red-400">*</span>
+                        <div className="form-field">
+                            <label className="form-label">
+                                Certificate Name <span className="required-asterisk">*</span>
                             </label>
                             <input
                                 type="text"
                                 name="name"
                                 value={formData.name}
                                 onChange={handleChange}
-                                className={`w-full px-4 py-3 ${bgSecondary} ${borderColor} border rounded-lg 
-                                    focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none 
-                                    ${textPrimary} transition-all duration-200 ${errors.name ? 'border-red-400' : ''}`}
+                                className={`form-input ${errors.name ? 'error' : ''}`}
                                 placeholder="e.g., React Developer Certification"
                             />
-                            {errors.name && <span className={`text-sm ${errorColor} mt-1 block`}>{errors.name}</span>}
+                            {errors.name && <span className="field-error">{errors.name}</span>}
                         </div>
 
                         {/* Issuing Organization */}
-                        <div>
-                            <label className={`block mb-2 ${textPrimary} font-medium`}>
-                                Issuing Organization <span className="text-red-400">*</span>
+                        <div className="form-field">
+                            <label className="form-label">
+                                Issuing Organization <span className="required-asterisk">*</span>
                             </label>
                             <input
                                 type="text"
                                 name="issuer"
                                 value={formData.issuer}
                                 onChange={handleChange}
-                                className={`w-full px-4 py-3 ${bgSecondary} ${borderColor} border rounded-lg 
-                                    focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none 
-                                    ${textPrimary} transition-all duration-200 ${errors.issuer ? 'border-red-400' : ''}`}
+                                className={`form-input ${errors.issuer ? 'error' : ''}`}
                                 placeholder="e.g., Meta, Google, Coursera"
                             />
-                            {errors.issuer && <span className={`text-sm ${errorColor} mt-1 block`}>{errors.issuer}</span>}
+                            {errors.issuer && <span className="field-error">{errors.issuer}</span>}
                         </div>
 
                         {/* Issue Date */}
-                        <div>
-                            <label className={`block mb-2 ${textPrimary} font-medium`}>
-                                Issue Date <span className="text-red-400">*</span>
+                        <div className="form-field">
+                            <label className="form-label">
+                                Issue Date <span className="required-asterisk">*</span>
                             </label>
                             <input
                                 type="date"
                                 name="issueDate"
                                 value={formData.issueDate}
                                 onChange={handleChange}
-                                className={`w-full px-4 py-3 ${bgSecondary} ${borderColor} border rounded-lg 
-                                    focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none 
-                                    ${textPrimary} transition-all duration-200 ${errors.issueDate ? 'border-red-400' : ''}`}
+                                className={`form-input ${errors.issueDate ? 'error' : ''}`}
                             />
-                            {errors.issueDate && <span className={`text-sm ${errorColor} mt-1 block`}>{errors.issueDate}</span>}
+                            {errors.issueDate && <span className="field-error">{errors.issueDate}</span>}
                         </div>
 
                         {/* Credential ID */}
-                        <div>
-                            <label className={`block mb-2 ${textPrimary} font-medium`}>
-                                Credential ID <span className={`${textSecondary} text-sm`}>(Optional)</span>
+                        <div className="form-field">
+                            <label className="form-label">
+                                Credential ID <span className="optional-text">(Optional)</span>
                             </label>
                             <input
                                 type="text"
                                 name="credentialId"
                                 value={formData.credentialId}
                                 onChange={handleChange}
-                                className={`w-full px-4 py-3 ${bgSecondary} ${borderColor} border rounded-lg 
-                                    focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none 
-                                    ${textPrimary} transition-all duration-200`}
+                                className="form-input"
                                 placeholder="Certificate ID or verification code"
                             />
                         </div>
 
                         {/* Credential URL */}
-                        <div className="md:col-span-2">
-                            <label className={`block mb-2 ${textPrimary} font-medium`}>
-                                Credential URL <span className="text-red-400">*</span>
+                        <div className="form-field form-field-full">
+                            <label className="form-label">
+                                Credential URL <span className="required-asterisk">*</span>
                             </label>
                             <input
                                 type="url"
                                 name="credentialUrl"
                                 value={formData.credentialUrl}
                                 onChange={handleChange}
-                                className={`w-full px-4 py-3 ${bgSecondary} ${borderColor} border rounded-lg 
-                                    focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none 
-                                    ${textPrimary} transition-all duration-200 ${errors.credentialUrl ? 'border-red-400' : ''}`}
+                                className={`form-input ${errors.credentialUrl ? 'error' : ''}`}
                                 placeholder="https://www.coursera.org/verify/..."
                             />
-                            {errors.credentialUrl && <span className={`text-sm ${errorColor} mt-1 block`}>{errors.credentialUrl}</span>}
+                            {errors.credentialUrl && <span className="field-error">{errors.credentialUrl}</span>}
                         </div>
 
                         {/* Skills */}
-                        <div className="md:col-span-2">
-                            <label className={`block mb-2 ${textPrimary} font-medium`}>
-                                Related Skills <span className={`${textSecondary} text-sm`}>(Optional)</span>
+                        <div className="form-field form-field-full">
+                            <label className="form-label">
+                                Related Skills <span className="optional-text">(Optional)</span>
                             </label>
                             <input
                                 type="text"
@@ -287,59 +252,52 @@ const AddCertificateForm = ({ onClose, onSubmit, initialData = {}, isEditing = f
                                 value={formData.skills}
                                 onChange={handleChange}
                                 placeholder="e.g., React, Node.js, MongoDB, API Development"
-                                className={`w-full px-4 py-3 ${bgSecondary} ${borderColor} border rounded-lg 
-                                    focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 focus:outline-none 
-                                    ${textPrimary} transition-all duration-200`}
+                                className="form-input"
                             />
-                            <p className={`text-xs ${textSecondary} mt-1`}>Separate skills with commas</p>
+                            <p className="field-hint">Separate skills with commas</p>
                         </div>
                     </div>
 
                     {/* Image Upload Section */}
-                    <div className="mb-6">
-                        <label className={`block mb-2 ${textPrimary} font-medium`}>
-                            Certificate Image <span className="text-red-400">*</span>
+                    <div className="image-upload-section">
+                        <label className="form-label">
+                            Certificate Image <span className="required-asterisk">*</span>
                         </label>
-                        <div className="flex flex-col lg:flex-row gap-6 items-start">
+                        <div className="image-upload-container">
                             {/* Upload Area */}
-                            <div className={`relative w-full lg:w-1/2 h-64 ${bgSecondary} border-2 border-dashed 
-                                ${errors.image ? 'border-red-400' : borderColor} rounded-lg overflow-hidden 
-                                transition-colors duration-200 hover:border-cyan-400`}>
+                            <div className={`image-upload-area ${errors.image ? 'error' : ''}`}>
                                 {previewImage ? (
-                                    <div className="relative w-full h-full">
+                                    <div className="image-preview-container">
                                         <img
                                             src={previewImage}
                                             alt="Certificate Preview"
-                                            className="w-full h-full object-contain"
+                                            className="image-preview"
                                         />
-                                        <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 hover:opacity-100 
-                                            transition-opacity duration-200 flex items-center justify-center">
-                                            <span className="text-white text-sm">Click to change image</span>
+                                        <div className="image-overlay">
+                                            <span>Click to change image</span>
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="h-full flex items-center justify-center text-center p-4">
-                                        <div>
-                                            <FaUpload size={32} className={`mx-auto mb-3 ${accent}`} />
-                                            <p className={`${textPrimary} font-medium mb-1`}>Upload Certificate Image</p>
-                                            <p className={`text-sm ${textSecondary}`}>JPEG, PNG, WebP (max 5MB)</p>
-                                            <p className={`text-xs ${textSecondary} mt-2`}>Click or drag to upload</p>
-                                        </div>
+                                    <div className="upload-placeholder">
+                                        <FaUpload className="upload-icon" />
+                                        <p className="upload-text">Upload Certificate Image</p>
+                                        <p className="upload-subtext">JPEG, PNG, WebP (max 5MB)</p>
+                                        <p className="upload-hint">Click or drag to upload</p>
                                     </div>
                                 )}
                                 <input
                                     type="file"
                                     onChange={handleImageChange}
                                     accept="image/jpeg,image/png,image/webp"
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    className="file-input-hidden"
                                 />
                             </div>
 
                             {/* Upload Info */}
-                            <div className="w-full lg:w-1/2 space-y-3">
-                                <div className={`p-4 ${bgSecondary} rounded-lg border ${borderColor}`}>
-                                    <h4 className={`${textPrimary} font-medium mb-2`}>Upload Guidelines:</h4>
-                                    <ul className={`text-sm ${textSecondary} space-y-1`}>
+                            <div className="upload-info">
+                                <div className="upload-guidelines">
+                                    <h4 className="guidelines-title">Upload Guidelines:</h4>
+                                    <ul className="guidelines-list">
                                         <li>• Use high-quality images for best results</li>
                                         <li>• Supported formats: JPEG, PNG, WebP</li>
                                         <li>• Maximum file size: 5MB</li>
@@ -348,25 +306,24 @@ const AddCertificateForm = ({ onClose, onSubmit, initialData = {}, isEditing = f
                                 </div>
                                 
                                 {isEditing && initialData?.image && (
-                                    <div className={`p-3 bg-yellow-900/20 border border-yellow-500 rounded-lg`}>
-                                        <p className="text-yellow-400 text-sm">
+                                    <div className="edit-notice">
+                                        <p>
                                             <strong>Note:</strong> Uploading a new image will replace the existing one.
                                         </p>
                                     </div>
                                 )}
                             </div>
                         </div>
-                        {errors.image && <span className={`text-sm ${errorColor} mt-2 block`}>{errors.image}</span>}
+                        {errors.image && <span className="field-error">{errors.image}</span>}
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-col sm:flex-row justify-end gap-3 py-5">
+                    <div className="form-actions">
                         <Button
                             type="button"
                             variant="ghost"
                             onClick={handleClose}
-                            className={`px-6 py-3 rounded-lg transition-all duration-200 ${bgSecondary} ${textPrimary} 
-                                hover:${highlight} border ${borderColor} hover:border-purple-400`}
+                            className="form-button-cancel"
                             disabled={isLoading}
                         >
                             Cancel
@@ -375,26 +332,23 @@ const AddCertificateForm = ({ onClose, onSubmit, initialData = {}, isEditing = f
                             type="submit"
                             variant="primary"
                             disabled={isLoading}
-                            className={`px-6 py-3 font-medium rounded-lg flex items-center justify-center gap-2 
-                                bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 
-                                text-white transition-all duration-200 transform hover:scale-105 disabled:opacity-50 
-                                disabled:cursor-not-allowed disabled:transform-none min-w-[140px]`}
+                            className="form-button-submit"
                         >
                             {isLoading ? (
                                 <>
-                                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                                    <div className="loading-spinner"></div>
                                     Saving...
                                 </>
                             ) : (
                                 <>
-                                    <MdSave size={18} />
+                                    <MdSave className="button-icon" />
                                     {isEditing ? 'Update Certificate' : 'Save Certificate'}
                                 </>
                             )}
                         </Button>
                     </div>
                 </form>
-            {/* </div> */}
+            </div>
         </Modal>
     );
 };

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../../styles/pages/TemplateGallery.css';
 
 // Mock data for resume templates
 const TemplateGallery = () => {
@@ -71,25 +72,24 @@ const TemplateGallery = () => {
     };
 
     return (
-        <div className="bg-[#0D1117] text-[#E5E5E5] min-h-screen py-8 px-4">
-            <div className="container mx-auto max-w-6xl">
-                <div className="text-center mb-10">
-                    <h1 className="text-4xl font-bold mb-4 text-[#00FFFF]">Choose Your Template</h1>
-                    <p className="text-xl max-w-3xl mx-auto text-gray-300">
+        <div className="template-gallery-page">
+            <div className="page-container">
+                <div className="page-header">
+                    <h1 className="page-title">Choose Your Template</h1>
+                    <p className="page-subtitle">
                         Select from our professionally designed templates to start building your resume.
                         All templates are ATS-friendly and fully customizable.
                     </p>
                 </div>
 
-                <div className="flex flex-col md:flex-row justify-between mb-8">
-                    <div className="mb-4 md:mb-0">
-                        <div className="flex flex-wrap gap-2">
+                <div className="filters-section">
+                    <div className="category-filters">
+                        <div className="filter-buttons">
                             {['all', 'professional', 'creative', 'minimal', 'technical'].map(category => (
                                 <button
                                     key={category}
                                     onClick={() => setSelectedCategory(category)}
-                                    className={`px-4 py-2 rounded-md ${selectedCategory === category ?
-                                        'bg-[#9C27B0] text-white' : 'bg-[#161B22] text-[#E5E5E5] hover:bg-[#1E293B]'}`}
+                                    className={`category-filter-button ${selectedCategory === category ? 'active' : ''}`}
                                 >
                                     {category.charAt(0).toUpperCase() + category.slice(1)}
                                 </button>
@@ -97,48 +97,45 @@ const TemplateGallery = () => {
                         </div>
                     </div>
 
-                    <div className="w-full md:w-64">
+                    <div className="search-section">
                         <input
                             type="text"
                             placeholder="Search templates..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="px-4 py-2 bg-[#161B22] border border-gray-700 rounded-md focus:outline-none focus:border-[#00FFFF] w-full"
+                            className="search-input"
                         />
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="templates-grid">
                     {filteredTemplates.map(template => (
-                        <div
-                            key={template.id}
-                            className="bg-[#161B22] rounded-lg overflow-hidden border border-gray-700 hover:border-[#9C27B0] transition-all shadow-md"
-                        >
-                            <div className="relative">
+                        <div key={template.id} className="template-card">
+                            <div className="template-preview">
                                 <img
                                     src={template.previewImage}
                                     alt={`${template.name} template preview`}
-                                    className="w-full h-auto"
+                                    className="preview-image"
                                 />
-                                <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-40 transition-all flex items-center justify-center">
+                                <div className="preview-overlay">
                                     <button
                                         onClick={() => handleTemplateSelect(template)}
-                                        className="bg-[#9C27B0] text-white py-2 px-4 rounded-md opacity-0 hover:opacity-100 transition-all transform translate-y-4 hover:translate-y-0 focus:outline-none focus:ring-2 focus:ring-[#9C27B0] focus:ring-offset-1"
+                                        className="use-template-button"
                                     >
                                         Use This Template
                                     </button>
                                 </div>
                             </div>
-                            <div className="p-4">
-                                <h3 className="text-xl font-bold mb-2 text-[#00FFFF]">{template.name}</h3>
-                                <p className="text-sm text-gray-300 mb-3">{template.description}</p>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm px-3 py-1 bg-gray-800 rounded-full">
+                            <div className="template-info">
+                                <h3 className="template-name">{template.name}</h3>
+                                <p className="template-description">{template.description}</p>
+                                <div className="template-footer">
+                                    <span className="template-category">
                                         {template.category.charAt(0).toUpperCase() + template.category.slice(1)}
                                     </span>
                                     <button
                                         onClick={() => handleTemplateSelect(template)}
-                                        className="text-[#00FFFF] hover:text-[#9C27B0] transition-colors focus:outline-none"
+                                        className="select-button"
                                     >
                                         Select →
                                     </button>
@@ -149,11 +146,11 @@ const TemplateGallery = () => {
                 </div>
 
                 {filteredTemplates.length === 0 && (
-                    <div className="text-center py-12">
-                        <p className="text-2xl text-gray-400">No templates match your current filters.</p>
+                    <div className="no-results">
+                        <p className="no-results-text">No templates match your current filters.</p>
                         <button
                             onClick={() => { setSelectedCategory('all'); setSearchTerm(''); }}
-                            className="mt-4 text-[#00FFFF] hover:text-[#9C27B0] focus:outline-none"
+                            className="clear-filters-button"
                         >
                             Clear filters
                         </button>

@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { FaCheck, FaHourglass, FaClock, FaPlus, FaArrowLeft } from 'react-icons/fa';
+import { FaPlus, FaArrowLeft } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import SummaryApi from '../../config/index';
 import ProjectCard from '../../components/portfolio/ProjectCard';
+import '../../styles/pages/ProjectTracking.css';
 
 const ProjectTracking = () => {
     const navigate = useNavigate();
     const [filter, setFilter] = useState('all');
 
-    // Fetch projects with status filter
     const { data: projectsData, isLoading } = useQuery(
         ['projects', filter],
         async () => {
@@ -31,81 +31,54 @@ const ProjectTracking = () => {
 
     const projects = projectsData?.projects || [];
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'completed': return 'bg-green-500';
-            case 'in-progress': return 'bg-blue-500';
-            case 'planned': return 'bg-yellow-500';
-            default: return 'bg-gray-500';
-        }
-    };
-
-    // This function is defined but not used in the provided JSX.
-    // It's okay to keep if intended for future use or other components.
-    const getStatusIcon = (status) => {
-        switch (status) {
-            case 'completed': return <FaCheck />;
-            case 'in-progress': return <FaHourglass />;
-            case 'planned': return <FaClock />;
-            default: return null;
-        }
-    };
-
-    const formatDate = (dateString) => {
-        if (!dateString) return 'Present';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short'
-        });
-    };
-
     const addNewProject = () => {
         navigate('/portfolio/projects/add');
     };
 
     return (
-        <div className="p-8 bg-[#0D1117] text-[#E5E5E5] min-h-screen">
-            <div className="max-w-6xl mx-auto">
-                <div className="flex justify-between items-center mb-8">
+        // CRITICAL FIX: The outer wrapper is removed. React.Fragment is used instead.
+        <>
+            {/* The .page-container class is now correctly placed here */}
+            <div className="page-container project-tracking-content">
+                <div className="page-header">
                     <button
                         onClick={() => navigate('/portfolio')}
-                        className="flex items-center gap-2 text-[#00FFFF] hover:underline"
+                        className="back-button"
                     >
                         <FaArrowLeft /> Back to Portfolio
                     </button>
                     <button
                         onClick={addNewProject}
-                        className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#00FFFF] to-[#9C27B0] text-black rounded-lg hover:opacity-90 transition-opacity"
+                        className="add-project-button"
                     >
                         <FaPlus /> Add Project
                     </button>
                 </div>
 
-                <h1 className="text-3xl font-bold mb-8 text-[#00FFFF]">Project Tracking</h1>
+                <h1 className="page-title">Project Tracking</h1>
 
-                <div className="mb-6">
-                    <div className="flex gap-4 border-b border-gray-700 pb-4">
+                <div className="filter-section">
+                    <div className="filter-tabs">
                         <button
-                            className={`px-4 py-2 rounded-t-lg ${filter === 'all' ? 'bg-[#161B22] text-[#00FFFF] border-b-2 border-[#00FFFF]' : 'text-gray-400'}`}
+                            className={`filter-button ${filter === 'all' ? 'active' : ''}`}
                             onClick={() => setFilter('all')}
                         >
                             All Projects
                         </button>
                         <button
-                            className={`px-4 py-2 rounded-t-lg ${filter === 'in-progress' ? 'bg-[#161B22] text-[#00FFFF] border-b-2 border-[#00FFFF]' : 'text-gray-400'}`}
+                            className={`filter-button ${filter === 'in-progress' ? 'active' : ''}`}
                             onClick={() => setFilter('in-progress')}
                         >
                             In Progress
                         </button>
                         <button
-                            className={`px-4 py-2 rounded-t-lg ${filter === 'completed' ? 'bg-[#161B22] text-[#00FFFF] border-b-2 border-[#00FFFF]' : 'text-gray-400'}`}
+                            className={`filter-button ${filter === 'completed' ? 'active' : ''}`}
                             onClick={() => setFilter('completed')}
                         >
                             Completed
                         </button>
                         <button
-                            className={`px-4 py-2 rounded-t-lg ${filter === 'planned' ? 'bg-[#161B22] text-[#00FFFF] border-b-2 border-[#00FFFF]' : 'text-gray-400'}`}
+                            className={`filter-button ${filter === 'planned' ? 'active' : ''}`}
                             onClick={() => setFilter('planned')}
                         >
                             Planned
@@ -114,33 +87,32 @@ const ProjectTracking = () => {
                 </div>
 
                 {isLoading ? (
-                    <div className="flex justify-center items-center h-64">
-                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#00FFFF]"></div>
+                    <div className="loading-container">
+                        <div className="loading-spinner"></div>
                     </div>
                 ) : projects.length === 0 ? (
-                    <div className="bg-[#161B22] rounded-lg p-8 text-center border border-dashed border-gray-600">
-                        <p className="text-gray-400 mb-4">
+                    <div className="empty-state">
+                        <p className="empty-state-text">
                             {filter === 'all'
                                 ? "You don't have any projects yet"
                                 : `No ${filter.replace('-', ' ')} projects`}
                         </p>
                         <button
                             onClick={addNewProject}
-                            className="px-4 py-2 bg-[#00FFFF] text-black rounded-lg hover:opacity-90"
+                            className="empty-state-button"
                         >
                             Add Your First Project
                         </button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* ProjectCard handles its own navigation to /portfolio/projects/:projectId */}
+                    <div className="project-grid">
                         {projects.map(project => (
                             <ProjectCard key={project._id} project={project} />
                         ))}
                     </div>
                 )}
             </div>
-        </div>
+        </>
     );
 };
 

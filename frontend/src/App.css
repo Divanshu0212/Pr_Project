@@ -1,69 +1,41 @@
-/* Combined Global Styles */
+/* === APP.CSS - DEFINITIVE FIX FOR LAYOUT STABILITY === */
 
-/* Keep the transition for all elements */
-* {
-  transition: all 0.5s;
-}
-
-/* Style for the root element */
+/*
+ * This ensures the root element for React can expand to the full height
+ * of the viewport, which is essential for child flex containers.
+*/
 #root {
   width: 100%;
+  height: 100%;
   margin: 0 auto;
   text-align: center;
-  overflow-x: hidden; /* Prevent horizontal scrollbars */
-}
-
-/* Logo styles */
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-/* Logo spin animation */
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Apply logo spin animation if no reduced motion preference */
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-/* Card style */
-.card {
-  padding: 2em;
-}
-
-/* Read the docs text color */
-.read-the-docs {
-  color: #888;
-}
-
-/* App-specific styles */
-
-.app-container {
-  min-height: 100vh;
+  /* This rule is critical. It establishes a flex context for the App. */
   display: flex;
   flex-direction: column;
 }
 
+/*
+ * This is the main wrapper for your application inside App.jsx.
+ * It's set to grow and fill the available space within #root.
+*/
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Allows the container to take up all vertical space */
+}
+
+/* 
+ * This is the Framer Motion div that wraps your pages.
+ * It also needs to be a flex container to correctly manage the layout's height and width.
+*/
+.page-container {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Ensures the page content fills the remaining space */
+}
+
+/* --- (Optional but Recommended) You can keep these styles if you like them --- */
 /* Custom scrollbar for the whole app */
 ::-webkit-scrollbar {
   width: 8px;
@@ -71,58 +43,14 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
+  background: rgb(var(--color-background-secondary));
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(229, 229, 229, 0.2);
-  border-radius: var(--border-radius-full);
+  background: rgba(var(--color-accent-primary), 0.5);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-cyan);
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.fade-in {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-@keyframes slideInFromRight {
-  from { transform: translateX(30px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-.slide-in {
-  animation: slideInFromRight 0.5s ease-in-out;
-}
-
-/* Status indicators */
-.status-indicator {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: var(--border-radius-full);
-  margin-right: var(--spacing-xs);
-}
-
-.status-success {
-  background-color: #4CAF50;
-}
-
-.status-warning {
-  background-color: #FFC107;
-}
-
-.status-error {
-  background-color: #F44336;
-}
-
-.status-info {
-  background-color: var(--accent-cyan);
+  background: rgb(var(--color-accent-primary));
 }

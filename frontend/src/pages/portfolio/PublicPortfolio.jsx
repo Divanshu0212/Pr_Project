@@ -118,7 +118,7 @@ const PublicPortfolio = () => {
     console.log(publicPortfolioData);
 
     return (
-        <div className={`public-portfolio-page ${isDark ? 'dark' : ''}`}>
+        <div className="public-portfolio-page">
             <div className="portfolio-content-wrapper">
                 
                 {/* Hero Section */}

@@ -1,4 +1,16 @@
-/* === BUTTON COMPONENT STYLES (ENHANCED & MINIMAL) === */
+/* === BUTTON COMPONENT STYLES (UNIFIED THEME SYSTEM) === */
+
+/* CSS Variables for dynamic theming */
+:root {
+  /* Button shine effect colors */
+  --button-shine-primary: rgba(255, 255, 255, 0.3);
+  --button-shine-secondary: rgba(255, 255, 255, 0.15);
+}
+
+.dark {
+  --button-shine-primary: rgba(255, 255, 255, 0.2);
+  --button-shine-secondary: rgba(255, 255, 255, 0.1);
+}
 
 .button {
   position: relative;
@@ -201,7 +213,7 @@
   50% { background-position: 100% 50%; }
 }
 
-/* Dark theme enhancements */
+/* === DARK THEME SPECIFIC OVERRIDES === */
 .dark .button-primary {
   box-shadow: 
     0 4px 15px rgba(0, 255, 255, 0.3),
@@ -223,7 +235,28 @@
   box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
 }
 
-/* Responsive adjustments */
+/* Portfolio theme specific overrides */
+body.portfolio-theme.dark .button-primary {
+  box-shadow: 
+    0 4px 15px rgba(99, 102, 241, 0.3),
+    0 0 0 0 rgba(99, 102, 241, 0.5);
+}
+
+body.portfolio-theme.dark .button-primary:hover:not(:disabled) {
+  box-shadow: 
+    0 8px 25px rgba(139, 92, 246, 0.4),
+    0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+body.portfolio-theme.dark .button-secondary {
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+body.portfolio-theme.dark .button-secondary:hover:not(:disabled) {
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+}
+
+/* === RESPONSIVE ADJUSTMENTS === */
 @media (max-width: 768px) {
   .button-large {
     font-size: 1rem;

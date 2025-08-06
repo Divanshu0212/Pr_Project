@@ -934,3 +934,119 @@ input[type="tel"] {
 .sidebar-wrapper { border: 2px solid blue !important; }
 .content-wrapper { border: 2px solid green !important; }
 */
+
+/* ==========================================================================
+   IMPROVED HOVER EFFECTS - CLEANER GLOW
+   ========================================================================== */
+
+.hover-glow {
+  transition: all 0.4s ease;
+  position: relative;
+}
+
+.hover-glow:hover {
+  /* Much more subtle glow using a softer opacity and smaller spread */
+  box-shadow: 
+    0 0 20px rgba(var(--color-accent-primary), 0.15),
+    0 4px 20px rgba(var(--color-accent-primary), 0.1),
+    var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.hover-glow::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Very subtle overlay gradient */
+  background: linear-gradient(
+    135deg, 
+    rgba(var(--color-accent-primary), 0.03), 
+    rgba(var(--color-accent-secondary), 0.02),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.hover-glow:hover::before {
+  opacity: 1;
+}
+
+/* Alternative cleaner hover effects */
+
+/* Subtle lift with minimal glow */
+.hover-lift-clean {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-lift-clean:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 8px 25px rgba(var(--color-text-primary), 0.08),
+    0 4px 10px rgba(var(--color-text-primary), 0.04);
+}
+
+/* Minimal border glow */
+.hover-border-glow {
+  transition: all 0.3s ease;
+  border: 1px solid rgba(var(--color-accent-neutral), 1);
+}
+
+.hover-border-glow:hover {
+  border-color: rgba(var(--color-accent-primary), 0.3);
+  box-shadow: 
+    0 0 0 1px rgba(var(--color-accent-primary), 0.1),
+    var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Scale with subtle shadow */
+.hover-scale-subtle {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-scale-subtle:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Recommended replacement for the original hover-glow */
+.hover-gentle {
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.hover-gentle:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 30px rgba(var(--color-text-primary), 0.06),
+    0 4px 15px rgba(var(--color-text-primary), 0.04),
+    0 0 0 1px rgba(var(--color-accent-primary), 0.08);
+}
+
+.hover-gentle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg, 
+    rgba(var(--color-accent-primary), 0.02), 
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.hover-gentle:hover::before {
+  opacity: 1;
+}

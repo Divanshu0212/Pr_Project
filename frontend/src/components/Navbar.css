@@ -111,7 +111,8 @@
 .navbar-left {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.5rem;
+  flex-shrink: 0;
 }
 
 .navbar-brand {
@@ -133,11 +134,11 @@
 .navbar-brand:hover {
   transform: translateY(-2px);
 }
-
 .page-title-container {
   display: flex;
   align-items: center;
-  margin-left: 0.1rem;
+  margin-left: 0;
+  flex-shrink: 0;
 }
 
 .page-title {
@@ -145,6 +146,10 @@
   font-weight: 600;
   color: rgb(var(--color-text-primary));
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
 }
 
 /* Right Section (retained from previous version) */
@@ -811,7 +816,7 @@
   height: 28px;
   background: var(--gradient-accent); /* Using new gradient-accent */
   background-size: 200% 200%;
-  margin: 0 1.5rem; /* Adjusted margin */
+margin: 0 1rem;
   border-radius: 2px;
   animation: gradient-flow 4s ease-in-out infinite; /* Using new gradient-flow */
   opacity: 0.8;

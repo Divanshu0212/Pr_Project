@@ -1,33 +1,67 @@
-/* Dashboard Layout Styles */
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
   position: relative;
-  background: var(--color-background);
-  transition: all 0.3s ease;
+  background: linear-gradient(135deg, 
+    rgb(var(--color-background-primary)) 0%, 
+    rgb(var(--color-background-secondary)) 100%);
+  /* overflow-x: hidden is crucial to prevent scrollbars during transitions */
+  overflow-x: hidden;
 }
 
 .dashboard-content {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  transition: margin-left 0.3s ease;
+  flex-grow: 1;
+  /* 
+   * CRITICAL FIX #1: This is the key to stopping the "shrinking" content.
+   * It tells the flex container that it cannot shrink, even during animations.
+   * `width: 100%` was not enough; `min-width: 0` is the required flexbox fix.
+  */
+  min-width: 0; 
+  position: relative;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+/* This ::before creates the subtle background gradient mesh */
+.dashboard-content::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 80%, rgba(var(--color-accent-primary), 0.05) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(var(--color-accent-secondary), 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* On desktop, this class pushes the content over to make room for the sidebar */
+.dashboard-content.content-shifted {
+  margin-left: 18rem; /* Use the correct 18rem sidebar width */
+}
+
+/* The main content area with the glass effect and slide-in animation */
+.dashboard-main {
+  flex: 1 0 auto;
+  background: rgba(var(--color-background-secondary), 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 2rem;
+  overflow-y: auto;
   position: relative;
   z-index: 1;
-  margin-left: 18rem;
+  /* Initial state for the animation */
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease;
 }
 
-.content-shifted {
-  margin-left: 280px;
-}
-
-.dashboard-main {
-  flex: 1;
-  padding: 20px;
-  background: var(--color-background);
-  min-height: calc(100vh - 140px);
-  position: relative;
+/* The final state after the animation runs */
+.dashboard-main.animate-in {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .dashboard-container {
@@ -36,146 +70,20 @@
   width: 100%;
 }
 
-/* Scroll Animation Classes */
-.scroll-animate {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.scroll-animate.animate-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Responsive Design */
+/* Responsive Styles */
 @media (max-width: 1024px) {
-  .content-shifted {
-    margin-left: 0;
-  }
-  
-  .dashboard-main {
-    padding: 15px;
+  /* On tablets, the margin is smaller for a compact sidebar */
+  .dashboard-content.content-shifted {
+    margin-left: 5rem;
   }
 }
 
 @media (max-width: 768px) {
+  /* On mobile, the sidebar overlays, so there is no margin */
   .dashboard-content {
-    margin-left: 0;
+    margin-left: 0 !important;
   }
-  
   .dashboard-main {
-    padding: 10px;
-    min-height: calc(100vh - 120px);
+    padding: 1.5rem 1rem;
   }
-  
-  .dashboard-container {
-    padding: 0 5px;
-  }
-}
-
-@media (max-width: 480px) {
-  .dashboard-main {
-    padding: 8px;
-  }
-  
-  .scroll-animate {
-    transform: translateY(20px);
-  }
-}
-
-/* Dark Mode Support */
-.dashboard-layout.dark {
-  background: var(--color-background-dark);
-}
-
-.dashboard-layout.dark .dashboard-main {
-  background: var(--color-background-dark);
-  color: var(--color-text-dark);
-}
-
-/* Performance Optimizations */
-.dashboard-layout * {
-  box-sizing: border-box;
-}
-
-/* Focus States for Accessibility */
-.dashboard-layout:focus-within {
-  outline: none;
-}
-
-/* Loading States */
-.dashboard-content.loading {
-  pointer-events: none;
-  opacity: 0.7;
-}
-
-/* High Contrast Mode Support */
-@media (prefers-contrast: high) {
-  .dashboard-layout {
-    border: 2px solid currentColor;
-  }
-}
-
-/* Reduced Motion Support */
-@media (prefers-reduced-motion: reduce) {
-  .dashboard-content,
-  .dashboard-main,
-  .scroll-animate {
-    transition: none;
-  }
-  
-  .scroll-animate {
-    transform: none;
-    opacity: 1;
-  }
-}
-
-/*
- * Modal Background Effects
- * These styles activate when a modal is open, applying blur and interaction blocking
- * to the entire dashboard layout when the .modal-is-open class is added to the body
- */
-body.modal-is-open .dashboard-layout {
-  /* Apply a blur effect to the entire layout */
-  filter: blur(5px);
-  
-  /* Disable pointer events to prevent interaction with the background */
-  pointer-events: none;
-
-  /* Optional: a subtle scale down can enhance the focus effect */
-  transform: scale(0.99);
-
-  /* Ensure a smooth transition */
-  transition: filter 0.3s ease-out, transform 0.3s ease-out, opacity 0.3s ease-out;
-  
-  /* Slightly reduce opacity for additional modal focus */
-  opacity: 0.6;
-}
-
-/* Ensure the modal portal itself is not affected by the blur */
-body.modal-is-open #modal-root {
-  filter: none;
-  pointer-events: auto;
-  transform: none;
-  opacity: 1;
-}
-
-/* Additional enhancement: dim the background slightly */
-body.modal-is-open .dashboard-layout::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.1);
-  z-index: -1;
-  transition: opacity 0.3s ease-out;
-}
-
-/* Prevent any scrolling on the body when modal is open */
-body.modal-is-open {
-  overflow: hidden;
-  height: 100vh;
 }

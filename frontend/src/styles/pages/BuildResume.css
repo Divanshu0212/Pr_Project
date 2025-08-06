@@ -1103,3 +1103,143 @@
     justify-content: center;
   }
 }
+
+/* ==========================================================================
+   BUILD RESUME - THEME FIXES
+   ========================================================================== */
+
+/*
+ * FIX: Provide styles for buttons in Light Mode.
+ * These rules target the buttons when the body does NOT have the .dark class.
+*/
+:not(.dark) .remove-card-btn {
+  background: rgba(var(--color-error), 0.1);
+  border: 1px solid rgba(var(--color-error), 0.3);
+  color: rgb(var(--color-error));
+}
+:not(.dark) .remove-card-btn:hover {
+  background: rgba(var(--color-error), 0.2);
+}
+
+:not(.dark) .bullet-remove-btn {
+  background: rgba(var(--color-error), 0.1);
+  border: 1px solid rgba(var(--color-error), 0.3);
+  color: rgb(var(--color-error));
+}
+:not(.dark) .bullet-remove-btn:hover {
+  background: rgba(var(--color-error), 0.2);
+}
+
+:not(.dark) .add-bullet-btn {
+  background: rgba(var(--color-accent-primary), 0.1);
+  border: 1px solid rgba(var(--color-accent-primary), 0.3);
+  color: rgb(var(--color-accent-primary));
+}
+:not(.dark) .add-bullet-btn:hover {
+  background: rgba(var(--color-accent-primary), 0.2);
+}
+
+:not(.dark) .add-skill-btn {
+    background: rgba(var(--color-accent-primary), 0.1);
+    border: 1px dashed rgba(var(--color-accent-primary), 0.4);
+    color: rgb(var(--color-accent-primary));
+}
+:not(.dark) .add-skill-btn:hover {
+    background: rgba(var(--color-accent-primary), 0.2);
+    border-style: solid;
+}
+
+:not(.dark) .skill-remove-btn {
+    background: rgba(var(--color-error), 0.1);
+    border: 1px solid rgba(var(--color-error), 0.3);
+    color: rgb(var(--color-error));
+}
+:not(.dark) .skill-remove-btn:hover {
+    background: rgba(var(--color-error), 0.2);
+}
+
+:not(.dark) .add-item-button {
+  color: rgb(var(--color-accent-primary));
+  background-color: rgba(var(--color-accent-primary), 0.1);
+}
+:not(.dark) .add-item-button:hover {
+  background-color: rgba(var(--color-accent-primary), 0.2);
+}
+
+:not(.dark) .remove-button-circle {
+  color: rgb(var(--color-error));
+  background-color: rgba(var(--color-error), 0.1);
+}
+:not(.dark) .remove-button-circle:hover {
+  background-color: rgba(var(--color-error), 0.2);
+}
+/* ==========================================================================
+   BUILD RESUME - DEFINITIVE THEME FIX FOR TECHNOLOGY TAGS
+   ========================================================================== */
+
+/*
+ * This styles the technology tag itself.
+ * It provides distinct appearances for light and dark modes.
+*/
+.tech-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+/* --- Light Mode Styles --- */
+:not(.dark) .tech-tag {
+  background-color: rgb(var(--color-background-tertiary));
+  border: 1px solid rgb(var(--color-border));
+  color: rgb(var(--color-text-primary));
+}
+
+/* --- Dark Mode Styles --- */
+.dark .tech-tag {
+  background-color: rgb(var(--color-background-tertiary));
+  border: 1px solid rgb(var(--color-border));
+  color: rgb(var(--color-text-primary));
+}
+
+/*
+ * This styles the remove button (the 'x') inside the technology tag.
+ * It ensures the button is correctly styled for both themes.
+*/
+.tech-tag button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* --- Light Mode Button --- */
+:not(.dark) .tech-tag button {
+  background-color: rgb(var(--color-background-secondary));
+  color: rgb(var(--color-text-secondary));
+}
+:not(.dark) .tech-tag button:hover {
+  background-color: rgba(var(--color-error), 0.1);
+  color: rgb(var(--color-error));
+  transform: scale(1.1);
+}
+
+/* --- Dark Mode Button --- */
+.dark .tech-tag button {
+  background-color: rgb(var(--color-background-primary));
+  color: rgb(var(--color-text-secondary));
+}
+.dark .tech-tag button:hover {
+  background-color: rgba(var(--color-error), 0.2);
+  color: rgb(var(--color-error));
+  transform: scale(1.1);
+}

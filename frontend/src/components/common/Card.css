@@ -1,4 +1,16 @@
-/* === CARD COMPONENT STYLES (ENHANCED & MINIMAL) === */
+/* === CARD COMPONENT STYLES (UNIFIED THEME SYSTEM) === */
+
+/* CSS Variables for dynamic theming */
+:root {
+  /* Card spotlight effect colors */
+  --card-spotlight-primary: rgba(var(--color-accent-primary), 0.15);
+  --card-spotlight-secondary: rgba(var(--color-highlight), 0.1);
+  
+  /* Card hover glow effects */
+  --card-hover-shadow-light: 0 25px 50px -12px rgba(49, 130, 206, 0.25), 0 0 0 1px rgba(49, 130, 206, 0.1);
+  --card-hover-shadow-dark: 0 25px 50px -12px rgba(0, 255, 255, 0.25), 0 0 0 1px rgba(0, 255, 255, 0.1);
+  --card-hover-shadow-portfolio: 0 25px 50px -12px rgba(99, 102, 241, 0.25), 0 0 0 1px rgba(99, 102, 241, 0.1);
+}
 
 .card {
   position: relative;
@@ -32,6 +44,11 @@
 
 .card:hover::before {
   opacity: 1;
+}
+
+/* Hover glow effect - theme aware */
+.card:hover {
+  box-shadow: var(--card-hover-shadow-light);
 }
 
 /* Subtle noise texture */
@@ -174,7 +191,7 @@
   transform: translateX(4px);
 }
 
-/* Dark theme enhancements */
+/* === DARK THEME SPECIFIC OVERRIDES === */
 .dark .card {
   border-color: rgba(var(--color-accent-primary), 0.3);
   background: rgba(var(--color-background-secondary), 0.9);
@@ -184,7 +201,16 @@
   opacity: 0.8;
 }
 
-/* Responsive adjustments */
+.dark .card:hover {
+  box-shadow: var(--card-hover-shadow-dark);
+}
+
+/* === PORTFOLIO THEME SPECIFIC OVERRIDES === */
+body.portfolio-theme.dark .card:hover {
+  box-shadow: var(--card-hover-shadow-portfolio);
+}
+
+/* === RESPONSIVE ADJUSTMENTS === */
 @media (max-width: 768px) {
   .card-text-content {
     padding: 1rem;

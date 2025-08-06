@@ -117,6 +117,7 @@ const AnimatedRoutes = () => {
         exit="exit"
         transition={pageTransition}
         className="page-container"
+      
       >
         <Routes location={location}>
           {/* --- Public Routes (accessible without login) --- */}

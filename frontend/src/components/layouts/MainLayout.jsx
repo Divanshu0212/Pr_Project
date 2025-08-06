@@ -24,7 +24,7 @@ const MainLayout = ({ children, user }) => {
     };
   }, [location.pathname]);
 
-  // Scroll animation observer
+  // Scroll animation observer - from your old, working version
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {

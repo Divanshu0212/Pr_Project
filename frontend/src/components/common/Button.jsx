@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../context/ThemeContext';
 import './Button.css';
 
 const Button = ({
@@ -16,7 +15,6 @@ const Button = ({
   enableShine = true,
   isLoading = false,
 }) => {
-  const { theme } = useTheme();
   const buttonRef = useRef(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
@@ -72,11 +70,11 @@ const Button = ({
     }
   };
 
-  // Enhanced shine effect with theme-aware colors
+  // Shine effect style - now fully CSS variable driven
   const shineStyle = enableShine && isHovered ? {
     background: `radial-gradient(circle at ${position.x}px ${position.y}px, 
-      rgba(255, 255, 255, ${theme === 'dark' ? '0.2' : '0.3'}) 0%, 
-      rgba(255, 255, 255, ${theme === 'dark' ? '0.1' : '0.15'}) 30%, 
+      var(--button-shine-primary) 0%, 
+      var(--button-shine-secondary) 30%, 
       transparent 70%)`,
     transition: 'background 0.15s ease-out',
   } : {};
@@ -129,7 +127,7 @@ const Button = ({
         ${fullWidth ? 'button-full-width' : ''}
         ${enableShine ? 'button-shine-enabled' : ''}
         ${isLoading ? 'button-loading' : ''}
-      `}
+      `.trim()}
       variants={buttonVariants}
       initial="hidden"
       animate={isVisible ? "visible" : "hidden"}
@@ -141,13 +139,13 @@ const Button = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      {/* {enableShine && (
+      {enableShine && (
         <div 
           className="button-shine" 
           style={shineStyle}
           aria-hidden="true"
         />
-      )} */}
+      )}
       
       {isLoading ? (
         <div className="button-loader">
@@ -159,7 +157,7 @@ const Button = ({
         </div>
       ) : (
         <motion.span 
-          className="button-content "
+          className="button-content"
           variants={hoverVariants}
         >
           {icon && (
@@ -171,7 +169,7 @@ const Button = ({
               {icon}
             </motion.span>
           )}
-          <span className="button-text">{children}</span> {/* This is where children are rendered */}
+          <span className="button-text">{children}</span>
         </motion.span>
       )}
       
@@ -182,7 +180,7 @@ const Button = ({
 };
 
 Button.propTypes = {
-  children: PropTypes.node.isRequired, // This prop type is correct for how the button renders children
+  children: PropTypes.node.isRequired,
   variant: PropTypes.oneOf(['primary', 'secondary', 'ghost']),
   size: PropTypes.oneOf(['small', 'medium', 'large']),
   onClick: PropTypes.func,

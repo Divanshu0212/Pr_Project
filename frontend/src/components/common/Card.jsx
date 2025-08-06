@@ -2,7 +2,6 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { motion } from 'framer-motion';
-import { useTheme } from '../../context/ThemeContext';
 import './Card.css';
 
 const Card = ({
@@ -13,7 +12,6 @@ const Card = ({
   enableSpotlight = true,
   disableAnimation = false,
 }) => {
-  const { theme } = useTheme();
   const divRef = useRef(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [opacity, setOpacity] = useState(0);
@@ -67,12 +65,12 @@ const Card = ({
     if (enableSpotlight) setOpacity(0);
   };
 
-  // Enhanced spotlight style with theme-aware colors
+  // Spotlight style - now fully CSS variable driven
   const spotlightStyle = {
     opacity,
     background: `radial-gradient(400px circle at ${position.x}px ${position.y}px, 
-      rgba(var(--color-accent-primary), 0.15),
-      rgba(var(--color-highlight), 0.1),
+      var(--card-spotlight-primary),
+      var(--card-spotlight-secondary),
       transparent 70%
     )`,
     transition: 'opacity 0.3s ease',
@@ -111,9 +109,7 @@ const Card = ({
 
   const glowVariants = {
     hover: {
-      boxShadow: theme === 'dark' 
-        ? `0 25px 50px -12px rgba(0, 255, 255, 0.25), 0 0 0 1px rgba(0, 255, 255, 0.1)`
-        : `0 25px 50px -12px rgba(49, 130, 206, 0.25), 0 0 0 1px rgba(49, 130, 206, 0.1)`,
+      // Box shadow is now handled by CSS classes
       transition: { duration: 0.3 }
     }
   };
@@ -173,7 +169,7 @@ const Card = ({
   return (
     <motion.div
       ref={divRef}
-      className={`card panel ${onClick ? 'is-clickable' : ''} ${className}`}
+      className={`card panel ${onClick ? 'is-clickable' : ''} ${className}`.trim()}
       variants={cardVariants}
       initial={disableAnimation ? "visible" : "hidden"}
       animate={isVisible || disableAnimation ? "visible" : "hidden"}

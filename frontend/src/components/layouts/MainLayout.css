@@ -1,168 +1,95 @@
-/* Main Layout - Enhanced with gradients and animations */
+/* ==========================================================================
+   DASHBOARD LAYOUT - DEFINITIVE & STABLE FLEXBOX VERSION
+   This file restores smooth animations and permanently fixes all layout glitches.
+   ========================================================================== */
 
-.main-layout {
-  min-height: 100vh;
+.dashboard-layout {
   display: flex;
-  flex-direction: column;
+  min-height: 100vh;
+  position: relative;
   background: linear-gradient(135deg, 
     rgb(var(--color-background-primary)) 0%, 
     rgb(var(--color-background-secondary)) 100%);
-  position: relative;
-  overflow-x: hidden;
+  /* 
+   * CRITICAL FIX #1: The conflicting overflow property is REMOVED from this file.
+   * The overflow is now exclusively controlled by App.css.
+  */
 }
 
-.main-layout::before {
+.dashboard-content {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  /* 
+   * CRITICAL FIX #2: This is the key to stopping "shrinking" content.
+   * It tells the flex container that it cannot shrink, even during animations.
+  */
+  min-width: 0; 
+  position: relative;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+/* This ::before creates the subtle background gradient mesh */
+.dashboard-content::before {
   content: '';
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at 25% 75%, rgba(49, 130, 206, 0.08) 0%, transparent 50%),
-              radial-gradient(circle at 75% 25%, rgba(128, 90, 213, 0.08) 0%, transparent 50%);
+  background: radial-gradient(circle at 20% 80%, rgba(var(--color-accent-primary), 0.05) 0%, transparent 50%),
+              radial-gradient(circle at 80% 20%, rgba(var(--color-accent-secondary), 0.05) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
 }
 
-.main-content {
-  flex-grow: 1;
-  padding: 2rem 1.5rem;
+/* On desktop, this class pushes the content over to make room for the sidebar */
+.dashboard-content.content-shifted {
+  margin-left: 18rem; /* Use the correct 18rem sidebar width */
+}
+
+/* The main content area with the glass effect and slide-in animation */
+.dashboard-main {
+  flex: 1 0 auto;
+  background: rgba(var(--color-background-secondary), 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 2rem;
+  overflow-y: auto;
   position: relative;
   z-index: 1;
+  /* Initial state for the animation */
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease;
 }
 
-.main-container {
-  max-width: 1280px;
+/* The final state after the animation runs */
+.dashboard-main.animate-in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.dashboard-container {
+  max-width: 1400px;
   margin: 0 auto;
   width: 100%;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.main-container.animate-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Enhanced typography with gradients */
-.main-content h1,
-.main-content h2,
-.main-content h3 {
-  background: linear-gradient(135deg, 
-    rgb(var(--color-text-primary)) 0%,
-    rgb(var(--color-accent-primary)) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 700;
-  line-height: 1.2;
-  margin-bottom: 1rem;
-}
-
-.main-content h1 {
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  animation: fade-in-up 1s ease-out;
-}
-
-.main-content h2 {
-  font-size: clamp(1.5rem, 4vw, 2.5rem);
-  animation: fade-in-up 1s ease-out 0.2s both;
-}
-
-.main-content h3 {
-  font-size: clamp(1.25rem, 3vw, 2rem);
-  animation: fade-in-up 1s ease-out 0.4s both;
-}
-
-/* Animated paragraphs */
-.main-content p {
-  color: rgb(var(--color-text-secondary));
-  line-height: 1.7;
-  margin-bottom: 1.5rem;
-  opacity: 0;
-  transform: translateY(20px);
-  animation: fade-in-up 0.8s ease-out 0.6s both;
-}
-
-/* Enhanced links with hover effects */
-.main-content a {
-  color: rgb(var(--color-accent-primary));
-  text-decoration: none;
-  position: relative;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.main-content a::before {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background: linear-gradient(90deg, 
-    rgb(var(--color-accent-primary)), 
-    rgb(var(--color-accent-secondary)));
-  transition: width 0.3s ease;
-}
-
-.main-content a:hover {
-  color: rgb(var(--color-accent-secondary));
-  transform: translateY(-2px);
-}
-
-.main-content a:hover::before {
-  width: 100%;
-}
-
-/* Scroll animations */
-.scroll-animate {
-  opacity: 0;
-  transform: translateY(50px);
-  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.scroll-animate.animate-in {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Floating elements */
-.floating-element {
-  animation: float 6s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  33% { transform: translateY(-10px) rotate(1deg); }
-  66% { transform: translateY(-5px) rotate(-1deg); }
-}
-
-/* Shimmer effect for loading elements */
-.shimmer {
-  background: linear-gradient(90deg, 
-    rgba(var(--color-text-secondary), 0.1) 25%, 
-    rgba(var(--color-accent-primary), 0.2) 50%, 
-    rgba(var(--color-text-secondary), 0.1) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 2s linear infinite;
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .main-content {
-    padding: 1.5rem 1rem;
+/* Responsive Styles */
+@media (max-width: 1024px) {
+  /* On tablets, the margin is smaller for a compact sidebar */
+  .dashboard-content.content-shifted {
+    margin-left: 5rem;
   }
-  
-  .main-content h1,
-  .main-content h2,
-  .main-content h3 {
-    text-align: center;
+}
+
+@media (max-width: 768px) {
+  /* On mobile, the sidebar overlays, so there is no margin */
+  .dashboard-content {
+    margin-left: 0 !important;
+  }
+  .dashboard-main {
+    padding: 1.5rem 1rem;
   }
 }
