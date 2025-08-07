@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import { useTheme } from '../../context/ThemeContext';
 import Button from '../common/Button';
 import Modal from '../common/Modal';
+import './AddCertificateForm.css';
 
 const AddCertificateForm = ({ onClose, onSubmit, initialData = {}, isEditing = false, title }) => {
     const [formData, setFormData] = useState({
