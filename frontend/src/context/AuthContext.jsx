@@ -43,7 +43,9 @@ export const AuthProvider = ({ children }) => {
         });
         if (response.ok) {
           const userData = await response.json();
+          console.log('User data fetched successfully:', userData);
           setCurrentUser({
+            id:userData.user.id,
             username: userData.user.username || 'User',
             displayName: userData.user.displayName || userData.user.name || 'User',
             email: userData.user.email,

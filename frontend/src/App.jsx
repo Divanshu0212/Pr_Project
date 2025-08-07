@@ -72,6 +72,8 @@ const CertificatesPage = lazy(() => import('./pages/portfolio/CertificatesPage')
 const ExperiencePage = lazy(() => import('./pages/portfolio/ExperiencePage')); // NEW: Create this page
 
 
+const FindCandidatesPage =lazy(()=>import('./pages/candidates/FindCandidatesPage'));
+
 // Page transition variants for Framer Motion
 const pageVariants = {
   initial: { opacity: 0, y: 15 },
@@ -117,7 +119,6 @@ const AnimatedRoutes = () => {
         exit="exit"
         transition={pageTransition}
         className="page-container"
-      
       >
         <Routes location={location}>
           {/* --- Public Routes (accessible without login) --- */}
@@ -163,16 +164,17 @@ const AnimatedRoutes = () => {
           <Route path="/resume/my-resumes" element={<ProtectedRoute><MyResumesPage /></ProtectedRoute>} /> {/* New page */}
 
           {/* ATS Optimizer Module */}
-          <Route path="/ats" element={<ProtectedRoute><AtsTracker /></ProtectedRoute>} /> {/* Main ATS page with upload */}
+          <Route path="/ats" element={<ProtectedRoute><DashboardLayout user={currentUser}><AtsTracker /></DashboardLayout></ProtectedRoute>} /> {/* Main ATS page with upload */}
 
-          <Route path="/ats/results" element={<ProtectedRoute><AtsResults /></ProtectedRoute>} /> {/* Analysis results page */}
+          <Route path="/ats/results" element={<ProtectedRoute><DashboardLayout user={currentUser}><AtsResults /></DashboardLayout></ProtectedRoute>} /> {/* Analysis results page */}
           <Route path="/ats/analysis/:analysisId" element={<ProtectedRoute><DashboardLayout user={currentUser}><AnalysisView /></DashboardLayout></ProtectedRoute>} /> {/* Detailed report (fetches by ID) */}
-          <Route path="/ats/history" element={<ProtectedRoute><AtsHistoryPage /></ProtectedRoute>} /> {/* New page */}
+          <Route path="/ats/history" element={<ProtectedRoute><DashboardLayout user={currentUser}><AtsHistoryPage /></DashboardLayout></ProtectedRoute>} /> {/* New page */}
           <Route path="/ats/keywords" element={<ProtectedRoute><DashboardLayout user={currentUser}><KeywordAnalysis /></DashboardLayout></ProtectedRoute>} />
-
           {/* --- Fallback Routes --- */}
           <Route path="/index.html" element={<Navigate to="/" replace />} /> {/* Redirect old index.html route */}
           <Route path="*" element={<MainLayout user={currentUser}><NotFound /></MainLayout>} /> {/* 404 Not Found */}
+
+          <Route path="/find-candidates" element={<ProtectedRoute><DashboardLayout user={currentUser}><FindCandidatesPage/></DashboardLayout></ProtectedRoute>} />
         </Routes>
       </motion.div>
     </AnimatePresence>

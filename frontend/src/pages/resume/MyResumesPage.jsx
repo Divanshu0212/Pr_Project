@@ -1,9 +1,8 @@
-import React, { useContext, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import PropTypes from 'prop-types';
+import { useContext, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from 'react-query'; // Import useMutation, useQueryClient
 import { format } from 'date-fns'; // For date formatting
-import { FaPlus, FaEye, FaDownload, FaTrash } from 'react-icons/fa';
+import { FaPlus, FaDownload, FaTrash } from 'react-icons/fa';
 import { MdOutlineEdit } from 'react-icons/md'; // More common edit icon
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import Button from '../../components/common/Button';
@@ -66,7 +65,9 @@ const MyResumesPage = () => {
                     resume_id: resume._id,
                     name: resume.title,
                     created_at: resume.createdAt,
-                    cloudinary_url: resume.cloudinaryResumes?.url || null
+                    has_pdf: !!resume.pdfData?.data || !!resume.pdfData?.filename,
+                    pdf_size: resume.pdfData?.size || null,
+                    pdf_filename: resume.pdfData?.filename || null
                 }));
 
             } catch (error) {
@@ -126,10 +127,37 @@ const MyResumesPage = () => {
         }
     };
 
-    const handleDownloadPdf = (resume) => {
-        // For all resumes, check if they have a Cloudinary URL
-        if (resume.cloudinary_url) {
-            window.open(resume.cloudinary_url, '_blank');
+    const handleDownloadPdf = async (resume) => {
+        // For MongoDB stored PDFs
+        if (resume.has_pdf) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(SummaryApi.resumes.downloadPdf.url(resume._id), {
+                    method: SummaryApi.resumes.downloadPdf.method,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to download PDF');
+                }
+
+                // Create blob and download
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = resume.pdf_filename || `${resume.name || 'resume'}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('Error downloading PDF. Please try again.');
+            }
         } else {
             alert('PDF not available for download. Please upload your resume as PDF first.');
         }
@@ -224,11 +252,11 @@ const MyResumesPage = () => {
                                             {resume.name || resume.title || 'Untitled Resume'}
                                         </h2>
                                         <span className={`px-2 py-1 text-xs rounded-full ${
-                                            resume.cloudinary_url 
+                                            resume.has_pdf 
                                                 ? 'bg-green-100 text-green-800' 
                                                 : 'bg-blue-100 text-blue-800'
                                         }`}>
-                                            {resume.cloudinary_url ? 'Has PDF' : 'No PDF'}
+                                            {resume.has_pdf ? 'Has PDF' : 'No PDF'}
                                         </span>
                                     </div>
                                     <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
@@ -241,7 +269,7 @@ const MyResumesPage = () => {
                                         >
                                             <MdOutlineEdit size={14} /> Edit
                                         </Button>
-                                        {resume.cloudinary_url && (
+                                        {resume.has_pdf && (
                                             <Button
                                                 onClick={() => handleDownloadPdf(resume)}
                                                 className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 ${isDark ? 'bg-purple-600/30 text-purple-200 hover:bg-purple-500/40' : 'bg-purple-200 text-purple-800 hover:bg-purple-300'}`}
@@ -265,11 +293,6 @@ const MyResumesPage = () => {
             </div>
         </DashboardLayout>
     );
-};
-
-MyResumesPage.propTypes = {
-    // No direct props are passed down from a parent component for this page.
-    // It fetches its own data based on AuthContext.currentUser.
 };
 
 export default MyResumesPage;

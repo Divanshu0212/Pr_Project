@@ -1,5 +1,6 @@
 // backend/controller/atsController.js
 const AtsAnalysis = require('../models/AtsAnalysis');
+const AtsHistoryScore = require('../models/AtsHistoryScore');
 const mongoose = require('mongoose'); // For ObjectId validation
 const Joi = require('@hapi/joi'); // For robust input validation
 const multer = require('multer'); // Import multer to catch MulterErrors
@@ -108,6 +109,16 @@ exports.analyzeResume = async (req, res) => {
         };
         logger.info('ATS analysis simulation complete.', { userId, matchScore: analysisResult.matchScore });
 
+        // Prepare detailed scores for history tracking
+        const detailedScores = {
+            keywords: Math.floor(Math.random() * 20) + 70,
+            formatting: analysisResult.formatScore,
+            experience: analysisResult.sectionsAnalyzed.experience.score,
+            skills: analysisResult.sectionsAnalyzed.skills.score,
+            education: analysisResult.sectionsAnalyzed.education.score,
+            summary: analysisResult.sectionsAnalyzed.summary.score
+        };
+
         // --- STEP 5: Save Analysis Report to Database ---
         const newAnalysis = new AtsAnalysis({
             userId: userId,
@@ -123,6 +134,40 @@ exports.analyzeResume = async (req, res) => {
 
         await newAnalysis.save();
         logger.security(`ATS analysis report saved successfully.`, { userId, analysisId: newAnalysis._id });
+
+        // --- STEP 6: Store ATS Score History (only if different from previous) ---
+        try {
+            const shouldStore = await AtsHistoryScore.shouldStoreScore(userId, analysisResult.matchScore, detailedScores);
+            
+            if (shouldStore) {
+                const historyScore = new AtsHistoryScore({
+                    userId: userId,
+                    overallScore: analysisResult.matchScore,
+                    detailedScores: detailedScores,
+                    resumeTitle: resumeTitle,
+                    jobTitle: jobDescription.substring(0, 255) || 'General Application',
+                    analysisDate: new Date(),
+                    analysisId: newAnalysis._id
+                });
+
+                await historyScore.save();
+                logger.info(`ATS score history saved successfully.`, { 
+                    userId, 
+                    overallScore: analysisResult.matchScore,
+                    scoreId: historyScore._id,
+                    reason: 'Score significantly different from previous analysis'
+                });
+            } else {
+                logger.info(`ATS score unchanged, skipping history storage.`, { 
+                    userId, 
+                    overallScore: analysisResult.matchScore,
+                    reason: 'Score change below tolerance threshold (1%)'
+                });
+            }
+        } catch (historyError) {
+            logger.error('Error saving ATS score history:', { userId, error: historyError.message });
+            // Don't fail the entire request if history storage fails
+        }
 
         res.status(201).json({
             success: true,
@@ -161,13 +206,46 @@ exports.getAtsHistory = async (req, res) => {
 
     try {
         const history = await AtsAnalysis.find({ userId })
-            .select('analysisId resumeTitle jobTitle analysisDate summary createdAt')
+            .select('analysisId resumeTitle jobTitle analysisDate summary reportData createdAt')
             .sort({ analysisDate: -1 });
+
+        // Parse the report data to include overall score for frontend
+        const formattedHistory = history.map(item => {
+            let overall_score = 0;
+            let analysis_timestamp = item.analysisDate;
+            
+            // Try to get score from summary first, then from reportData
+            if (item.summary && item.summary.matchScore) {
+                overall_score = item.summary.matchScore;
+            } else if (item.reportData) {
+                try {
+                    const parsedData = JSON.parse(item.reportData);
+                    overall_score = parsedData.overall_score || parsedData.matchScore || 0;
+                    if (parsedData.analysis_timestamp) {
+                        analysis_timestamp = parsedData.analysis_timestamp;
+                    }
+                } catch (e) {
+                    console.warn('Could not parse reportData for analysis:', item._id);
+                }
+            }
+
+            return {
+                _id: item._id,
+                analysisId: item.analysisId,
+                resumeTitle: item.resumeTitle || 'Untitled Resume',
+                jobTitle: item.jobTitle || 'General Analysis',
+                analysisDate: item.analysisDate,
+                analysis_timestamp: analysis_timestamp,
+                overall_score: overall_score,
+                summary: item.summary,
+                createdAt: item.createdAt
+            };
+        });
 
         res.status(200).json({
             success: true,
-            count: history.length,
-            history: history
+            count: formattedHistory.length,
+            history: formattedHistory
         });
     } catch (error) {
         logger.error('Error fetching ATS history:', { userId, errorMessage: error.message, stack: error.stack });
@@ -234,6 +312,297 @@ exports.deleteAtsAnalysis = async (req, res) => {
     } catch (error) {
         logger.error('Error deleting ATS analysis:', { userId, analysisId, errorMessage: error.message, stack: error.stack });
         sendErrorResponse(res, 500, 'Server error. Could not delete ATS analysis report.');
+    }
+};
+
+// @route   GET /api/ats/score-history
+// @desc    Get ATS score history for graph visualization
+// @access  Private
+exports.getAtsScoreHistory = async (req, res) => {
+    const userId = req.user.id;
+    const { period = 'all', limit = 50 } = req.query;
+
+    try {
+        let dateFilter = {};
+        
+        // Apply date filtering based on period
+        if (period !== 'all') {
+            const now = new Date();
+            let startDate;
+            
+            switch (period) {
+                case '7d':
+                    startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    break;
+                case '30d':
+                    startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                    break;
+                case '90d':
+                    startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+                    break;
+                case '1y':
+                    startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+                    break;
+                default:
+                    startDate = null;
+            }
+            
+            if (startDate) {
+                dateFilter.analysisDate = { $gte: startDate };
+            }
+        }
+
+        const scoreHistory = await AtsHistoryScore.find({ 
+            userId, 
+            ...dateFilter 
+        })
+        .select('overallScore detailedScores resumeTitle jobTitle analysisDate')
+        .sort({ analysisDate: -1 })
+        .limit(parseInt(limit));
+
+        // Calculate statistics
+        const scores = scoreHistory.map(entry => entry.overallScore);
+        const stats = {
+            totalEntries: scoreHistory.length,
+            averageScore: scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0,
+            highestScore: scores.length > 0 ? Math.max(...scores) : 0,
+            lowestScore: scores.length > 0 ? Math.min(...scores) : 0,
+            improvement: scores.length >= 2 ? scores[0] - scores[scores.length - 1] : 0
+        };
+
+        res.status(200).json({
+            success: true,
+            data: {
+                history: scoreHistory,
+                statistics: stats,
+                period: period,
+                count: scoreHistory.length
+            }
+        });
+
+    } catch (error) {
+        logger.error('Error fetching ATS score history:', { 
+            userId, 
+            errorMessage: error.message, 
+            stack: error.stack 
+        });
+        sendErrorResponse(res, 500, 'Server error. Could not retrieve ATS score history.');
+    }
+};
+
+// @route   GET /api/ats/score-trends
+// @desc    Get ATS score trends and analytics
+// @access  Private
+exports.getAtsScoreTrends = async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        // Get score history for trend analysis
+        const scoreHistory = await AtsHistoryScore.find({ userId })
+            .select('overallScore detailedScores analysisDate')
+            .sort({ analysisDate: 1 }) // Ascending order for trend calculation
+            .limit(100); // Limit for performance
+
+        if (scoreHistory.length === 0) {
+            return res.status(200).json({
+                success: true,
+                data: {
+                    trends: [],
+                    categoryTrends: {},
+                    insights: []
+                }
+            });
+        }
+
+        // Calculate overall trend
+        const trends = scoreHistory.map((entry, index) => ({
+            date: entry.analysisDate,
+            score: entry.overallScore,
+            change: index > 0 ? entry.overallScore - scoreHistory[index - 1].overallScore : 0
+        }));
+
+        // Calculate category-wise trends
+        const categoryTrends = {};
+        const categories = ['keywords', 'formatting', 'experience', 'skills', 'education', 'summary'];
+        
+        categories.forEach(category => {
+            categoryTrends[category] = scoreHistory
+                .filter(entry => entry.detailedScores && entry.detailedScores[category])
+                .map((entry, index, filteredArray) => ({
+                    date: entry.analysisDate,
+                    score: entry.detailedScores[category],
+                    change: index > 0 ? entry.detailedScores[category] - filteredArray[index - 1].detailedScores[category] : 0
+                }));
+        });
+
+        // Generate insights
+        const insights = [];
+        const recentScores = scoreHistory.slice(-5);
+        const olderScores = scoreHistory.slice(0, -5);
+
+        if (recentScores.length >= 2) {
+            const recentAvg = recentScores.reduce((sum, entry) => sum + entry.overallScore, 0) / recentScores.length;
+            const olderAvg = olderScores.length > 0 ? 
+                olderScores.reduce((sum, entry) => sum + entry.overallScore, 0) / olderScores.length : 
+                recentAvg;
+
+            if (recentAvg > olderAvg + 5) {
+                insights.push({
+                    type: 'positive',
+                    message: `Your ATS scores have improved by ${Math.round(recentAvg - olderAvg)} points recently!`,
+                    category: 'overall'
+                });
+            } else if (recentAvg < olderAvg - 5) {
+                insights.push({
+                    type: 'warning',
+                    message: `Your ATS scores have decreased by ${Math.round(olderAvg - recentAvg)} points recently.`,
+                    category: 'overall'
+                });
+            }
+        }
+
+        res.status(200).json({
+            success: true,
+            data: {
+                trends,
+                categoryTrends,
+                insights,
+                totalAnalyses: scoreHistory.length
+            }
+        });
+
+    } catch (error) {
+        logger.error('Error fetching ATS score trends:', { 
+            userId, 
+            errorMessage: error.message, 
+            stack: error.stack 
+        });
+        sendErrorResponse(res, 500, 'Server error. Could not retrieve ATS score trends.');
+    }
+};
+
+// @route   GET /api/ats/score-config
+// @desc    Get current ATS score storage configuration
+// @access  Private
+exports.getScoreConfig = async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        // For now, return static config. Could be made dynamic per user in the future
+        const config = {
+            scoreTolerance: 1, // 1% tolerance
+            storeOnlySignificantChanges: true,
+            description: 'Scores are only stored if they differ by at least 1% from the previous analysis'
+        };
+
+        res.status(200).json({
+            success: true,
+            config: config
+        });
+    } catch (error) {
+        logger.error('Error fetching score config:', { userId, errorMessage: error.message, stack: error.stack });
+        sendErrorResponse(res, 500, 'Server error. Could not retrieve score configuration.');
+    }
+};
+
+// @route   POST /api/ats/store-score
+// @desc    Store ATS score for tracking (only if different from previous)
+// @access  Private
+exports.storeAtsScore = async (req, res) => {
+    const userId = req.user.id;
+    const { overallScore, detailedScores, resumeTitle, jobTitle } = req.body;
+
+    // Validate input
+    if (!overallScore || typeof overallScore !== 'number' || overallScore < 0 || overallScore > 100) {
+        logger.warn('Invalid overall score provided for score storage.', { userId, overallScore });
+        return sendErrorResponse(res, 400, 'Invalid overall score. Must be a number between 0 and 100.');
+    }
+
+    try {
+        // Check if we should store this score (only if different from previous)
+        const shouldStore = await AtsHistoryScore.shouldStoreScore(userId, overallScore, detailedScores);
+        
+        logger.info(`Score storage check for user ${userId}:`, {
+            overallScore,
+            shouldStore,
+            timestamp: new Date().toISOString()
+        });
+        
+        if (!shouldStore) {
+            logger.info(`ATS score unchanged for user ${userId}, skipping storage.`, { 
+                overallScore,
+                reason: 'Score change below tolerance threshold (1%)'
+            });
+            return res.status(200).json({
+                success: true,
+                message: 'Score unchanged from previous analysis, not stored.',
+                stored: false,
+                reason: 'Score difference is below the significance threshold'
+            });
+        }
+
+        // Create corresponding ATS Analysis record first (required for analysisId reference)
+        const analysisData = {
+            overallScore,
+            detailedScores: detailedScores || {},
+            resumeTitle: resumeTitle || 'Analyzed Resume',
+            jobTitle: jobTitle || 'Job Analysis',
+            analysisDate: new Date()
+        };
+
+        const newAnalysis = new AtsAnalysis({
+            userId: userId,
+            resumeTitle: resumeTitle || 'Analyzed Resume',
+            jobTitle: jobTitle || 'Job Analysis',
+            analysisDate: new Date(),
+            summary: {
+                matchScore: overallScore,
+                keywordCount: 0 // Default value for score-only storage
+            },
+            reportData: JSON.stringify(analysisData) // Store the score data as report
+        });
+
+        await newAnalysis.save();
+        logger.info('ATS analysis record created for score storage.', { userId, analysisId: newAnalysis._id });
+
+        // Create new score entry with the analysisId reference
+        const newScoreEntry = new AtsHistoryScore({
+            userId: userId,
+            overallScore: overallScore,
+            detailedScores: detailedScores || {},
+            resumeTitle: resumeTitle || 'Analyzed Resume',
+            jobTitle: jobTitle || 'Job Analysis',
+            analysisDate: new Date(),
+            analysisId: newAnalysis._id // Required field
+        });
+
+        await newScoreEntry.save();
+        logger.info(`ATS score stored successfully for user ${userId}.`, { 
+            overallScore, 
+            scoreId: newScoreEntry._id,
+            analysisId: newAnalysis._id
+        });
+
+        res.status(201).json({
+            success: true,
+            message: 'ATS score stored successfully.',
+            stored: true,
+            scoreId: newScoreEntry._id,
+            analysisId: newAnalysis._id,
+            data: {
+                overallScore: newScoreEntry.overallScore,
+                detailedScores: newScoreEntry.detailedScores,
+                analysisDate: newScoreEntry.analysisDate
+            }
+        });
+
+    } catch (error) {
+        logger.error('Error storing ATS score:', { 
+            userId, 
+            errorMessage: error.message, 
+            stack: error.stack 
+        });
+        sendErrorResponse(res, 500, 'Server error. Could not store ATS score.');
     }
 };
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, FileText, Target, Zap, CheckCircle, AlertCircle, TrendingUp, Shield, Star } from 'lucide-react';
-import DashboardLayout from '../../components/layouts/DashboardLayout';
 import ResumeUploader from '../../components/ats/ResumeUploader';
 import Button from '../../components/common/Button';
 import Card from '../../components/common/Card';
@@ -98,6 +97,11 @@ const AtsTracker = () => {
 
         try {
             console.log('Starting analysis for:', resumeFile.name);
+            
+            // Store filename and job description for later use in results page
+            localStorage.setItem('uploadedFileName', resumeFile.name);
+            localStorage.setItem('jobDescription', jobDescription);
+            
             const analysisResult = await analyzeResumeOnBackend(resumeFile, jobDescription);
             console.log('Analysis completed:', analysisResult);
             
@@ -166,7 +170,7 @@ const AtsTracker = () => {
     }
 
     return (
-        <DashboardLayout>
+        <div>
             <div className={`min-h-screen transition-colors duration-300 ${
                 isDark
                     ? 'bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900'
@@ -426,7 +430,7 @@ const AtsTracker = () => {
                     </div>
                 </div>
             </div>
-        </DashboardLayout>
+        </div>
     );
 };
 

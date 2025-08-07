@@ -51,19 +51,31 @@ router.post(
     '/upload',
     passport.authenticate('jwt', { session: false }),
     uploadResume,
-    resumeController.uploadResumeToCloudinary
+    resumeController.uploadResumeToMongoDB
 );
 
 router.get(
-    '/cloudinary',
+    '/list',
     passport.authenticate('jwt', { session: false }),
-    resumeController.listCloudinaryResumes
+    resumeController.listMongoDBResumes
+);
+
+router.get(
+    '/pdf/:id',
+    passport.authenticate('jwt', { session: false }),
+    resumeController.getResumePDF
+);
+
+router.get(
+    '/download/:id',
+    passport.authenticate('jwt', { session: false }),
+    resumeController.downloadResumePDF
 );
 
 router.delete(
-    '/cloudinary/:resumeId',
+    '/pdf/:id',
     passport.authenticate('jwt', { session: false }),
-    resumeController.deleteCloudinaryResume
+    resumeController.deleteResumePDF
 );
 
 module.exports = router;

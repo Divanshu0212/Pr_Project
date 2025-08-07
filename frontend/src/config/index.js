@@ -183,6 +183,26 @@ const SummaryApi = {
         analytics: {
             url: "http://localhost:8001/analytics",
             method: "GET"
+        },
+        history: {
+            url: `${BACKEND_DOMAIN}/api/ats/history`,
+            method: "GET"
+        },
+        scoreHistory: {
+            url: `${BACKEND_DOMAIN}/api/ats/score-history`,
+            method: "GET"
+        },
+        scoreTrends: {
+            url: `${BACKEND_DOMAIN}/api/ats/score-trends`,
+            method: "GET"
+        },
+        delete: {
+            url: (id) => `${BACKEND_DOMAIN}/api/ats/analysis/${id}`,
+            method: "DELETE"
+        },
+        storeScore: {
+            url: `${BACKEND_DOMAIN}/api/ats/store-score`,
+            method: "POST"
         }
     },
     resumes: {
@@ -215,13 +235,35 @@ const SummaryApi = {
             url: `${BACKEND_DOMAIN}/api/resumes/upload`,
             method: "POST"
         },
-        getResume: {
-            url: `${BACKEND_DOMAIN}/api/resumes/cloudinary`,
+        list: {
+            url: `${BACKEND_DOMAIN}/api/resumes/list`,
             method: "GET"
         },
-        deleteResume: {
-            url: (resumeId) => `${BACKEND_DOMAIN}/api/resumes/cloudinary/${resumeId}`,
+        getPdf: {
+            url: (id) => `${BACKEND_DOMAIN}/api/resumes/pdf/${id}`,
+            method: "GET"
+        },
+        downloadPdf: {
+            url: (id) => `${BACKEND_DOMAIN}/api/resumes/download/${id}`,
+            method: "GET"
+        },
+        deletePdf: {
+            url: (id) => `${BACKEND_DOMAIN}/api/resumes/pdf/${id}`,
             method: "DELETE"
+        }
+    },
+    candidates: {
+        search: {
+            url: `${BACKEND_DOMAIN}/api/candidates/search`,
+            method: "GET"
+        },
+        stats: {
+            url: `${BACKEND_DOMAIN}/api/candidates/stats`,
+            method: "GET"
+        },
+        profile: {
+            url: (id) => `${BACKEND_DOMAIN}/api/candidates/${id}`,
+            method: "GET"
         }
     }
 };

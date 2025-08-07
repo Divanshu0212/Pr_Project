@@ -34,4 +34,24 @@ router.delete('/analysis/:analysisId', auth, atsController.deleteAtsAnalysis);
 // Changed to POST to receive text in body, GET with query params is less ideal for larger texts
 router.post('/keywords', auth, atsController.getKeywords);
 
+// @route   GET /api/ats/score-history
+// @desc    Get ATS score history for graph visualization
+// @access  Private
+router.get('/score-history', auth, atsController.getAtsScoreHistory);
+
+// @route   GET /api/ats/score-trends
+// @desc    Get ATS score trends and analytics
+// @access  Private
+router.get('/score-trends', auth, atsController.getAtsScoreTrends);
+
+// @route   GET /api/ats/score-config
+// @desc    Get current ATS score storage configuration
+// @access  Private
+router.get('/score-config', auth, atsController.getScoreConfig);
+
+// @route   POST /api/ats/store-score
+// @desc    Store ATS score for tracking (only if different from previous)
+// @access  Private
+router.post('/store-score', auth, atsController.storeAtsScore);
+
 module.exports = router;

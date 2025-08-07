@@ -527,8 +527,8 @@ const ResumeOptimizer = () => {
         });
     };
 
-    // Function to upload resume to Cloudinary and MongoDB
-    const uploadResumeToCloudinaryAndDB = async (optimizationData) => {
+    // Function to upload resume to MongoDB blob storage
+    const uploadResumeToMongoDBStorage = async (optimizationData) => {
         try {
             // First, get the PDF from the optimization service
             const pdfResponse = await fetch(`http://0.0.0.0:8000/api/resume/${optimizationData.resume_id}/pdf`);
@@ -551,13 +551,19 @@ const ResumeOptimizer = () => {
                 suggestions: optimizationData.suggestions
             }));
 
-            // Upload to Cloudinary and save to MongoDB
+            // Upload to MongoDB blob storage
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('No authentication token found. Please log in again.');
+            }
+
             const uploadResponse = await axios.post(
                 SummaryApi.resumes.upload.url,
                 formData,
                 {
                     headers: {
                         'Content-Type': 'multipart/form-data',
+                        'Authorization': `Bearer ${token}`
                     },
                     withCredentials: true
                 }
@@ -565,7 +571,7 @@ const ResumeOptimizer = () => {
 
             return uploadResponse.data;
         } catch (error) {
-            console.error('Upload to Cloudinary/MongoDB failed:', error);
+            console.error('Upload to MongoDB failed:', error);
             
             // Provide more specific error messages
             if (error.response?.status === 401) {
@@ -637,18 +643,18 @@ const ResumeOptimizer = () => {
                 const optimizationData = await response.json();
                 setOptimizationResult(optimizationData);
 
-                // Upload the resume to Cloudinary and MongoDB
+                // Upload the resume to MongoDB blob storage
                 try {
-                    const uploadResult = await uploadResumeToCloudinaryAndDB(optimizationData);
+                    const uploadResult = await uploadResumeToMongoDBStorage(optimizationData);
                     console.log('Resume uploaded successfully:', uploadResult);
                     
                     // Update the optimization result with upload information
                     setOptimizationResult(prev => ({
                         ...prev,
                         uploadSuccess: true,
-                        cloudinaryUrl: uploadResult.url,
-                        mongodbId: uploadResult.databaseId,
-                        cloudinaryPublicId: uploadResult.public_id,
+                        mongodbPdfId: uploadResult.databaseId,
+                        mongodbFilename: uploadResult.filename,
+                        mongodbSize: uploadResult.size,
                         uploadMessage: 'Resume saved to your portfolio successfully!'
                     }));
                 } catch (uploadError) {
@@ -1306,7 +1312,7 @@ const ResumeOptimizer = () => {
                                     <span className="mr-2">✅</span>
                                     <span>{optimizationResult.uploadMessage}</span>
                                 </div>
-                                {optimizationResult.cloudinaryUrl && (
+                                {optimizationResult.mongodbPdfId && (
                                     <p className="text-sm mt-1">Your resume is now saved in your portfolio.</p>
                                 )}
                             </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useContext, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
     ArrowLeft, 
@@ -13,25 +13,274 @@ import {
     BarChart3,
     Download
 } from 'lucide-react';
-import DashboardLayout from '../../components/layouts/DashboardLayout';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import CodingProfilesSection from '../../components/CodingProfilesClean';
 import { useTheme } from '../../context/ThemeContext';
+import { AuthContext } from '../../context/AuthContext';
+import SummaryApi from '../../config';
+
+// Simple markdown renderer for AI text
+const renderMarkdownText = (text, isDark) => {
+    if (!text || typeof text !== 'string') return text;
+
+    // Split text into lines to handle better formatting
+    const lines = text.split('\n');
+    
+    return lines.map((line, lineIndex) => {
+        let processedLine = line;
+        
+        // Handle headers (# ## ###)
+        const headerMatch = processedLine.match(/^(#{1,3})\s(.+)$/);
+        if (headerMatch) {
+            const level = headerMatch[1].length;
+            const headerText = headerMatch[2];
+            const className = `font-bold ${
+                level === 1 ? 'text-xl' : level === 2 ? 'text-lg' : 'text-base'
+            } mb-2 mt-4 ${isDark ? 'text-white' : 'text-gray-800'}`;
+            
+            return (
+                <div key={lineIndex} className={className}>
+                    {renderInlineMarkdown(headerText)}
+                </div>
+            );
+        }
+        
+        // Handle bullet points
+        const bulletMatch = processedLine.match(/^[\s]*[-*+]\s(.+)$/);
+        if (bulletMatch) {
+            return (
+                <div key={lineIndex} className="flex items-start mb-1">
+                    <span className={`mr-2 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>•</span>
+                    <span className={`${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                        {renderInlineMarkdown(bulletMatch[1])}
+                    </span>
+                </div>
+            );
+        }
+        
+        // Handle numbered lists
+        const numberedMatch = processedLine.match(/^[\s]*\d+\.\s(.+)$/);
+        if (numberedMatch) {
+            return (
+                <div key={lineIndex} className={`mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                    {renderInlineMarkdown(numberedMatch[1])}
+                </div>
+            );
+        }
+        
+        // Regular paragraph
+        if (processedLine.trim()) {
+            return (
+                <div key={lineIndex} className={`mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                    {renderInlineMarkdown(processedLine)}
+                </div>
+            );
+        }
+        
+        // Empty line
+        return <br key={lineIndex} />;
+    });
+};
+
+// Handle inline markdown (bold, italic, etc.)
+const renderInlineMarkdown = (text) => {
+    if (!text || typeof text !== 'string') return text;
+    
+    const parts = [];
+    let currentIndex = 0;
+    
+    // Handle **bold** text
+    const boldRegex = /\*\*(.*?)\*\*/g;
+    let match;
+    
+    while ((match = boldRegex.exec(text)) !== null) {
+        // Add text before the match
+        if (match.index > currentIndex) {
+            parts.push(processItalicAndOther(text.slice(currentIndex, match.index)));
+        }
+        
+        // Add bold text
+        parts.push(
+            <strong key={`bold-${match.index}`} className="font-bold">
+                {processItalicAndOther(match[1])}
+            </strong>
+        );
+        
+        currentIndex = match.index + match[0].length;
+    }
+    
+    // Add remaining text
+    if (currentIndex < text.length) {
+        parts.push(processItalicAndOther(text.slice(currentIndex)));
+    }
+    
+    return parts.length > 0 ? parts : processItalicAndOther(text);
+};
+
+// Handle italic and other formatting
+const processItalicAndOther = (text) => {
+    if (!text || typeof text !== 'string') return text;
+    
+    // Handle *italic* text
+    const italicRegex = /(?<!\*)\*(?!\*)([^*]+)\*(?!\*)/g;
+    const parts = [];
+    let currentIndex = 0;
+    let match;
+    
+    while ((match = italicRegex.exec(text)) !== null) {
+        // Add text before the match
+        if (match.index > currentIndex) {
+            parts.push(text.slice(currentIndex, match.index));
+        }
+        
+        // Add italic text
+        parts.push(
+            <em key={`italic-${match.index}`} className="italic">
+                {match[1]}
+            </em>
+        );
+        
+        currentIndex = match.index + match[0].length;
+    }
+    
+    // Add remaining text
+    if (currentIndex < text.length) {
+        parts.push(text.slice(currentIndex));
+    }
+    
+    return parts.length > 0 ? parts : text;
+};
 
 const AtsResults = () => {
     const { isDark } = useTheme();
+    const { currentUser, isAuthenticated } = useContext(AuthContext);
     const navigate = useNavigate();
     const [analysisData, setAnalysisData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const scoreStorageAttempted = useRef(false); // Ref to track if we've attempted storage
+
+    // Function to extract job title from analysis data
+    const extractJobTitle = (analysisData) => {
+        try {
+            // Try to extract from various possible fields
+            if (analysisData.job_title) return analysisData.job_title;
+            if (analysisData.jobTitle) return analysisData.jobTitle;
+            if (analysisData.position) return analysisData.position;
+            
+            // Try to extract from job description if available
+            const jobDesc = localStorage.getItem('jobDescription');
+            if (jobDesc) {
+                // Look for common job title patterns at the beginning
+                const titlePatterns = [
+                    /^(.{1,50}?)(?:\s*-|\s*\||\s*at\s)/i,
+                    /(?:job title|position|role):\s*(.{1,50}?)(?:\n|$)/i,
+                    /^([A-Z][^.\n]{5,50}?)(?:\n|$)/
+                ];
+                
+                for (const pattern of titlePatterns) {
+                    const match = jobDesc.match(pattern);
+                    if (match && match[1]) {
+                        return match[1].trim();
+                    }
+                }
+            }
+            
+            return 'Job Analysis';
+        } catch (error) {
+            console.error('Error extracting job title:', error);
+            return 'Job Analysis';
+        }
+    };
+
+    // Function to store ATS score to backend
+    const storeAtsScore = useCallback(async (analysisData) => {
+        try {
+            // Prevent duplicate storage
+            if (scoreStorageAttempted.current) {
+                console.log('Score storage already attempted for this analysis, skipping');
+                return;
+            }
+
+            // Check if user is authenticated
+            if (!isAuthenticated || !currentUser) {
+                console.log('User not authenticated, skipping score storage');
+                return;
+            }
+
+            // Check if we have valid analysis data
+            if (!analysisData || !analysisData.overall_score) {
+                console.log('No valid analysis data to store');
+                return;
+            }
+
+            // Mark as attempted to prevent duplicates
+            scoreStorageAttempted.current = true;
+
+            // Prepare score data for backend
+            const scoreData = {
+                overallScore: analysisData.overall_score,
+                detailedScores: analysisData.detailed_scores || {},
+                resumeTitle: localStorage.getItem('uploadedFileName') || 'Analyzed Resume',
+                jobTitle: extractJobTitle(analysisData) || 'Job Analysis',
+                analysisDate: new Date().toISOString()
+            };
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.log('No authentication token found, skipping score storage');
+                return;
+            }
+
+            // Make API call to store the score
+            const response = await fetch(SummaryApi.ats.storeScore.url, {
+                method: SummaryApi.ats.storeScore.method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(scoreData)
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log('ATS score stored successfully:', result);
+            } else {
+                const errorData = await response.json();
+                console.log('Score storage response:', errorData.message || 'Score not stored (may be duplicate)');
+                
+                // If unauthorized, redirect to login
+                if (response.status === 401) {
+                    console.warn('Authentication failed. User may need to log in again.');
+                    // Optionally redirect to login or show a message
+                }
+            }
+        } catch (error) {
+            console.error('Error storing ATS score:', error);
+            // Don't show error to user, just log it
+        }
+    }, [isAuthenticated, currentUser]);
 
     useEffect(() => {
+        // Reset storage attempt flag when component mounts
+        scoreStorageAttempted.current = false;
+        
         // Get analysis result from localStorage
         const storedResult = localStorage.getItem('atsAnalysisResult');
         if (storedResult) {
             try {
                 const data = JSON.parse(storedResult);
                 setAnalysisData(data);
+                
+                // Create a unique identifier for this analysis to prevent storing the same analysis multiple times
+                const analysisId = `${data.overall_score}_${data.analysis_timestamp}_${JSON.stringify(data.detailed_scores)}`;
+                const lastStoredAnalysisId = localStorage.getItem('lastStoredAnalysisId');
+                
+                // Only store if this is a different analysis or we haven't attempted storage yet
+                if (lastStoredAnalysisId !== analysisId && !scoreStorageAttempted.current && isAuthenticated && currentUser) {
+                    localStorage.setItem('lastStoredAnalysisId', analysisId);
+                    storeAtsScore(data);
+                }
             } catch (error) {
                 console.error('Error parsing analysis result:', error);
                 navigate('/ats');
@@ -40,7 +289,22 @@ const AtsResults = () => {
             navigate('/ats');
         }
         setLoading(false);
-    }, [navigate]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [navigate]); // Intentionally limited dependencies to prevent infinite loop
+
+    // Separate effect to handle score storage when auth state changes
+    useEffect(() => {
+        if (analysisData && !scoreStorageAttempted.current && isAuthenticated && currentUser) {
+            // Double-check with the unique identifier
+            const analysisId = `${analysisData.overall_score}_${analysisData.analysis_timestamp}_${JSON.stringify(analysisData.detailed_scores)}`;
+            const lastStoredAnalysisId = localStorage.getItem('lastStoredAnalysisId');
+            
+            if (lastStoredAnalysisId !== analysisId) {
+                localStorage.setItem('lastStoredAnalysisId', analysisId);
+                storeAtsScore(analysisData);
+            }
+        }
+    }, [isAuthenticated, currentUser, analysisData, storeAtsScore]);
 
     const getScoreColor = (score) => {
         if (score >= 85) return 'text-green-500';
@@ -76,17 +340,17 @@ const AtsResults = () => {
 
     if (loading) {
         return (
-            <DashboardLayout>
+            <div>
                 <div className="flex items-center justify-center min-h-screen">
                     <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
                 </div>
-            </DashboardLayout>
+            </div>
         );
     }
 
     if (!analysisData) {
         return (
-            <DashboardLayout>
+            <div>
                 <div className="flex items-center justify-center min-h-screen">
                     <Card className="p-8 text-center">
                         <AlertTriangle className="w-16 h-16 text-orange-500 mx-auto mb-4" />
@@ -97,12 +361,12 @@ const AtsResults = () => {
                         </Button>
                     </Card>
                 </div>
-            </DashboardLayout>
+            </div>
         );
     }
 
     return (
-        <DashboardLayout>
+        <div>
             <div className={`min-h-screen transition-colors duration-300 ${
                 isDark
                     ? 'bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900'
@@ -324,8 +588,8 @@ const AtsResults = () => {
                                                     </h4>
                                                     <div className={`p-4 rounded-lg ${isDark ? 'bg-purple-500/10 border border-purple-500/30' : 'bg-purple-50 border border-purple-200'}`}>
                                                         {feedbackList.map((feedback, index) => (
-                                                            <div key={index} className={`text-sm leading-relaxed whitespace-pre-wrap ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                                {feedback.replace(/^🤖\s*/, '')}
+                                                            <div key={index} className={`text-sm leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                {renderMarkdownText(feedback.replace(/^🤖\s*/, ''), isDark)}
                                                             </div>
                                                         ))}
                                                     </div>
@@ -470,10 +734,10 @@ const AtsResults = () => {
                                 }`}>
                                     {analysisData.feedback["AI Analysis"].map((recommendation, index) => (
                                         <div key={index} className={`prose max-w-none ${isDark ? 'prose-invert' : ''}`}>
-                                            <div className={`text-sm leading-relaxed whitespace-pre-wrap ${
+                                            <div className={`text-sm leading-relaxed ${
                                                 isDark ? 'text-gray-300' : 'text-gray-700'
                                             }`}>
-                                                {recommendation.replace(/^🤖\s*/, '')}
+                                                {renderMarkdownText(recommendation.replace(/^🤖\s*/, ''), isDark)}
                                             </div>
                                         </div>
                                     ))}
@@ -503,7 +767,7 @@ const AtsResults = () => {
                                                 Executive Summary
                                             </h3>
                                             <p className={`text-lg mb-4 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                {analysisData.detailed_insights.executive_summary.message}
+                                                {renderMarkdownText(analysisData.detailed_insights.executive_summary.message, isDark)}
                                             </p>
                                             
                                             {/* Strengths and Weaknesses */}
@@ -859,7 +1123,7 @@ const AtsResults = () => {
                     )}
                 </div>
             </div>
-        </DashboardLayout>
+        </div>
     );
 };
 

@@ -29,14 +29,19 @@ const certificateRoutes = require('./routes/certificate');
 const experienceRoutes = require('./routes/experience');
 const resumeRoutes = require('./routes/resume');
 const atsRoutes = require('./routes/ats');
+const candidateRoutes = require('./routes/candidates');
 
 // Import the centralized error handling middleware
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
-// Connect Database
-connectDB();
+// Connect Database with error handling
+connectDB().catch(err => {
+    logger.error('Failed to connect to MongoDB:', err);
+    console.error('❌ Failed to connect to MongoDB. Server will continue but database operations will fail.');
+    // Server continues to run but database operations will fail gracefully
+});
 
 // --- Core Security & Hardening Middleware ---
 
@@ -130,6 +135,7 @@ app.use('/api/certificates', certificateRoutes);
 app.use('/api/experiences', experienceRoutes);
 app.use('/api/resumes', resumeRoutes);
 app.use('/api/ats', atsRoutes); // Mount ATS routes
+app.use('/api/candidates', candidateRoutes); // Mount candidate search routes
 logger.info('All API routes registered.');
 
 // 404 Not Found Handler - Catches requests to undefined routes

@@ -2,10 +2,6 @@ const Resume = require('../models/Resume');
 const Joi = require('joi');
 const JoiDate = require('@joi/date');
 const mongoose = require('mongoose');
-const { cloudinary, validateConfig,
-    uploadResume,
-    deleteResume,
-    listUserResumes } = require('../config/cloudinaryResume');
 const fs = require('fs');
 const path = require('path');
 const { console } = require('inspector');
@@ -127,27 +123,15 @@ exports.createResume = async (req, res) => {
             resumeData: JSON.stringify(validatedResumeData), // Store validated data as string
         });
 
-        // Handle file upload if present
+        // Handle file upload if present - store in MongoDB as blob
         if (req.file) {
             try {
-                const uploadResult = await new Promise((resolve, reject) => {
-                    const uploadStream = cloudinary.uploader.upload_stream(
-                        {
-                            resource_type: 'raw',
-                            folder: `resumes/${userId}`,
-                            public_id: `${title}_${Date.now()}`
-                        },
-                        (error, result) => {
-                            if (error) return reject(error);
-                            resolve(result);
-                        }
-                    );
-                    uploadStream.end(req.file.buffer);
-                });
-
-                newResume.cloudinaryResumes = {
-                    public_id: uploadResult.public_id,
-                    url: uploadResult.secure_url,
+                // Store PDF data directly in MongoDB
+                newResume.pdfData = {
+                    filename: req.file.originalname || `${title}_${Date.now()}.pdf`,
+                    contentType: req.file.mimetype || 'application/pdf',
+                    data: req.file.buffer,
+                    size: req.file.buffer.length,
                     uploadedAt: new Date()
                 };
             } catch (uploadError) {
@@ -202,6 +186,12 @@ exports.getAllResumes = async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching resumes:', error.message);
+        
+        // Handle specific MongoDB connection errors
+        if (error.name === 'MongoServerSelectionError' || error.name === 'MongoNetworkError') {
+            return sendErrorResponse(res, 503, 'Database temporarily unavailable. Please try again later.');
+        }
+        
         sendErrorResponse(res, 500, 'Server error. Could not retrieve resumes.');
     }
 };
@@ -315,27 +305,14 @@ exports.deleteResume = async (req, res) => {
     }
 
     try {
-        // Find the resume first to get Cloudinary info
+        // Find the resume first 
         const resume = await Resume.findOne({ _id: id, userId });
 
         if (!resume) {
             return sendErrorResponse(res, 404, 'Resume not found or not authorized.');
         }
 
-        // Delete from Cloudinary if exists
-        if (resume.cloudinaryResumes && resume.cloudinaryResumes.public_id) {
-            try {
-                await cloudinary.uploader.destroy(resume.cloudinaryResumes.public_id, {
-                    resource_type: 'raw'
-                });
-                console.log(`Deleted Cloudinary file: ${resume.cloudinaryResumes.public_id}`);
-            } catch (cloudinaryError) {
-                console.error('Error deleting from Cloudinary:', cloudinaryError);
-                // Continue with database deletion even if Cloudinary deletion fails
-            }
-        }
-
-        // Delete from database
+        // Delete from database (PDF data is stored in MongoDB, so it will be deleted automatically)
         const result = await Resume.deleteOne({ _id: id, userId });
 
         if (result.deletedCount === 0) {
@@ -383,9 +360,9 @@ exports.getDefaultResume = (req, res) => {
 // @desc    Upload a resume PDF to Cloudinary
 // @access  Private
 // @route   POST /api/resumes/upload
-// @desc    Upload a resume PDF to Cloudinary and save metadata to database
+// @desc    Upload a resume PDF to MongoDB blob storage and save metadata to database
 // @access  Private
-exports.uploadResumeToCloudinary = async (req, res) => {
+exports.uploadResumeToMongoDB = async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({
@@ -397,22 +374,23 @@ exports.uploadResumeToCloudinary = async (req, res) => {
         const userId = req.user.id;
         const resumeId = req.body.resumeId || `resume_${Date.now()}`;
 
-        // Process the file buffer and upload to Cloudinary
-        const uploadResult = await new Promise((resolve, reject) => {
-            const uploadStream = cloudinary.uploader.upload_stream(
-                {
-                    resource_type: 'raw',
-                    folder: `resumes/${userId}`,
-                    public_id: resumeId.length === 24 ? `resume_${Date.now()}` : resumeId // Use timestamp for ObjectIds
-                },
-                (error, result) => {
-                    if (error) return reject(error);
-                    resolve(result);
-                }
-            );
+        // Validate file type
+        const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        if (!allowedTypes.includes(req.file.mimetype)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid file type. Only PDF, DOC, and DOCX files are allowed.'
+            });
+        }
 
-            uploadStream.end(req.file.buffer);
-        });
+        // Validate file size (e.g., max 10MB)
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        if (req.file.buffer.length > maxSize) {
+            return res.status(400).json({
+                success: false,
+                message: 'File size too large. Maximum size is 10MB.'
+            });
+        }
 
         let resume;
 
@@ -428,10 +406,12 @@ exports.uploadResumeToCloudinary = async (req, res) => {
                 });
             }
 
-            // Update existing resume with Cloudinary info
-            resume.cloudinaryResumes = {
-                public_id: uploadResult.public_id,
-                url: uploadResult.secure_url,
+            // Update existing resume with PDF blob data
+            resume.pdfData = {
+                filename: req.file.originalname || `resume_${Date.now()}.pdf`,
+                contentType: req.file.mimetype,
+                data: req.file.buffer,
+                size: req.file.buffer.length,
                 uploadedAt: new Date()
             };
             await resume.save();
@@ -443,10 +423,12 @@ exports.uploadResumeToCloudinary = async (req, res) => {
             });
 
             if (existingResume) {
-                // Update existing resume with Cloudinary info
-                existingResume.cloudinaryResumes = {
-                    public_id: uploadResult.public_id,
-                    url: uploadResult.secure_url,
+                // Update existing resume with PDF blob data
+                existingResume.pdfData = {
+                    filename: req.file.originalname || `resume_${Date.now()}.pdf`,
+                    contentType: req.file.mimetype,
+                    data: req.file.buffer,
+                    size: req.file.buffer.length,
                     uploadedAt: new Date()
                 };
                 await existingResume.save();
@@ -471,9 +453,11 @@ exports.uploadResumeToCloudinary = async (req, res) => {
                         achievements: [],
                         coding_profiles: []
                     }),
-                    cloudinaryResumes: {
-                        public_id: uploadResult.public_id,
-                        url: uploadResult.secure_url,
+                    pdfData: {
+                        filename: req.file.originalname || `resume_${Date.now()}.pdf`,
+                        contentType: req.file.mimetype,
+                        data: req.file.buffer,
+                        size: req.file.buffer.length,
                         uploadedAt: new Date()
                     }
                 });
@@ -483,9 +467,9 @@ exports.uploadResumeToCloudinary = async (req, res) => {
 
         res.status(200).json({
             success: true,
-            message: 'Resume uploaded successfully',
-            url: uploadResult.secure_url,
-            public_id: uploadResult.public_id,
+            message: 'Resume uploaded successfully to MongoDB',
+            filename: resume.pdfData.filename,
+            size: resume.pdfData.size,
             resumeId: resumeId,
             databaseId: resume._id
         });
@@ -500,16 +484,104 @@ exports.uploadResumeToCloudinary = async (req, res) => {
     }
 };
 
-// @route   GET /api/resumes/cloudinary
-exports.listCloudinaryResumes = async (req, res) => {
+// @route   GET /api/resumes/pdf/:id
+// @desc    Serve PDF file from MongoDB blob storage
+// @access  Private
+exports.getResumePDF = async (req, res) => {
+    const userId = req.user.id;
+    const { id } = req.params;
+
+    // Validate MongoDB ID format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return sendErrorResponse(res, 400, 'Invalid resume ID format.');
+    }
+
+    try {
+        const resume = await Resume.findOne({ _id: id, userId });
+
+        if (!resume || !resume.pdfData || !resume.pdfData.data) {
+            return res.status(404).json({
+                success: false,
+                message: 'PDF not found for this resume'
+            });
+        }
+
+        // Set appropriate headers for PDF response
+        res.setHeader('Content-Type', resume.pdfData.contentType || 'application/pdf');
+        res.setHeader('Content-Length', resume.pdfData.size);
+        res.setHeader('Content-Disposition', `inline; filename="${resume.pdfData.filename}"`);
+        
+        // Send the PDF data
+        res.send(resume.pdfData.data);
+
+    } catch (error) {
+        console.error('Error serving PDF:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while retrieving PDF'
+        });
+    }
+};
+
+// @route   GET /api/resumes/download/:id
+// @desc    Download PDF file from MongoDB blob storage
+// @access  Private
+exports.downloadResumePDF = async (req, res) => {
+    const userId = req.user.id;
+    const { id } = req.params;
+
+    // Validate MongoDB ID format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return sendErrorResponse(res, 400, 'Invalid resume ID format.');
+    }
+
+    try {
+        const resume = await Resume.findOne({ _id: id, userId });
+
+        if (!resume || !resume.pdfData || !resume.pdfData.data) {
+            return res.status(404).json({
+                success: false,
+                message: 'PDF not found for this resume'
+            });
+        }
+
+        // Set appropriate headers for download
+        res.setHeader('Content-Type', resume.pdfData.contentType || 'application/pdf');
+        res.setHeader('Content-Length', resume.pdfData.size);
+        res.setHeader('Content-Disposition', `attachment; filename="${resume.pdfData.filename}"`);
+        
+        // Send the PDF data
+        res.send(resume.pdfData.data);
+
+    } catch (error) {
+        console.error('Error downloading PDF:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while downloading PDF'
+        });
+    }
+};
+
+// @route   GET /api/resumes/list
+exports.listMongoDBResumes = async (req, res) => {
     const userId = req.user.id;
     try {
-        // Use the new listUserResumes function
-        const resumes = await listUserResumes(userId);
+        const resumes = await Resume.find({ userId }).select('_id title pdfData.filename pdfData.size pdfData.uploadedAt createdAt');
+        
+        const resumeList = resumes.map(resume => ({
+            resume_id: resume._id,
+            title: resume.title,
+            filename: resume.pdfData?.filename || null,
+            size: resume.pdfData?.size || null,
+            has_pdf: !!resume.pdfData?.data,
+            uploaded_at: resume.pdfData?.uploadedAt || resume.createdAt,
+            created_at: resume.createdAt
+        }));
+
         res.status(200).json({
             success: true,
-            count: resumes.length,
-            resumes
+            count: resumeList.length,
+            resumes: resumeList
         });
     } catch (error) {
         console.error('List error:', error.message);
@@ -517,21 +589,43 @@ exports.listCloudinaryResumes = async (req, res) => {
     }
 };
 
-// @route   DELETE /api/resumes/cloudinary/:resumeId
-exports.deleteCloudinaryResume = async (req, res) => {
+// @route   DELETE /api/resumes/pdf/:id
+// @desc    Delete PDF data from a resume (keep the resume but remove PDF)
+// @access  Private
+exports.deleteResumePDF = async (req, res) => {
     const userId = req.user.id;
-    const { resumeId } = req.params;
+    const { id } = req.params;
+
+    // Validate MongoDB ID format
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return sendErrorResponse(res, 400, 'Invalid resume ID format.');
+    }
 
     try {
-        // Use the new deleteResume function
-        const result = await deleteResume(`resumes/${userId}/${resumeId}`);
+        const resume = await Resume.findOne({ _id: id, userId });
 
-        if (result.success) {
-            return res.status(200).json(result);
+        if (!resume) {
+            return sendErrorResponse(res, 404, 'Resume not found or not authorized.');
         }
-        sendErrorResponse(res, 404, result.message);
+
+        if (!resume.pdfData || !resume.pdfData.data) {
+            return res.status(404).json({
+                success: false,
+                message: 'No PDF found for this resume'
+            });
+        }
+
+        // Remove PDF data but keep the resume
+        resume.pdfData = undefined;
+        await resume.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'PDF deleted successfully from resume'
+        });
+
     } catch (error) {
-        console.error('Delete error:', error.message);
-        sendErrorResponse(res, 500, error.message);
+        console.error('Error deleting PDF:', error);
+        sendErrorResponse(res, 500, 'Server error while deleting PDF');
     }
 };

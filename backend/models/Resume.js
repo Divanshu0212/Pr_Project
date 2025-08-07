@@ -44,6 +44,17 @@ const ResumeSchema = new mongoose.Schema({
             type: Date,
             default: Date.now
         }
+    },
+    // MongoDB Blob Storage for PDF
+    pdfData: {
+        filename: String,
+        contentType: String,
+        data: Buffer,
+        size: Number,
+        uploadedAt: {
+            type: Date,
+            default: Date.now
+        }
     }
 }, {
     timestamps: true, // Adds createdAt and updatedAt automatically

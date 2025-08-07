@@ -128,7 +128,7 @@ const ExperienceForm = ({ onClose, onSubmit, initialData }) => {
   };
 
   return (
-    <Modal onClose={onClose} className="experience-form-modal">
+    <Modal onClose={onClose} className="experience-form-modal" isOpen={true} title={initialData ? 'Edit Experience' : 'Add Experience'}>
       <div className="experience-form-container">
         {/* Animated background gradient */}
         <div className="form-background-gradient" />

@@ -1207,11 +1207,11 @@ class AdvancedATSAnalyzer:
         
         # Quantifiable achievements
         number_patterns = [
-            r'\d+%',  # Percentages
-            r'\$\d+[,\d]*',  # Dollar amounts
-            r'\d+[,\d]*\+?\s*(users|customers|employees|projects)',  # Numbers with units
-            r'increased|decreased|improved|reduced.*?\d+',  # Achievement metrics
-        ]
+    r'\d+%',  # Percentages
+    r'[\$₹]\d+[,\d]*',  # Dollar or Rupee amounts
+    r'\d+[,\d]*\+?\s*(users|customers|employees|projects)',  # Numbers with units
+    r'increased|decreased|improved|reduced.*?\d+',  # Achievement metrics
+]
         
         quantifiable_count = 0
         for pattern in number_patterns:
@@ -1266,11 +1266,9 @@ class AdvancedATSAnalyzer:
         for mistake, correct in common_mistakes.items():
             if mistake in text.lower():
                 spelling_errors += 1
-        
-        # Grammar pattern checks
+
         grammar_issues = 0
-        
-        # Check for common grammar issues
+
         grammar_patterns = [
             r'\bi\s+am\b',  # Should be capitalized
             r'\s{2,}',      # Multiple spaces
@@ -1319,7 +1317,7 @@ class AdvancedATSAnalyzer:
         
         found_required = 0
         found_optional = 0
-        
+
         for section in required_sections:
             if section in self.standard_sections:
                 pattern = self.standard_sections[section]
