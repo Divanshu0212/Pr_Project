@@ -828,13 +828,13 @@ class AdvancedATSAnalyzer:
         if not profiles:
             return "No Coding Profiles Found"
         
-        if overall_score >= 80:
+        if overall_score >= 85:
             return "Excellent - Ready for Senior Roles"
-        elif overall_score >= 65:
+        elif overall_score >= 70:
             return "Good - Ready for Mid-Level Roles"
-        elif overall_score >= 45:
+        elif overall_score >= 55:
             return "Fair - Suitable for Junior Roles"
-        elif overall_score >= 25:
+        elif overall_score >= 35:
             return "Basic - Needs Improvement for Technical Roles"
         else:
             return "Insufficient - Significant Practice Required"
@@ -866,19 +866,19 @@ class AdvancedATSAnalyzer:
             recommendations.append("Create a CodeChef account for diverse programming challenges")
         
         # Score-based recommendations
-        if overall_score < 30:
+        if overall_score < 35:
             recommendations.extend([
                 "Focus on solving at least 5 problems per week consistently",
                 "Start with easy problems to build confidence and fundamentals",
                 "Learn basic data structures: arrays, strings, linked lists, stacks, queues"
             ])
-        elif overall_score < 50:
+        elif overall_score < 55:
             recommendations.extend([
                 "Increase problem-solving frequency to 7-10 problems per week",
                 "Focus on medium difficulty problems",
                 "Learn advanced data structures: trees, graphs, heaps, hash maps"
             ])
-        elif overall_score < 70:
+        elif overall_score < 75:
             recommendations.extend([
                 "Participate in weekly contests to improve speed and ranking",
                 "Tackle hard problems to strengthen advanced concepts",
@@ -2155,7 +2155,7 @@ Be specific and actionable with examples."""
         
         analysis_time = time.time() - start_time
         
-        # Calculate overall score (including coding score if available)
+        # Calculate overall score with weighted percentages (including coding score if available)
         scores = {
             'ats': ats_score,
             'keywords': keywords_score,
@@ -2164,12 +2164,31 @@ Be specific and actionable with examples."""
             'structure': structure_score
         }
         
-        # Add coding score to overall calculation if coding profiles found
+        # Define weights for each score component
         if coding_analysis and coding_analysis.get('profiles_found'):
+            # With coding profiles: ATS(10%), Keywords(25%), Content(25%), Grammar(15%), Structure(15%), Coding(10%)
             coding_score = min(coding_analysis.get('overall_coding_score', 0), 100)
             scores['coding'] = coding_score
+            weights = {
+                'ats': 0.10,
+                'keywords': 0.25,
+                'content': 0.25,
+                'grammar': 0.15,
+                'structure': 0.15,
+                'coding': 0.10
+            }
+        else:
+            # Without coding profiles: ATS(10%), Keywords(30%), Content(30%), Grammar(15%), Structure(15%)
+            weights = {
+                'ats': 0.10,
+                'keywords': 0.30,
+                'content': 0.30,
+                'grammar': 0.15,
+                'structure': 0.15
+            }
         
-        overall_score = sum(scores.values()) / len(scores)
+        # Calculate weighted overall score
+        overall_score = sum(scores[component] * weights[component] for component in scores.keys())
         
         # Determine score level and color
         if overall_score >= 85:

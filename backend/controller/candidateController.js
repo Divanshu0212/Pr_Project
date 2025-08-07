@@ -5,6 +5,11 @@ const Experience = require('../models/Experience');
 const Project = require('../models/Project');
 const Certificate = require('../models/Certificate');
 
+// Helper function to escape regex special characters
+const escapeRegex = (string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
+
 // Advanced candidate search with multiple algorithms
 exports.searchCandidates = async (req, res) => {
     try {
@@ -42,7 +47,7 @@ exports.searchCandidates = async (req, res) => {
             pipeline.push({
                 $match: {
                     'userSkills.name': { 
-                        $in: skillsArray.map(skill => new RegExp(skill.trim(), 'i'))
+                        $in: skillsArray.map(skill => new RegExp(escapeRegex(skill.trim()), 'i'))
                     },
                     'userSkills.proficiency': { $gte: parseInt(minProficiency) }
                 }
@@ -148,7 +153,7 @@ exports.searchCandidates = async (req, res) => {
 
         // Location filter
         if (location) {
-            matchConditions['portfolio.location'] = new RegExp(location, 'i');
+            matchConditions['portfolio.location'] = new RegExp(escapeRegex(location), 'i');
         }
 
         // Availability filter
@@ -159,10 +164,10 @@ exports.searchCandidates = async (req, res) => {
         // Search query filter (search in name, bio, job title)
         if (searchQuery) {
             matchConditions.$or = [
-                { displayName: new RegExp(searchQuery, 'i') },
-                { username: new RegExp(searchQuery, 'i') },
-                { 'portfolio.bio': new RegExp(searchQuery, 'i') },
-                { 'portfolio.jobTitle': new RegExp(searchQuery, 'i') }
+                { displayName: new RegExp(escapeRegex(searchQuery), 'i') },
+                { username: new RegExp(escapeRegex(searchQuery), 'i') },
+                { 'portfolio.bio': new RegExp(escapeRegex(searchQuery), 'i') },
+                { 'portfolio.jobTitle': new RegExp(escapeRegex(searchQuery), 'i') }
             ];
         }
 
@@ -195,7 +200,7 @@ exports.searchCandidates = async (req, res) => {
                                                         cond: {
                                                             $in: [
                                                                 '$$this.name',
-                                                                skillsArray.map(s => new RegExp(s.trim(), 'i'))
+                                                                skillsArray.map(s => new RegExp(escapeRegex(s.trim()), 'i'))
                                                             ]
                                                         }
                                                     }

@@ -51,7 +51,14 @@ const Sidebar = ({ user, isOpen, onClose }) => {
             subItems: [
                 { title: 'ATS Home', path: '/ats', icon: <FiHome size={14} /> }, // Direct link to ATS home
                 { title: 'Analysis History', path: '/ats/history', icon: <FiBarChart2 size={14} /> }, // New: Analysis history page
-                { title: 'Keyword Tool', path: '/ats/keywords', icon: <FiPieChart size={14} /> } // Corrected: keyword tool
+            ]
+        },
+        {
+            title: 'Search Candidates',
+            path: '/find-candidates',
+            icon: <FiSearch className="sidebar-icon-svg" />,
+            subItems: [
+                { title: 'Find Candidates', path: '/find-candidates', icon: <FiSearch size={14} /> }, // Main candidate search page
             ]
         }
     ], []); // Empty dependency array since these are static
