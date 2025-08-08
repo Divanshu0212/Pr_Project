@@ -25,7 +25,7 @@ os.environ["LANGCHAIN_TRACING_V2"] = os.getenv("LANGCHAIN_TRACING_V2", "true")
 os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT", "Resume")
 
 # Groq API configuration
-GROQ_API_KEY = os.getenv("GROQ_API_KEY","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")
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 if not GROQ_API_KEY:
     raise ValueError("GROQ_API_KEY environment variable is required")
 

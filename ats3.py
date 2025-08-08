@@ -108,7 +108,7 @@ class CodingProfileAnalysis(BaseModel):
 class AdvancedATSAnalyzer:
     def __init__(self, groq_api_key=None):
         # Initialize Groq client
-        self.groq_api_key = groq_api_key or os.getenv("GROQ_API_KEY","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")
+        self.groq_api_key = groq_api_key or os.getenv("GROQ_API_KEY","")
         if self.groq_api_key:
             self.groq_client = Groq(api_key=self.groq_api_key)
             self.model_name = "llama-3.3-70b-versatile"  # Default Groq model
