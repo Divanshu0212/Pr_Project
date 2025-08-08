@@ -30,13 +30,17 @@ const renderMarkdownText = (text, isDark) => {
     return lines.map((line, lineIndex) => {
         let processedLine = line;
         
-        // Handle headers (# ## ###)
-        const headerMatch = processedLine.match(/^(#{1,3})\s(.+)$/);
+        // Handle headers (# ## ### #### ##### ######)
+        const headerMatch = processedLine.match(/^(#{1,6})\s(.+)$/);
         if (headerMatch) {
             const level = headerMatch[1].length;
             const headerText = headerMatch[2];
             const className = `font-bold ${
-                level === 1 ? 'text-xl' : level === 2 ? 'text-lg' : 'text-base'
+                level === 1 ? 'text-xl' : 
+                level === 2 ? 'text-lg' : 
+                level === 3 ? 'text-base' :
+                level === 4 ? 'text-sm' :
+                'text-sm'
             } mb-2 mt-4 ${isDark ? 'text-white' : 'text-gray-800'}`;
             
             return (
@@ -225,6 +229,15 @@ const AtsResults = () => {
                 jobTitle: extractJobTitle(analysisData) || 'Job Analysis',
                 analysisDate: new Date().toISOString()
             };
+
+            // Add debug logging to see what we're sending
+            console.log('Storing ATS score with data:', {
+                overallScore: scoreData.overallScore,
+                detailedScores: scoreData.detailedScores,
+                detailedScoresKeys: Object.keys(scoreData.detailedScores),
+                resumeTitle: scoreData.resumeTitle,
+                jobTitle: scoreData.jobTitle
+            });
 
             const token = localStorage.getItem('token');
             if (!token) {

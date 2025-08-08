@@ -512,6 +512,17 @@ exports.storeAtsScore = async (req, res) => {
     const userId = req.user.id;
     const { overallScore, detailedScores, resumeTitle, jobTitle } = req.body;
 
+    // Add detailed logging to see what we're receiving
+    logger.info(`Received ATS score storage request for user ${userId}:`, {
+        overallScore,
+        detailedScores,
+        detailedScoresKeys: detailedScores ? Object.keys(detailedScores) : [],
+        detailedScoresValues: detailedScores ? Object.values(detailedScores) : [],
+        resumeTitle,
+        jobTitle,
+        timestamp: new Date().toISOString()
+    });
+
     // Validate input
     if (!overallScore || typeof overallScore !== 'number' || overallScore < 0 || overallScore > 100) {
         logger.warn('Invalid overall score provided for score storage.', { userId, overallScore });

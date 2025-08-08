@@ -1190,7 +1190,7 @@ const ResumeOptimizer = () => {
                                             type="text"
                                             value={skill}
                                             onChange={e => handleSkillChange(category, skillIndex, e.target.value)}
-                                            className={`input-field flex-grow ${isDark ? 'dark-input' : ''}`}
+                                            className={`form-input flex-grow ${isDark ? 'dark-input' : ''}`}
                                             placeholder={`Skill ${skillIndex + 1}`}
                                         />
                                         <button

@@ -174,12 +174,13 @@ const AtsHistoryPage = () => {
         date: format(new Date(entry.analysisDate), 'MMM dd'),
         fullDate: entry.analysisDate,
         score: entry.overallScore,
-        keywords: entry.detailedScores?.keywords || 0,
-        formatting: entry.detailedScores?.formatting || 0,
-        experience: entry.detailedScores?.experience || 0,
-        skills: entry.detailedScores?.skills || 0,
-        education: entry.detailedScores?.education || 0,
-        summary: entry.detailedScores?.summary || 0,
+        // Map the actual field names from ATS service to chart-friendly names
+        keywords: entry.detailedScores?.['Keyword Optimization'] || 0,
+        formatting: entry.detailedScores?.['ATS Compatibility'] || 0,
+        experience: entry.detailedScores?.['Content Quality'] || 0,
+        skills: entry.detailedScores?.['Structure & Completeness'] || 0,
+        education: entry.detailedScores?.['Grammar & Spelling'] || 0,
+        summary: entry.detailedScores?.['Coding Profiles'] || 0,
         resumeTitle: entry.resumeTitle,
         jobTitle: entry.jobTitle
     }))?.reverse() || [];
@@ -334,12 +335,12 @@ const AtsHistoryPage = () => {
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
-                    <Line type="monotone" dataKey="keywords" stroke="#f59e0b" strokeWidth={2} name="Keywords" />
-                    <Line type="monotone" dataKey="formatting" stroke="#10b981" strokeWidth={2} name="Formatting" />
-                    <Line type="monotone" dataKey="experience" stroke="#8b5cf6" strokeWidth={2} name="Experience" />
-                    <Line type="monotone" dataKey="skills" stroke="#ef4444" strokeWidth={2} name="Skills" />
-                    <Line type="monotone" dataKey="education" stroke="#06b6d4" strokeWidth={2} name="Education" />
-                    <Line type="monotone" dataKey="summary" stroke="#ec4899" strokeWidth={2} name="Summary" />
+                    <Line type="monotone" dataKey="keywords" stroke="#f59e0b" strokeWidth={2} name="Keyword Optimization" />
+                    <Line type="monotone" dataKey="formatting" stroke="#10b981" strokeWidth={2} name="ATS Compatibility" />
+                    <Line type="monotone" dataKey="experience" stroke="#8b5cf6" strokeWidth={2} name="Content Quality" />
+                    <Line type="monotone" dataKey="skills" stroke="#ef4444" strokeWidth={2} name="Structure & Completeness" />
+                    <Line type="monotone" dataKey="education" stroke="#06b6d4" strokeWidth={2} name="Grammar & Spelling" />
+                    <Line type="monotone" dataKey="summary" stroke="#ec4899" strokeWidth={2} name="Coding Profiles" />
                 </LineChart>
             </ResponsiveContainer>
         );

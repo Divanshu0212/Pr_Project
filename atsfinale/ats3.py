@@ -24,7 +24,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import aiohttp
 from urllib.parse import urlparse, parse_qs
-from typing import Tuple
+import bs4
+from bs4 import BeautifulSoup
+import fitz  # PyMuPDF for better PDF URL extraction
 
 # Download required NLTK data
 def download_nltk_data():
@@ -79,6 +81,26 @@ class AnalysisResponse(BaseModel):
     word_count: int
     analysis_timestamp: str
     metrics: Dict[str, Any]
+
+class CodingProfile(BaseModel):
+    platform: str
+    username: str
+    url: str
+    rating: Optional[int] = None
+    max_rating: Optional[int] = None
+    problems_solved: Optional[int] = None
+    contests_participated: Optional[int] = None
+    rank: Optional[str] = None
+    last_activity: Optional[str] = None
+    consistency_score: Optional[float] = None
+
+class CodingProfileAnalysis(BaseModel):
+    profiles_found: List[CodingProfile]
+    overall_coding_score: float
+    job_readiness_level: str
+    recommendations: List[str]
+    strengths: List[str]
+    areas_for_improvement: List[str]
 
 class AdvancedATSAnalyzer:
     def __init__(self, ollama_url="http://localhost:11434"):
@@ -142,46 +164,91 @@ class AdvancedATSAnalyzer:
             'achievements': r'achievement|award|recognition|honor'
         }
         
-        # Initialize model selection
-        self.select_best_available_model()
-        
-        # Coding platforms configuration
+        # Coding platform patterns for URL detection
         self.coding_platforms = {
             'leetcode': {
-                'base_url': 'https://leetcode.com/api/problems/all/',
-                'profile_pattern': r'leetcode\.com/([^/\s]+)',
-                'api_endpoint': 'https://leetcode.com/graphql'
+                'patterns': [
+                    r'https?://(?:www\.)?leetcode\.com/(?:u/)?([^/\s]+)',
+                    r'leetcode\.com/(?:u/)?([^/\s]+)',
+                    r'lc\.com/([^/\s]+)'
+                ],
+                'api_base': 'https://leetcode.com/graphql',
+                'rating_thresholds': {
+                    'beginner': 0,
+                    'intermediate': 1400,
+                    'advanced': 1800,
+                    'expert': 2200
+                }
             },
             'codeforces': {
-                'base_url': 'https://codeforces.com/api/',
-                'profile_pattern': r'codeforces\.com/profile/([^/\s]+)',
-                'api_endpoint': 'https://codeforces.com/api/user.info'
+                'patterns': [
+                    r'https?://(?:www\.)?codeforces\.com/profile/([^/\s]+)',
+                    r'codeforces\.com/profile/([^/\s]+)',
+                    r'cf\.com/profile/([^/\s]+)'
+                ],
+                'api_base': 'https://codeforces.com/api',
+                'rating_thresholds': {
+                    'newbie': 0,
+                    'pupil': 1200,
+                    'specialist': 1400,
+                    'expert': 1600,
+                    'candidate_master': 1900,
+                    'master': 2100,
+                    'international_master': 2300,
+                    'grandmaster': 2400
+                }
             },
             'codechef': {
-                'base_url': 'https://www.codechef.com/users/',
-                'profile_pattern': r'codechef\.com/users/([^/\s]+)',
-                'api_endpoint': 'https://www.codechef.com/api/rankings/PRACTICE'
+                'patterns': [
+                    r'https?://(?:www\.)?codechef\.com/users/([^/\s]+)',
+                    r'codechef\.com/users/([^/\s]+)',
+                    r'cc\.com/users/([^/\s]+)'
+                ],
+                'api_base': 'https://www.codechef.com/api',
+                'rating_thresholds': {
+                    'unrated': 0,
+                    '1_star': 1400,
+                    '2_star': 1600,
+                    '3_star': 1800,
+                    '4_star': 2000,
+                    '5_star': 2200,
+                    '6_star': 2500,
+                    '7_star': 3000
+                }
             }
         }
         
-        # Coding performance thresholds for job readiness assessment
-        self.job_readiness_thresholds = {
-            'entry_level': {
-                'leetcode': {'rating': 1200, 'problems_solved': 50, 'consistency_days': 30},
-                'codeforces': {'rating': 800, 'problems_solved': 50, 'contest_participation': 5},
-                'codechef': {'rating': 1400, 'problems_solved': 30, 'contest_participation': 3}
+        # Job role coding requirements
+        self.job_coding_requirements = {
+            'software_engineer': {
+                'min_problems': 200,
+                'min_rating': 1500,
+                'consistency_months': 6
             },
-            'mid_level': {
-                'leetcode': {'rating': 1600, 'problems_solved': 150, 'consistency_days': 60},
-                'codeforces': {'rating': 1200, 'problems_solved': 100, 'contest_participation': 10},
-                'codechef': {'rating': 1800, 'problems_solved': 80, 'contest_participation': 8}
+            'senior_software_engineer': {
+                'min_problems': 400,
+                'min_rating': 1700,
+                'consistency_months': 12
             },
-            'senior_level': {
-                'leetcode': {'rating': 2000, 'problems_solved': 300, 'consistency_days': 90},
-                'codeforces': {'rating': 1600, 'problems_solved': 200, 'contest_participation': 20},
-                'codechef': {'rating': 2200, 'problems_solved': 150, 'contest_participation': 15}
+            'tech_lead': {
+                'min_problems': 500,
+                'min_rating': 1800,
+                'consistency_months': 18
+            },
+            'sde_intern': {
+                'min_problems': 100,
+                'min_rating': 1200,
+                'consistency_months': 3
+            },
+            'data_scientist': {
+                'min_problems': 150,
+                'min_rating': 1400,
+                'consistency_months': 6
             }
         }
+        
+        # Initialize model selection
+        self.select_best_available_model()
     
     def test_ollama_connection(self) -> bool:
         """Test if Ollama is accessible"""
@@ -248,7 +315,7 @@ class AdvancedATSAnalyzer:
                             "num_thread": 4,
                         }
                     },
-                    timeout=120
+                    timeout=180
                 )
             )
             
@@ -291,6 +358,617 @@ class AdvancedATSAnalyzer:
             return text.strip()
         except Exception as e:
             return f"Error reading PDF: {str(e)}"
+
+    def extract_urls_from_pdf(self, file_content: bytes) -> List[str]:
+        """Extract URLs/hyperlinks from PDF file using PyMuPDF"""
+        urls = []
+        try:
+            # Use PyMuPDF for better URL extraction
+            pdf_document = fitz.open(stream=file_content, filetype="pdf")
+            
+            for page_num in range(pdf_document.page_count):
+                page = pdf_document.load_page(page_num)
+                
+                # Extract links from page
+                links = page.get_links()
+                for link in links:
+                    if 'uri' in link:
+                        urls.append(link['uri'])
+                
+                # Also extract text and search for URL patterns
+                text = page.get_text()
+                url_patterns = [
+                    r'https?://[^\s\)]+',
+                    r'www\.[^\s\)]+\.[^\s\)]+',
+                    r'[a-zA-Z0-9.-]+\.com[^\s\)]*',
+                    r'[a-zA-Z0-9.-]+\.org[^\s\)]*'
+                ]
+                
+                for pattern in url_patterns:
+                    found_urls = re.findall(pattern, text)
+                    urls.extend(found_urls)
+            
+            pdf_document.close()
+            
+            # Clean and deduplicate URLs
+            clean_urls = []
+            for url in urls:
+                url = url.strip('.,;!?)')
+                if url and len(url) > 8:  # Basic URL length check
+                    if not url.startswith('http'):
+                        url = 'https://' + url
+                    clean_urls.append(url)
+            
+            return list(set(clean_urls))  # Remove duplicates
+            
+        except Exception as e:
+            logger.warning(f"URL extraction from PDF failed: {e}")
+            
+            # Fallback: extract from text using regex
+            try:
+                text = self.extract_text_from_pdf(file_content)
+                url_patterns = [
+                    r'https?://[^\s\)]+',
+                    r'www\.[^\s\)]+\.[^\s\)]+',
+                    r'leetcode\.com[^\s\)]*',
+                    r'codeforces\.com[^\s\)]*',
+                    r'codechef\.com[^\s\)]*'
+                ]
+                
+                urls = []
+                for pattern in url_patterns:
+                    found_urls = re.findall(pattern, text)
+                    urls.extend(found_urls)
+                
+                return list(set(urls))
+                
+            except Exception as fallback_error:
+                logger.error(f"Fallback URL extraction failed: {fallback_error}")
+                return []
+
+    def extract_coding_profiles_from_text(self, text: str) -> List[Dict[str, str]]:
+        """Extract coding platform profiles from text"""
+        profiles = []
+        
+        for platform, config in self.coding_platforms.items():
+            for pattern in config['patterns']:
+                matches = re.findall(pattern, text, re.IGNORECASE)
+                for match in matches:
+                    if isinstance(match, tuple):
+                        username = match[0] if match else None
+                    else:
+                        username = match
+                    
+                    if username and len(username) > 1:
+                        # Construct full URL
+                        if platform == 'leetcode':
+                            url = f"https://leetcode.com/u/{username}"
+                        elif platform == 'codeforces':
+                            url = f"https://codeforces.com/profile/{username}"
+                        elif platform == 'codechef':
+                            url = f"https://www.codechef.com/users/{username}"
+                        else:
+                            url = f"https://{platform}.com/{username}"
+                        
+                        profiles.append({
+                            'platform': platform,
+                            'username': username,
+                            'url': url
+                        })
+        
+        # Remove duplicates
+        unique_profiles = []
+        seen = set()
+        for profile in profiles:
+            key = (profile['platform'], profile['username'].lower())
+            if key not in seen:
+                seen.add(key)
+                unique_profiles.append(profile)
+        
+        return unique_profiles
+
+    async def fetch_leetcode_profile(self, username: str) -> Dict[str, Any]:
+        """Fetch LeetCode profile data"""
+        try:
+            # LeetCode GraphQL query
+            query = """
+            query getUserProfile($username: String!) {
+                allQuestionsCount {
+                    difficulty
+                    count
+                }
+                matchedUser(username: $username) {
+                    username
+                    profile {
+                        ranking
+                        userAvatar
+                        realName
+                        aboutMe
+                        reputation
+                    }
+                    submitStats: submitStatsGlobal {
+                        acSubmissionNum {
+                            difficulty
+                            count
+                            submissions
+                        }
+                    }
+                    badges {
+                        id
+                        displayName
+                        icon
+                        creationDate
+                    }
+                }
+            }
+            """
+            
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+                async with session.post(
+                    'https://leetcode.com/graphql',
+                    json={'query': query, 'variables': {'username': username}},
+                    headers={'Content-Type': 'application/json'}
+                ) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        
+                        if data.get('data', {}).get('matchedUser'):
+                            user_data = data['data']['matchedUser']
+                            submit_stats = user_data.get('submitStats', {}).get('acSubmissionNum', [])
+                            
+                            total_solved = 0
+                            easy_solved = 0
+                            medium_solved = 0
+                            hard_solved = 0
+                            
+                            for stat in submit_stats:
+                                if stat['difficulty'] == 'All':
+                                    total_solved = stat['count']
+                                elif stat['difficulty'] == 'Easy':
+                                    easy_solved = stat['count']
+                                elif stat['difficulty'] == 'Medium':
+                                    medium_solved = stat['count']
+                                elif stat['difficulty'] == 'Hard':
+                                    hard_solved = stat['count']
+                            
+                            profile_data = user_data.get('profile', {})
+                            
+                            return {
+                                'platform': 'leetcode',
+                                'username': username,
+                                'url': f"https://leetcode.com/u/{username}",
+                                'problems_solved': total_solved,
+                                'easy_solved': easy_solved,
+                                'medium_solved': medium_solved,
+                                'hard_solved': hard_solved,
+                                'ranking': profile_data.get('ranking'),
+                                'reputation': profile_data.get('reputation', 0),
+                                'badges': len(user_data.get('badges', [])),
+                                'real_name': profile_data.get('realName', ''),
+                                'status': 'success'
+                            }
+                        else:
+                            return {'platform': 'leetcode', 'username': username, 'status': 'user_not_found'}
+                    else:
+                        return {'platform': 'leetcode', 'username': username, 'status': 'api_error'}
+        
+        except Exception as e:
+            logger.warning(f"LeetCode API error for {username}: {e}")
+            return {'platform': 'leetcode', 'username': username, 'status': 'error', 'error': str(e)}
+
+    async def fetch_codeforces_profile(self, username: str) -> Dict[str, Any]:
+        """Fetch Codeforces profile data"""
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
+                # Fetch user info
+                async with session.get(f'https://codeforces.com/api/user.info?handles={username}') as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        
+                        if data.get('status') == 'OK' and data.get('result'):
+                            user_info = data['result'][0]
+                            
+                            # Fetch user submissions
+                            async with session.get(f'https://codeforces.com/api/user.status?handle={username}&from=1&count=1000') as sub_response:
+                                submissions_data = {}
+                                if sub_response.status == 200:
+                                    sub_data = await sub_response.json()
+                                    if sub_data.get('status') == 'OK':
+                                        submissions = sub_data.get('result', [])
+                                        
+                                        # Count accepted problems
+                                        accepted_problems = set()
+                                        for submission in submissions:
+                                            if submission.get('verdict') == 'OK':
+                                                problem_id = f"{submission.get('problem', {}).get('contestId')}-{submission.get('problem', {}).get('index')}"
+                                                accepted_problems.add(problem_id)
+                                        
+                                        submissions_data = {
+                                            'problems_solved': len(accepted_problems),
+                                            'total_submissions': len(submissions)
+                                        }
+                            
+                            return {
+                                'platform': 'codeforces',
+                                'username': username,
+                                'url': f"https://codeforces.com/profile/{username}",
+                                'rating': user_info.get('rating'),
+                                'max_rating': user_info.get('maxRating'),
+                                'rank': user_info.get('rank', ''),
+                                'max_rank': user_info.get('maxRank', ''),
+                                'problems_solved': submissions_data.get('problems_solved', 0),
+                                'total_submissions': submissions_data.get('total_submissions', 0),
+                                'contribution': user_info.get('contribution', 0),
+                                'last_online': user_info.get('lastOnlineTimeSeconds'),
+                                'registration_time': user_info.get('registrationTimeSeconds'),
+                                'status': 'success'
+                            }
+                        else:
+                            return {'platform': 'codeforces', 'username': username, 'status': 'user_not_found'}
+                    else:
+                        return {'platform': 'codeforces', 'username': username, 'status': 'api_error'}
+        
+        except Exception as e:
+            logger.warning(f"Codeforces API error for {username}: {e}")
+            return {'platform': 'codeforces', 'username': username, 'status': 'error', 'error': str(e)}
+
+    async def fetch_codechef_profile(self, username: str) -> Dict[str, Any]:
+        """Fetch CodeChef profile data (web scraping as API is limited)"""
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+                
+                async with session.get(f'https://www.codechef.com/users/{username}', headers=headers) as response:
+                    if response.status == 200:
+                        html = await response.text()
+                        soup = BeautifulSoup(html, 'html.parser')
+                        
+                        # Extract rating
+                        rating = None
+                        rating_elements = soup.find_all(['div', 'span'], class_=re.compile(r'rating'))
+                        for element in rating_elements:
+                            text = element.get_text().strip()
+                            rating_match = re.search(r'(\d{3,4})', text)
+                            if rating_match:
+                                rating = int(rating_match.group(1))
+                                break
+                        
+                        # Extract problems solved
+                        problems_solved = 0
+                        problem_elements = soup.find_all(text=re.compile(r'problems?\s+solved', re.IGNORECASE))
+                        for element in problem_elements:
+                            parent = element.parent
+                            if parent:
+                                numbers = re.findall(r'\d+', parent.get_text())
+                                if numbers:
+                                    problems_solved = int(numbers[0])
+                                    break
+                        
+                        # Extract star rating
+                        stars = 0
+                        star_elements = soup.find_all(['span', 'div'], class_=re.compile(r'star'))
+                        for element in star_elements:
+                            star_text = element.get_text()
+                            star_match = re.search(r'(\d+)\s*star', star_text, re.IGNORECASE)
+                            if star_match:
+                                stars = int(star_match.group(1))
+                                break
+                        
+                        # Extract rank
+                        rank = ""
+                        rank_elements = soup.find_all(text=re.compile(r'rank|position', re.IGNORECASE))
+                        for element in rank_elements:
+                            parent = element.parent
+                            if parent:
+                                rank_text = parent.get_text().strip()
+                                if 'global' in rank_text.lower():
+                                    numbers = re.findall(r'\d+', rank_text)
+                                    if numbers:
+                                        rank = f"Global Rank: {numbers[0]}"
+                                        break
+                        
+                        return {
+                            'platform': 'codechef',
+                            'username': username,
+                            'url': f"https://www.codechef.com/users/{username}",
+                            'rating': rating,
+                            'stars': stars,
+                            'problems_solved': problems_solved,
+                            'rank': rank,
+                            'status': 'success'
+                        }
+                    else:
+                        return {'platform': 'codechef', 'username': username, 'status': 'user_not_found'}
+        
+        except Exception as e:
+            logger.warning(f"CodeChef scraping error for {username}: {e}")
+            return {'platform': 'codechef', 'username': username, 'status': 'error', 'error': str(e)}
+
+    async def analyze_coding_profiles(self, profiles: List[Dict[str, str]]) -> Dict[str, Any]:
+        """Analyze coding profiles and determine job readiness"""
+        if not profiles:
+            return {
+                'profiles_found': [],
+                'overall_coding_score': 0,
+                'job_readiness_level': 'No Coding Profiles Found',
+                'recommendations': ['Add coding profile links to your resume (LeetCode, Codeforces, CodeChef)'],
+                'strengths': [],
+                'areas_for_improvement': ['Create and maintain coding profiles to demonstrate programming skills']
+            }
+        
+        analyzed_profiles = []
+        total_score = 0
+        active_profiles = 0
+        
+        # Fetch profile data for each platform
+        for profile in profiles:
+            platform = profile['platform']
+            username = profile['username']
+            
+            if platform == 'leetcode':
+                profile_data = await self.fetch_leetcode_profile(username)
+            elif platform == 'codeforces':
+                profile_data = await self.fetch_codeforces_profile(username)
+            elif platform == 'codechef':
+                profile_data = await self.fetch_codechef_profile(username)
+            else:
+                continue
+            
+            if profile_data.get('status') == 'success':
+                analyzed_profiles.append(profile_data)
+                
+                # Calculate individual platform score
+                platform_score = self.calculate_platform_score(profile_data)
+                total_score += platform_score
+                active_profiles += 1
+        
+        # Calculate overall coding score
+        overall_score = total_score / max(active_profiles, 1) if active_profiles > 0 else 0
+        
+        # Determine job readiness level
+        job_readiness = self.determine_job_readiness(analyzed_profiles, overall_score)
+        
+        # Generate recommendations
+        recommendations = self.generate_coding_recommendations(analyzed_profiles, overall_score)
+        
+        # Identify strengths and areas for improvement
+        strengths = self.identify_coding_strengths(analyzed_profiles)
+        areas_for_improvement = self.identify_coding_improvements(analyzed_profiles)
+        
+        return {
+            'profiles_found': analyzed_profiles,
+            'overall_coding_score': round(overall_score, 1),
+            'job_readiness_level': job_readiness,
+            'recommendations': recommendations,
+            'strengths': strengths,
+            'areas_for_improvement': areas_for_improvement,
+            'analysis_timestamp': datetime.now().isoformat()
+        }
+
+    def calculate_platform_score(self, profile_data: Dict[str, Any]) -> float:
+        """Calculate score for individual platform"""
+        platform = profile_data['platform']
+        score = 0
+        
+        if platform == 'leetcode':
+            problems_solved = profile_data.get('problems_solved', 0)
+            easy_solved = profile_data.get('easy_solved', 0)
+            medium_solved = profile_data.get('medium_solved', 0)
+            hard_solved = profile_data.get('hard_solved', 0)
+            
+            # Base score from problems solved
+            score += min(problems_solved * 0.5, 40)  # Max 40 points
+            
+            # Bonus for difficulty distribution
+            if medium_solved > 0:
+                score += min(medium_solved * 0.3, 20)  # Max 20 points
+            if hard_solved > 0:
+                score += min(hard_solved * 0.5, 20)  # Max 20 points
+            
+            # Ranking bonus
+            ranking = profile_data.get('ranking')
+            if ranking:
+                if ranking <= 10000:
+                    score += 20
+                elif ranking <= 50000:
+                    score += 15
+                elif ranking <= 100000:
+                    score += 10
+                else:
+                    score += 5
+        
+        elif platform == 'codeforces':
+            rating = profile_data.get('rating', 0)
+            max_rating = profile_data.get('max_rating', 0)
+            problems_solved = profile_data.get('problems_solved', 0)
+            
+            # Rating-based score
+            if rating >= 2100:  # Master+
+                score += 50
+            elif rating >= 1900:  # Candidate Master
+                score += 40
+            elif rating >= 1600:  # Expert
+                score += 30
+            elif rating >= 1400:  # Specialist
+                score += 25
+            elif rating >= 1200:  # Pupil
+                score += 20
+            else:
+                score += 10
+            
+            # Problems solved bonus
+            score += min(problems_solved * 0.3, 30)
+            
+            # Max rating bonus
+            if max_rating > rating:
+                score += min((max_rating - rating) * 0.01, 10)
+        
+        elif platform == 'codechef':
+            rating = profile_data.get('rating', 0)
+            stars = profile_data.get('stars', 0)
+            problems_solved = profile_data.get('problems_solved', 0)
+            
+            # Star-based score
+            star_scores = {1: 15, 2: 20, 3: 25, 4: 30, 5: 40, 6: 50, 7: 60}
+            score += star_scores.get(stars, 10)
+            
+            # Rating bonus
+            if rating > 0:
+                score += min(rating * 0.02, 20)
+            
+            # Problems solved bonus
+            score += min(problems_solved * 0.4, 20)
+        
+        return min(score, 100)  # Cap at 100
+
+    def determine_job_readiness(self, profiles: List[Dict[str, Any]], overall_score: float) -> str:
+        """Determine job readiness level based on coding profiles"""
+        if not profiles:
+            return "No Coding Profiles Found"
+        
+        if overall_score >= 85:
+            return "Excellent - Ready for Senior Roles"
+        elif overall_score >= 70:
+            return "Good - Ready for Mid-Level Roles"
+        elif overall_score >= 55:
+            return "Fair - Suitable for Junior Roles"
+        elif overall_score >= 35:
+            return "Basic - Needs Improvement for Technical Roles"
+        else:
+            return "Insufficient - Significant Practice Required"
+
+    def generate_coding_recommendations(self, profiles: List[Dict[str, Any]], overall_score: float) -> List[str]:
+        """Generate coding improvement recommendations"""
+        recommendations = []
+        
+        if not profiles:
+            return [
+                "Create accounts on LeetCode, Codeforces, and CodeChef",
+                "Start with easy problems and gradually increase difficulty",
+                "Aim to solve at least 3-5 problems per week",
+                "Participate in weekly contests to improve problem-solving speed"
+            ]
+        
+        # Platform-specific recommendations
+        has_leetcode = any(p['platform'] == 'leetcode' for p in profiles)
+        has_codeforces = any(p['platform'] == 'codeforces' for p in profiles)
+        has_codechef = any(p['platform'] == 'codechef' for p in profiles)
+        
+        if not has_leetcode:
+            recommendations.append("Create a LeetCode profile - essential for technical interviews")
+        
+        if not has_codeforces:
+            recommendations.append("Join Codeforces for algorithmic problem solving and contests")
+        
+        if not has_codechef:
+            recommendations.append("Create a CodeChef account for diverse programming challenges")
+        
+        # Score-based recommendations
+        if overall_score < 35:
+            recommendations.extend([
+                "Focus on solving at least 5 problems per week consistently",
+                "Start with easy problems to build confidence and fundamentals",
+                "Learn basic data structures: arrays, strings, linked lists, stacks, queues"
+            ])
+        elif overall_score < 55:
+            recommendations.extend([
+                "Increase problem-solving frequency to 7-10 problems per week",
+                "Focus on medium difficulty problems",
+                "Learn advanced data structures: trees, graphs, heaps, hash maps"
+            ])
+        elif overall_score < 75:
+            recommendations.extend([
+                "Participate in weekly contests to improve speed and ranking",
+                "Tackle hard problems to strengthen advanced concepts",
+                "Focus on dynamic programming and graph algorithms"
+            ])
+        else:
+            recommendations.extend([
+                "Maintain consistent practice to keep skills sharp",
+                "Mentor others and contribute to open source projects",
+                "Focus on system design and optimization problems"
+            ])
+        
+        return recommendations[:6]  # Limit to top 6 recommendations
+
+    def identify_coding_strengths(self, profiles: List[Dict[str, Any]]) -> List[str]:
+        """Identify coding profile strengths"""
+        strengths = []
+        
+        for profile in profiles:
+            platform = profile['platform']
+            
+            if platform == 'leetcode':
+                problems_solved = profile.get('problems_solved', 0)
+                if problems_solved >= 300:
+                    strengths.append(f"Strong LeetCode profile with {problems_solved}+ problems solved")
+                elif problems_solved >= 100:
+                    strengths.append(f"Good LeetCode progress with {problems_solved} problems solved")
+                
+                ranking = profile.get('ranking')
+                if ranking and ranking <= 50000:
+                    strengths.append(f"Good LeetCode ranking (Top {ranking:,})")
+            
+            elif platform == 'codeforces':
+                rating = profile.get('rating', 0)
+                if rating >= 1600:
+                    strengths.append(f"Strong Codeforces rating ({rating}) - Expert level")
+                elif rating >= 1400:
+                    strengths.append(f"Good Codeforces rating ({rating}) - Specialist level")
+                
+                problems_solved = profile.get('problems_solved', 0)
+                if problems_solved >= 200:
+                    strengths.append(f"Extensive Codeforces experience with {problems_solved}+ problems")
+            
+            elif platform == 'codechef':
+                stars = profile.get('stars', 0)
+                if stars >= 4:
+                    strengths.append(f"High CodeChef rating ({stars} stars)")
+                elif stars >= 2:
+                    strengths.append(f"Good CodeChef performance ({stars} stars)")
+        
+        if len(profiles) >= 2:
+            strengths.append("Active on multiple coding platforms")
+        
+        return strengths
+
+    def identify_coding_improvements(self, profiles: List[Dict[str, Any]]) -> List[str]:
+        """Identify areas for coding improvement"""
+        improvements = []
+        
+        if not profiles:
+            return ["No coding profiles found - create accounts on coding platforms"]
+        
+        for profile in profiles:
+            platform = profile['platform']
+            
+            if platform == 'leetcode':
+                problems_solved = profile.get('problems_solved', 0)
+                hard_solved = profile.get('hard_solved', 0)
+                
+                if problems_solved < 100:
+                    improvements.append("Increase LeetCode problem solving frequency")
+                
+                if hard_solved < 10 and problems_solved > 50:
+                    improvements.append("Practice more hard difficulty problems on LeetCode")
+            
+            elif platform == 'codeforces':
+                rating = profile.get('rating', 0)
+                if rating < 1400:
+                    improvements.append("Work on improving Codeforces rating through contest participation")
+            
+            elif platform == 'codechef':
+                stars = profile.get('stars', 0)
+                if stars < 3:
+                    improvements.append("Focus on improving CodeChef star rating")
+        
+        # General improvements
+        if len(profiles) == 1:
+            improvements.append("Diversify by joining additional coding platforms")
+        
+        return improvements[:4]  # Limit to top 4 improvements
     
     def extract_text_from_docx(self, file_content: bytes) -> str:
         """Extract text from DOCX file"""
@@ -529,11 +1207,11 @@ class AdvancedATSAnalyzer:
         
         # Quantifiable achievements
         number_patterns = [
-            r'\d+%',  # Percentages
-            r'\$\d+[,\d]*',  # Dollar amounts
-            r'\d+[,\d]*\+?\s*(users|customers|employees|projects)',  # Numbers with units
-            r'increased|decreased|improved|reduced.*?\d+',  # Achievement metrics
-        ]
+    r'\d+%',  # Percentages
+    r'[\$₹]\d+[,\d]*',  # Dollar or Rupee amounts
+    r'\d+[,\d]*\+?\s*(users|customers|employees|projects)',  # Numbers with units
+    r'increased|decreased|improved|reduced.*?\d+',  # Achievement metrics
+]
         
         quantifiable_count = 0
         for pattern in number_patterns:
@@ -588,11 +1266,9 @@ class AdvancedATSAnalyzer:
         for mistake, correct in common_mistakes.items():
             if mistake in text.lower():
                 spelling_errors += 1
-        
-        # Grammar pattern checks
+
         grammar_issues = 0
-        
-        # Check for common grammar issues
+
         grammar_patterns = [
             r'\bi\s+am\b',  # Should be capitalized
             r'\s{2,}',      # Multiple spaces
@@ -641,7 +1317,7 @@ class AdvancedATSAnalyzer:
         
         found_required = 0
         found_optional = 0
-        
+
         for section in required_sections:
             if section in self.standard_sections:
                 pattern = self.standard_sections[section]
@@ -1362,21 +2038,8 @@ class AdvancedATSAnalyzer:
             return max(industry_scores, key=industry_scores.get)
         return "general"
     
-    def detect_industry(self, text: str) -> str:
-        """Detect the most likely industry based on resume content"""
-        text_lower = text.lower()
-        industry_scores = {}
-        
-        for industry, keywords in self.industry_keywords.items():
-            score = sum(1 for keyword in keywords if keyword.lower() in text_lower)
-            industry_scores[industry] = score
-        
-        if industry_scores:
-            return max(industry_scores, key=industry_scores.get)
-        return ""
-    
-    async def analyze_resume_comprehensive(self, text: str, job_description: str = "", filename: str = "") -> Dict[str, Any]:
-        """Main comprehensive analysis function"""
+    async def analyze_resume_comprehensive(self, text: str, job_description: str = "", filename: str = "", file_content: bytes = None) -> Dict[str, Any]:
+        """Main comprehensive analysis function with coding profile analysis"""
         
         if len(text.strip()) < 50:
             raise HTTPException(status_code=400, detail="Resume content appears to be too short or unreadable.")
@@ -1389,6 +2052,63 @@ class AdvancedATSAnalyzer:
         content_score, content_feedback = self.analyze_content_quality(text)
         grammar_score, grammar_feedback = self.analyze_grammar_spelling(text)
         structure_score, structure_feedback = self.analyze_structure_completeness(text)
+        
+        # CODING PROFILES ANALYSIS - NEW FEATURE
+        coding_analysis = None
+        if file_content and filename.lower().endswith('.pdf'):
+            try:
+                # Extract URLs from PDF
+                urls = self.extract_urls_from_pdf(file_content)
+                
+                # Extract coding profiles from text and URLs
+                profiles_from_text = self.extract_coding_profiles_from_text(text)
+                profiles_from_urls = []
+                
+                for url in urls:
+                    url_profiles = self.extract_coding_profiles_from_text(url)
+                    profiles_from_urls.extend(url_profiles)
+                
+                # Combine and deduplicate profiles
+                all_profiles = profiles_from_text + profiles_from_urls
+                unique_profiles = []
+                seen = set()
+                for profile in all_profiles:
+                    key = (profile['platform'], profile['username'].lower())
+                    if key not in seen:
+                        seen.add(key)
+                        unique_profiles.append(profile)
+                
+                # Analyze coding profiles
+                coding_analysis = await self.analyze_coding_profiles(unique_profiles)
+                
+                logger.info(f"Found {len(unique_profiles)} coding profiles for analysis")
+                
+            except Exception as e:
+                logger.warning(f"Coding profile analysis failed: {e}")
+                coding_analysis = {
+                    'profiles_found': [],
+                    'overall_coding_score': 0,
+                    'job_readiness_level': 'Analysis Failed',
+                    'recommendations': ['Could not analyze coding profiles - ensure URLs are accessible'],
+                    'strengths': [],
+                    'areas_for_improvement': [],
+                    'error': str(e)
+                }
+        else:
+            # Fallback: extract from text only
+            try:
+                profiles_from_text = self.extract_coding_profiles_from_text(text)
+                coding_analysis = await self.analyze_coding_profiles(profiles_from_text)
+            except Exception as e:
+                logger.warning(f"Text-based coding profile analysis failed: {e}")
+                coding_analysis = {
+                    'profiles_found': [],
+                    'overall_coding_score': 0,
+                    'job_readiness_level': 'No Profiles Found',
+                    'recommendations': ['Add coding platform URLs to your resume'],
+                    'strengths': [],
+                    'areas_for_improvement': ['Create and maintain coding profiles']
+                }
         
         # Generate detailed AI insights
         ai_insights = self.generate_detailed_insights(text, job_description, ats_score, keywords_score, content_score)
@@ -1403,11 +2123,14 @@ RESUME: {text[:1500]}
 
 JOB DESCRIPTION: {job_description[:500] if job_description else "General professional role"}
 
+CODING PROFILES: {len(coding_analysis.get('profiles_found', []))} found with overall score {coding_analysis.get('overall_coding_score', 0)}
+
 Provide detailed suggestions for:
 1. Professional impact enhancement
 2. Keyword optimization 
 3. Quantifiable achievements
 4. Industry-specific improvements
+5. Coding profile optimization (if applicable)
 
 Be specific and actionable with examples."""
                 
@@ -1419,7 +2142,7 @@ Be specific and actionable with examples."""
         
         analysis_time = time.time() - start_time
         
-        # Calculate overall score
+        # Calculate overall score with weighted percentages (including coding score if available)
         scores = {
             'ats': ats_score,
             'keywords': keywords_score,
@@ -1428,7 +2151,31 @@ Be specific and actionable with examples."""
             'structure': structure_score
         }
         
-        overall_score = sum(scores.values()) / len(scores)
+        # Define weights for each score component
+        if coding_analysis and coding_analysis.get('profiles_found'):
+            # With coding profiles: ATS(10%), Keywords(25%), Content(25%), Grammar(15%), Structure(15%), Coding(10%)
+            coding_score = min(coding_analysis.get('overall_coding_score', 0), 100)
+            scores['coding'] = coding_score
+            weights = {
+                'ats': 0.10,
+                'keywords': 0.25,
+                'content': 0.25,
+                'grammar': 0.15,
+                'structure': 0.15,
+                'coding': 0.10
+            }
+        else:
+            # Without coding profiles: ATS(10%), Keywords(30%), Content(30%), Grammar(15%), Structure(15%)
+            weights = {
+                'ats': 0.10,
+                'keywords': 0.30,
+                'content': 0.30,
+                'grammar': 0.15,
+                'structure': 0.15
+            }
+        
+        # Calculate weighted overall score
+        overall_score = sum(scores[component] * weights[component] for component in scores.keys())
         
         # Determine score level and color
         if overall_score >= 85:
@@ -1449,6 +2196,29 @@ Be specific and actionable with examples."""
             "Structure & Completeness": structure_feedback
         }
         
+        # Add coding profile feedback if available
+        if coding_analysis and coding_analysis.get('profiles_found'):
+            coding_feedback = []
+            coding_feedback.append(f"✓ Found {len(coding_analysis['profiles_found'])} coding profiles")
+            coding_feedback.append(f"📊 Overall coding score: {coding_analysis['overall_coding_score']}")
+            coding_feedback.append(f"🎯 Job readiness: {coding_analysis['job_readiness_level']}")
+            
+            if coding_analysis.get('strengths'):
+                for strength in coding_analysis['strengths'][:2]:
+                    coding_feedback.append(f"✓ {strength}")
+            
+            if coding_analysis.get('recommendations'):
+                for rec in coding_analysis['recommendations'][:2]:
+                    coding_feedback.append(f"⚠ {rec}")
+            
+            feedback_with_insights["Coding Profiles"] = coding_feedback
+        else:
+            feedback_with_insights["Coding Profiles"] = [
+                "⚠ No coding profiles found in resume",
+                "💡 Add LeetCode, Codeforces, or CodeChef profile links",
+                "🎯 Coding profiles are crucial for technical roles"
+            ]
+        
         if llm_enhancement:
             feedback_with_insights["AI Analysis"] = [f"🤖 {llm_enhancement}"]
         
@@ -1467,27 +2237,39 @@ Be specific and actionable with examples."""
             "avg_sentence_length": len(words) / max(len(sentences), 1),
             "readability_score": min(max((len(words) / max(len(sentences), 1) - 10) * 5 + 50, 0), 100),
             "analysis_time_seconds": round(analysis_time, 2),
-            "text_similarity_to_job": self.calculate_text_similarity(text, job_description) if job_description else 0
+            "text_similarity_to_job": self.calculate_text_similarity(text, job_description) if job_description else 0,
+            "coding_profiles_count": len(coding_analysis.get('profiles_found', [])) if coding_analysis else 0
         }
+        
+        # Prepare detailed scores
+        detailed_scores = {
+            "ATS Compatibility": ats_score,
+            "Keyword Optimization": keywords_score,
+            "Content Quality": content_score,
+            "Grammar & Spelling": grammar_score,
+            "Structure & Completeness": structure_score
+        }
+        
+        # Add coding score if available
+        if coding_analysis and coding_analysis.get('profiles_found'):
+            detailed_scores["Coding Profiles"] = min(coding_analysis.get('overall_coding_score', 0), 100)
         
         result = {
             "overall_score": round(overall_score, 1),
             "score_level": score_level,
             "score_color": score_color,
-            "detailed_scores": {
-                "ATS Compatibility": ats_score,
-                "Keyword Optimization": keywords_score,
-                "Content Quality": content_score,
-                "Grammar & Spelling": grammar_score,
-                "Structure & Completeness": structure_score
-            },
+            "detailed_scores": detailed_scores,
             "feedback": feedback_with_insights,
             "detailed_insights": ai_insights,
-            "analysis_method": f"Advanced Analysis {'+ LLM' if self.model_name else ''}",
+            "analysis_method": f"Advanced Analysis {'+ LLM' if self.model_name else ''} + Coding Profiles",
             "word_count": len(words),
             "analysis_timestamp": datetime.now().isoformat(),
             "metrics": metrics
         }
+        
+        # Add coding profile analysis results
+        if coding_analysis:
+            result["coding_profiles_analysis"] = coding_analysis
         
         # Add job match insights if available
         if job_match_insights and "error" not in job_match_insights:
@@ -1496,7 +2278,7 @@ Be specific and actionable with examples."""
         return result
     
     async def analyze_resume_file(self, file_content: bytes, filename: str, job_description: str = "") -> Dict[str, Any]:
-        """Analyze resume from file upload"""
+        """Analyze resume from file upload with coding profile extraction"""
         
         # Extract text based on file type
         if filename.lower().endswith('.pdf'):
@@ -1509,7 +2291,7 @@ Be specific and actionable with examples."""
         if text.startswith("Error"):
             raise HTTPException(status_code=400, detail=text)
         
-        return await self.analyze_resume_comprehensive(text, job_description, filename)
+        return await self.analyze_resume_comprehensive(text, job_description, filename, file_content)
 
 # Initialize analyzer
 analyzer = AdvancedATSAnalyzer()
@@ -1518,8 +2300,8 @@ analyzer = AdvancedATSAnalyzer()
 async def root():
     """Root endpoint with API information"""
     return {
-        "message": "Advanced ATS Resume Score Analyzer",
-        "version": "5.0.0",
+        "message": "Advanced ATS Resume Score Analyzer with Coding Profiles",
+        "version": "6.0.0",
         "current_model": analyzer.model_name or "Advanced Rule-Based Analysis",
         "ollama_status": "connected" if analyzer.model_name else "using_advanced_rules",
         "features": [
@@ -1528,11 +2310,14 @@ async def root():
             "Grammar and spelling checks",
             "Content quality assessment",
             "ATS compatibility scoring",
-            "Job description alignment"
+            "Job description alignment",
+            "Coding profiles analysis (LeetCode, Codeforces, CodeChef)",
+            "Technical interview readiness assessment"
         ],
         "endpoints": {
-            "/analyze": "POST - Upload resume file",
+            "/analyze": "POST - Upload resume file (includes coding profile analysis)",
             "/analyze-text": "POST - Analyze text input",
+            "/analyze-coding-profile": "POST - Analyze specific coding profile",
             "/health": "GET - System health check",
             "/models": "GET - Available models"
         }
@@ -1647,26 +2432,150 @@ async def get_analytics():
     """Get system analytics and statistics"""
     return {
         "system_info": {
-            "analyzer_version": "5.0.0",
+            "analyzer_version": "6.0.0",
             "nlp_engine": "spaCy + NLTK" if analyzer.nlp else "NLTK only",
             "llm_available": analyzer.model_name is not None,
             "current_model": analyzer.model_name or "Rule-based",
+            "coding_analysis": "Enabled - LeetCode, Codeforces, CodeChef"
         },
         "analysis_capabilities": {
             "file_formats": ["PDF", "DOCX", "Text"],
             "languages": ["English"],
             "max_file_size": "10MB",
             "batch_processing": True,
-            "real_time_analysis": True
+            "real_time_analysis": True,
+            "coding_profiles": True,
+            "url_extraction": True
         },
         "scoring_categories": {
             "ATS Compatibility": "File format, parsing, sections",
             "Keyword Optimization": "Job matching, industry terms",
             "Content Quality": "Action verbs, metrics, achievements",
             "Grammar & Spelling": "Language correctness, consistency",
-            "Structure & Completeness": "Organization, required sections"
-        }
+            "Structure & Completeness": "Organization, required sections",
+            "Coding Profiles": "Platform analysis, problem-solving skills, technical readiness"
+        },
+        "coding_platforms_supported": {
+            "leetcode": "Problems solved, difficulty distribution, ranking",
+            "codeforces": "Rating, contests, problem-solving record",
+            "codechef": "Star rating, contests, global ranking"
+        },
+        "job_readiness_levels": [
+            "Excellent - Ready for Senior Roles",
+            "Good - Ready for Mid-Level Roles", 
+            "Fair - Suitable for Junior Roles",
+            "Basic - Needs Improvement for Technical Roles",
+            "Insufficient - Significant Practice Required"
+        ]
     }
+
+@app.post("/analyze-coding-profile")
+async def analyze_specific_coding_profile(
+    platform: str = Form(...),
+    username: str = Form(...)
+):
+    """Analyze a specific coding profile"""
+    try:
+        if platform.lower() not in ['leetcode', 'codeforces', 'codechef']:
+            raise HTTPException(status_code=400, detail="Supported platforms: leetcode, codeforces, codechef")
+        
+        profile = {
+            'platform': platform.lower(),
+            'username': username,
+            'url': f"https://{platform.lower()}.com/{username}"
+        }
+        
+        result = await analyzer.analyze_coding_profiles([profile])
+        return result
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Coding profile analysis failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+
+@app.post("/extract-coding-profiles")
+async def extract_coding_profiles_from_resume(
+    resume: UploadFile = File(...)
+):
+    """Extract coding profiles from resume without full analysis"""
+    try:
+        if not resume.filename:
+            raise HTTPException(status_code=400, detail="No file selected")
+        
+        file_content = await resume.read()
+        
+        # Extract text
+        if resume.filename.lower().endswith('.pdf'):
+            text = analyzer.extract_text_from_pdf(file_content)
+            urls = analyzer.extract_urls_from_pdf(file_content)
+        elif resume.filename.lower().endswith('.docx'):
+            text = analyzer.extract_text_from_docx(file_content)
+            urls = []  # DOCX URL extraction is more complex
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported file format")
+        
+        # Extract coding profiles
+        profiles_from_text = analyzer.extract_coding_profiles_from_text(text)
+        profiles_from_urls = []
+        
+        for url in urls:
+            url_profiles = analyzer.extract_coding_profiles_from_text(url)
+            profiles_from_urls.extend(url_profiles)
+        
+        # Combine and deduplicate
+        all_profiles = profiles_from_text + profiles_from_urls
+        unique_profiles = []
+        seen = set()
+        for profile in all_profiles:
+            key = (profile['platform'], profile['username'].lower())
+            if key not in seen:
+                seen.add(key)
+                unique_profiles.append(profile)
+        
+        return {
+            "found_profiles": unique_profiles,
+            "total_count": len(unique_profiles),
+            "extraction_timestamp": datetime.now().isoformat()
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Profile extraction failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Extraction failed: {str(e)}")
+
+@app.get("/coding-requirements/{job_role}")
+async def get_coding_requirements(job_role: str):
+    """Get coding requirements for specific job roles"""
+    job_role_lower = job_role.lower().replace(' ', '_').replace('-', '_')
+    
+    if job_role_lower in analyzer.job_coding_requirements:
+        requirements = analyzer.job_coding_requirements[job_role_lower]
+        return {
+            "job_role": job_role,
+            "requirements": requirements,
+            "platforms_recommended": ["leetcode", "codeforces", "codechef"],
+            "tips": [
+                f"Solve at least {requirements['min_problems']} problems across all platforms",
+                f"Achieve minimum rating of {requirements['min_rating']} on at least one platform",
+                f"Maintain consistent practice for {requirements['consistency_months']} months",
+                "Participate in weekly contests to improve problem-solving speed",
+                "Focus on data structures and algorithms relevant to the role"
+            ]
+        }
+    else:
+        available_roles = list(analyzer.job_coding_requirements.keys())
+        return {
+            "error": f"Job role '{job_role}' not found",
+            "available_roles": available_roles,
+            "general_advice": {
+                "min_problems": 150,
+                "min_rating": 1400,
+                "consistency_months": 6,
+                "recommended_platforms": ["leetcode", "codeforces", "codechef"]
+            }
+        }
 
 # Additional utility endpoints
 @app.get("/keywords/{industry}")
@@ -1738,490 +2647,28 @@ async def compare_resumes(
         logger.error(f"Comparison failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Comparison failed: {str(e)}")
 
-# ==================== CODING PROFILES ANALYSIS ====================
-    
-    def extract_profile_links(self, text: str) -> Dict[str, List[str]]:
-        """Extract coding profile links from resume text"""
-        profiles = {
-            'leetcode': [],
-            'codeforces': [],
-            'codechef': []
-        }
-        
-        # Enhanced URL patterns to catch various formats
-        url_patterns = [
-            r'https?://[^\s<>"{}|\\^`\[\]]*',
-            r'www\.[^\s<>"{}|\\^`\[\]]*',
-            r'[a-zA-Z0-9.-]+\.com/[^\s<>"{}|\\^`\[\]]*'
-        ]
-        
-        all_urls = []
-        for pattern in url_patterns:
-            all_urls.extend(re.findall(pattern, text, re.IGNORECASE))
-        
-        # Remove duplicates while preserving order
-        seen = set()
-        unique_urls = []
-        for url in all_urls:
-            if url.lower() not in seen:
-                seen.add(url.lower())
-                unique_urls.append(url)
-        
-        # Extract platform-specific profiles
-        for url in unique_urls:
-            url_lower = url.lower()
-            
-            # LeetCode
-            if 'leetcode.com' in url_lower:
-                match = re.search(self.coding_platforms['leetcode']['profile_pattern'], url, re.IGNORECASE)
-                if match:
-                    username = match.group(1).strip('/')
-                    if username and username not in ['problems', 'contest', 'discuss', 'explore']:
-                        profiles['leetcode'].append({
-                            'username': username,
-                            'url': url,
-                            'clean_url': f"https://leetcode.com/{username}/"
-                        })
-            
-            # Codeforces
-            elif 'codeforces.com' in url_lower:
-                match = re.search(self.coding_platforms['codeforces']['profile_pattern'], url, re.IGNORECASE)
-                if match:
-                    username = match.group(1).strip('/')
-                    if username and username not in ['contests', 'problemset', 'gym']:
-                        profiles['codeforces'].append({
-                            'username': username,
-                            'url': url,
-                            'clean_url': f"https://codeforces.com/profile/{username}"
-                        })
-            
-            # CodeChef
-            elif 'codechef.com' in url_lower:
-                match = re.search(self.coding_platforms['codechef']['profile_pattern'], url, re.IGNORECASE)
-                if match:
-                    username = match.group(1).strip('/')
-                    if username and username not in ['ide', 'problems', 'contests']:
-                        profiles['codechef'].append({
-                            'username': username,
-                            'url': url,
-                            'clean_url': f"https://www.codechef.com/users/{username}"
-                        })
-        
-        return profiles
-    
-    async def fetch_leetcode_stats(self, username: str) -> Dict[str, Any]:
-        """Fetch LeetCode profile statistics"""
-        try:
-            # GraphQL query for LeetCode API
-            query = """
-            query getUserProfile($username: String!) {
-                matchedUser(username: $username) {
-                    username
-                    profile {
-                        realName
-                        ranking
-                    }
-                    submitStats: submitStatsGlobal {
-                        acSubmissionNum {
-                            difficulty
-                            count
-                            submissions
-                        }
-                    }
-                    userContestRanking(username: $username) {
-                        attendedContestsCount
-                        rating
-                        globalRanking
-                        topPercentage
-                    }
-                }
-            }
-            """
-            
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
-                async with session.post(
-                    self.coding_platforms['leetcode']['api_endpoint'],
-                    json={'query': query, 'variables': {'username': username}},
-                    headers={'Content-Type': 'application/json'}
-                ) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        user_data = data.get('data', {}).get('matchedUser')
-                        
-                        if user_data:
-                            # Parse submission statistics
-                            submit_stats = user_data.get('submitStats', {}).get('acSubmissionNum', [])
-                            total_solved = sum(stat.get('count', 0) for stat in submit_stats)
-                            
-                            easy_solved = next((stat.get('count', 0) for stat in submit_stats if stat.get('difficulty') == 'Easy'), 0)
-                            medium_solved = next((stat.get('count', 0) for stat in submit_stats if stat.get('difficulty') == 'Medium'), 0)
-                            hard_solved = next((stat.get('count', 0) for stat in submit_stats if stat.get('difficulty') == 'Hard'), 0)
-                            
-                            # Contest ranking info
-                            contest_ranking = user_data.get('userContestRanking') or {}
-                            
-                            return {
-                                'platform': 'leetcode',
-                                'username': username,
-                                'total_solved': total_solved,
-                                'easy_solved': easy_solved,
-                                'medium_solved': medium_solved,
-                                'hard_solved': hard_solved,
-                                'contest_rating': contest_ranking.get('rating', 0),
-                                'contests_attended': contest_ranking.get('attendedContestsCount', 0),
-                                'global_ranking': contest_ranking.get('globalRanking', 0),
-                                'top_percentage': contest_ranking.get('topPercentage', 0),
-                                'profile_ranking': user_data.get('profile', {}).get('ranking', 0),
-                                'real_name': user_data.get('profile', {}).get('realName', ''),
-                                'status': 'success'
-                            }
-                    
-                    return {'platform': 'leetcode', 'username': username, 'status': 'error', 'message': 'Profile not found or private'}
-                    
-        except Exception as e:
-            return {'platform': 'leetcode', 'username': username, 'status': 'error', 'message': str(e)}
-    
-    async def fetch_codeforces_stats(self, username: str) -> Dict[str, Any]:
-        """Fetch Codeforces profile statistics"""
-        try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
-                # Get user info
-                async with session.get(f"{self.coding_platforms['codeforces']['api_endpoint']}?handles={username}") as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        if data.get('status') == 'OK' and data.get('result'):
-                            user_info = data['result'][0]
-                            
-                            # Get user submissions for problem count
-                            try:
-                                async with session.get(f"https://codeforces.com/api/user.status?handle={username}") as sub_response:
-                                    if sub_response.status == 200:
-                                        sub_data = await sub_response.json()
-                                        if sub_data.get('status') == 'OK':
-                                            submissions = sub_data.get('result', [])
-                                            
-                                            # Count unique solved problems
-                                            solved_problems = set()
-                                            for submission in submissions:
-                                                if submission.get('verdict') == 'OK':
-                                                    problem_id = f"{submission.get('problem', {}).get('contestId', '')}{submission.get('problem', {}).get('index', '')}"
-                                                    solved_problems.add(problem_id)
-                                            
-                                            problems_solved = len(solved_problems)
-                                        else:
-                                            problems_solved = 0
-                                    else:
-                                        problems_solved = 0
-                            except:
-                                problems_solved = 0
-                            
-                            return {
-                                'platform': 'codeforces',
-                                'username': username,
-                                'rating': user_info.get('rating', 0),
-                                'max_rating': user_info.get('maxRating', 0),
-                                'rank': user_info.get('rank', 'unrated'),
-                                'max_rank': user_info.get('maxRank', 'unrated'),
-                                'problems_solved': problems_solved,
-                                'contribution': user_info.get('contribution', 0),
-                                'country': user_info.get('country', ''),
-                                'organization': user_info.get('organization', ''),
-                                'first_name': user_info.get('firstName', ''),
-                                'last_name': user_info.get('lastName', ''),
-                                'status': 'success'
-                            }
-                    
-                    return {'platform': 'codeforces', 'username': username, 'status': 'error', 'message': 'Profile not found'}
-                    
-        except Exception as e:
-            return {'platform': 'codeforces', 'username': username, 'status': 'error', 'message': str(e)}
-    
-    async def fetch_codechef_stats(self, username: str) -> Dict[str, Any]:
-        """Fetch CodeChef profile statistics (limited due to API restrictions)"""
-        try:
-            # CodeChef doesn't have a public API, so we'll do basic profile validation
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
-                profile_url = f"https://www.codechef.com/users/{username}"
-                
-                async with session.get(profile_url) as response:
-                    if response.status == 200:
-                        html_content = await response.text()
-                        
-                        # Basic parsing for publicly available info
-                        rating_match = re.search(r'rating["\s:]*(\d+)', html_content, re.IGNORECASE)
-                        rating = int(rating_match.group(1)) if rating_match else 0
-                        
-                        problems_match = re.search(r'problems["\s:]*(\d+)', html_content, re.IGNORECASE)
-                        problems_solved = int(problems_match.group(1)) if problems_match else 0
-                        
-                        return {
-                            'platform': 'codechef',
-                            'username': username,
-                            'rating': rating,
-                            'problems_solved': problems_solved,
-                            'profile_url': profile_url,
-                            'status': 'success',
-                            'note': 'Limited data due to API restrictions'
-                        }
-                    else:
-                        return {'platform': 'codechef', 'username': username, 'status': 'error', 'message': 'Profile not found'}
-                        
-        except Exception as e:
-            return {'platform': 'codechef', 'username': username, 'status': 'error', 'message': str(e)}
-    
-    def assess_job_readiness(self, profile_stats: List[Dict[str, Any]], target_level: str = 'entry_level') -> Dict[str, Any]:
-        """Assess job readiness based on coding profile statistics"""
-        assessment = {
-            'overall_score': 0,
-            'readiness_level': 'Not Ready',
-            'platform_assessments': {},
-            'recommendations': [],
-            'strengths': [],
-            'areas_for_improvement': [],
-            'target_level': target_level
-        }
-        
-        if target_level not in self.job_readiness_thresholds:
-            target_level = 'entry_level'
-        
-        thresholds = self.job_readiness_thresholds[target_level]
-        platform_scores = []
-        
-        for stats in profile_stats:
-            if stats.get('status') != 'success':
-                continue
-                
-            platform = stats['platform']
-            if platform not in thresholds:
-                continue
-                
-            platform_threshold = thresholds[platform]
-            platform_assessment = {
-                'platform': platform,
-                'score': 0,
-                'meets_requirements': False,
-                'details': {}
-            }
-            
-            # Platform-specific assessment
-            if platform == 'leetcode':
-                rating_score = min(stats.get('contest_rating', 0) / platform_threshold['rating'], 1.0) * 40
-                problems_score = min(stats.get('total_solved', 0) / platform_threshold['problems_solved'], 1.0) * 40
-                consistency_score = 20  # Placeholder - would need activity data
-                
-                platform_assessment['score'] = rating_score + problems_score + consistency_score
-                platform_assessment['details'] = {
-                    'rating': stats.get('contest_rating', 0),
-                    'required_rating': platform_threshold['rating'],
-                    'problems_solved': stats.get('total_solved', 0),
-                    'required_problems': platform_threshold['problems_solved'],
-                    'contests_attended': stats.get('contests_attended', 0)
-                }
-                
-                if (stats.get('contest_rating', 0) >= platform_threshold['rating'] and 
-                    stats.get('total_solved', 0) >= platform_threshold['problems_solved']):
-                    platform_assessment['meets_requirements'] = True
-                    
-            elif platform == 'codeforces':
-                rating_score = min(stats.get('rating', 0) / platform_threshold['rating'], 1.0) * 50
-                problems_score = min(stats.get('problems_solved', 0) / platform_threshold['problems_solved'], 1.0) * 30
-                contribution_score = min(stats.get('contribution', 0) / 50, 1.0) * 20
-                
-                platform_assessment['score'] = rating_score + problems_score + contribution_score
-                platform_assessment['details'] = {
-                    'rating': stats.get('rating', 0),
-                    'required_rating': platform_threshold['rating'],
-                    'problems_solved': stats.get('problems_solved', 0),
-                    'required_problems': platform_threshold['problems_solved'],
-                    'rank': stats.get('rank', 'unrated')
-                }
-                
-                if (stats.get('rating', 0) >= platform_threshold['rating'] and 
-                    stats.get('problems_solved', 0) >= platform_threshold['problems_solved']):
-                    platform_assessment['meets_requirements'] = True
-                    
-            elif platform == 'codechef':
-                rating_score = min(stats.get('rating', 0) / platform_threshold['rating'], 1.0) * 60
-                problems_score = min(stats.get('problems_solved', 0) / platform_threshold['problems_solved'], 1.0) * 40
-                
-                platform_assessment['score'] = rating_score + problems_score
-                platform_assessment['details'] = {
-                    'rating': stats.get('rating', 0),
-                    'required_rating': platform_threshold['rating'],
-                    'problems_solved': stats.get('problems_solved', 0),
-                    'required_problems': platform_threshold['problems_solved']
-                }
-                
-                if (stats.get('rating', 0) >= platform_threshold['rating'] and 
-                    stats.get('problems_solved', 0) >= platform_threshold['problems_solved']):
-                    platform_assessment['meets_requirements'] = True
-            
-            assessment['platform_assessments'][platform] = platform_assessment
-            platform_scores.append(platform_assessment['score'])
-        
-        # Calculate overall assessment
-        if platform_scores:
-            assessment['overall_score'] = sum(platform_scores) / len(platform_scores)
-            
-            # Determine readiness level
-            if assessment['overall_score'] >= 80:
-                assessment['readiness_level'] = 'Excellent - Ready for Senior Roles'
-            elif assessment['overall_score'] >= 65:
-                assessment['readiness_level'] = 'Good - Ready for Mid-Level Roles'
-            elif assessment['overall_score'] >= 50:
-                assessment['readiness_level'] = 'Fair - Ready for Entry-Level Roles'
-            elif assessment['overall_score'] >= 30:
-                assessment['readiness_level'] = 'Developing - Continue Practice'
-            else:
-                assessment['readiness_level'] = 'Beginner - Needs Significant Improvement'
-        
-        # Generate recommendations
-        assessment['recommendations'] = self.generate_coding_recommendations(assessment)
-        
-        return assessment
-    
-    def generate_coding_recommendations(self, assessment: Dict[str, Any]) -> List[str]:
-        """Generate personalized coding practice recommendations"""
-        recommendations = []
-        
-        for platform, platform_assessment in assessment['platform_assessments'].items():
-            score = platform_assessment['score']
-            details = platform_assessment['details']
-            
-            if platform == 'leetcode':
-                if details.get('rating', 0) < 1400:
-                    recommendations.append("🎯 Focus on LeetCode Easy and Medium problems to build rating")
-                if details.get('problems_solved', 0) < 100:
-                    recommendations.append("📚 Solve more LeetCode problems - aim for 2-3 problems daily")
-                if details.get('contests_attended', 0) < 5:
-                    recommendations.append("🏆 Participate in LeetCode weekly contests for rating boost")
-                    
-            elif platform == 'codeforces':
-                if details.get('rating', 0) < 1000:
-                    recommendations.append("🚀 Practice Codeforces problems rated 800-1200 to improve rating")
-                if details.get('problems_solved', 0) < 50:
-                    recommendations.append("⚡ Solve more Codeforces problems - focus on implementation and math")
-                    
-            elif platform == 'codechef':
-                if details.get('rating', 0) < 1600:
-                    recommendations.append("🧠 Participate in CodeChef contests to improve rating")
-                if details.get('problems_solved', 0) < 50:
-                    recommendations.append("🔧 Practice CodeChef problems in different categories")
-        
-        # General recommendations based on overall score
-        overall_score = assessment['overall_score']
-        if overall_score < 30:
-            recommendations.extend([
-                "📖 Start with basic programming concepts and data structures",
-                "⏰ Dedicate 1-2 hours daily to coding practice",
-                "🎯 Focus on one platform initially to build momentum"
-            ])
-        elif overall_score < 60:
-            recommendations.extend([
-                "🔄 Practice consistently across multiple platforms",
-                "📊 Focus on weak areas identified in the assessment",
-                "👥 Join coding communities for motivation and learning"
-            ])
-        
-        return recommendations
-    
-    async def analyze_coding_profiles(self, resume_text: str) -> Dict[str, Any]:
-        """Main function to analyze coding profiles from resume"""
-        
-        # Extract profile links
-        profile_links = self.extract_profile_links(resume_text)
-        
-        analysis_result = {
-            'profiles_found': profile_links,
-            'profile_statistics': [],
-            'job_readiness_assessment': None,
-            'summary': {
-                'total_profiles': 0,
-                'accessible_profiles': 0,
-                'total_problems_solved': 0,
-                'average_rating': 0,
-                'platforms_with_good_activity': []
-            }
-        }
-        
-        # Fetch statistics for each platform
-        all_tasks = []
-        
-        for platform, profiles in profile_links.items():
-            for profile in profiles:
-                username = profile['username']
-                
-                if platform == 'leetcode':
-                    all_tasks.append(self.fetch_leetcode_stats(username))
-                elif platform == 'codeforces':
-                    all_tasks.append(self.fetch_codeforces_stats(username))
-                elif platform == 'codechef':
-                    all_tasks.append(self.fetch_codechef_stats(username))
-        
-        # Execute all API calls concurrently
-        if all_tasks:
-            try:
-                profile_stats = await asyncio.gather(*all_tasks, return_exceptions=True)
-                
-                # Filter successful results
-                successful_stats = []
-                for stat in profile_stats:
-                    if isinstance(stat, dict) and stat.get('status') == 'success':
-                        successful_stats.append(stat)
-                        analysis_result['summary']['accessible_profiles'] += 1
-                        
-                        # Update summary statistics
-                        if stat['platform'] == 'leetcode':
-                            analysis_result['summary']['total_problems_solved'] += stat.get('total_solved', 0)
-                            if stat.get('contest_rating', 0) > 0:
-                                analysis_result['summary']['average_rating'] += stat.get('contest_rating', 0)
-                        elif stat['platform'] == 'codeforces':
-                            analysis_result['summary']['total_problems_solved'] += stat.get('problems_solved', 0)
-                            if stat.get('rating', 0) > 0:
-                                analysis_result['summary']['average_rating'] += stat.get('rating', 0)
-                        elif stat['platform'] == 'codechef':
-                            analysis_result['summary']['total_problems_solved'] += stat.get('problems_solved', 0)
-                            if stat.get('rating', 0) > 0:
-                                analysis_result['summary']['average_rating'] += stat.get('rating', 0)
-                
-                analysis_result['profile_statistics'] = profile_stats
-                
-                # Calculate average rating
-                if analysis_result['summary']['accessible_profiles'] > 0:
-                    analysis_result['summary']['average_rating'] /= analysis_result['summary']['accessible_profiles']
-                
-                # Assess job readiness
-                if successful_stats:
-                    analysis_result['job_readiness_assessment'] = self.assess_job_readiness(successful_stats)
-                
-            except Exception as e:
-                logger.error(f"Error fetching profile statistics: {e}")
-        
-        # Count total profiles found
-        analysis_result['summary']['total_profiles'] = sum(len(profiles) for profiles in profile_links.values())
-        
-        return analysis_result
-    
-    # ==================== END CODING PROFILES ANALYSIS ====================
-    
 if __name__ == "__main__":
     import uvicorn
     
-    print("🚀 Starting Advanced ATS Resume Analyzer...")
+    print("🚀 Starting Advanced ATS Resume Analyzer with Coding Profiles...")
     print(f"📊 Analysis method: {'LLM Enhanced' if analyzer.model_name else 'Advanced Rule-Based'}")
     print(f"🧠 NLP Ready: {'Yes' if analyzer.nlp else 'Limited'}")
     print("🔧 Features: Real analysis methods, comprehensive scoring, batch processing")
-    print("📈 New endpoints: /batch-analyze, /compare, /analytics, /keywords/{industry}")
+    print("�‍💻 NEW: Coding profiles analysis (LeetCode, Codeforces, CodeChef)")
+    print("🎯 NEW: Technical interview readiness assessment")
+    print("📈 Endpoints: /batch-analyze, /compare, /analytics, /keywords/{industry}")
+    print("💻 NEW Endpoints: /analyze-coding-profile, /extract-coding-profiles, /coding-requirements/{role}")
     
     # Install required packages reminder
     print("\n📦 Required packages:")
     print("pip install fastapi uvicorn python-docx PyPDF2 spacy nltk scikit-learn numpy")
+    print("pip install aiohttp beautifulsoup4 PyMuPDF")  # New dependencies
     print("python -m spacy download en_core_web_sm")
     
     print("\n🌐 Server starting on port 8001...")
     
     uvicorn.run(
-        "ats:app",  # Replace with your actual filename if different
+        "ats3:app",  # Updated filename
         host="0.0.0.0",
         port=8001,
         reload=True,

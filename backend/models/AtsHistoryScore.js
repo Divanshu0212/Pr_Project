@@ -15,12 +15,8 @@ const AtsHistoryScoreSchema = new mongoose.Schema({
         max: 100
     },
     detailedScores: {
-        keywords: { type: Number, min: 0, max: 100 },
-        formatting: { type: Number, min: 0, max: 100 },
-        experience: { type: Number, min: 0, max: 100 },
-        skills: { type: Number, min: 0, max: 100 },
-        education: { type: Number, min: 0, max: 100 },
-        summary: { type: Number, min: 0, max: 100 }
+        type: mongoose.Schema.Types.Mixed, // Allow dynamic field names
+        default: {}
     },
     resumeTitle: {
         type: String,
