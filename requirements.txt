@@ -1,9 +1,28 @@
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-pydantic==2.5.0
-requests==2.31.0
-jinja2==3.1.2
-weasyprint==60.2
-langchain-core==0.1.0
-langchain-groq==0.1.0
-python-multipart==0.0.6
+# FastAPI and core dependencies
+fastapi
+uvicorn[standard]
+pydantic
+requests
+python-multipart
+
+# Resume generation dependencies (temp4.py)
+jinja2
+weasyprint
+langchain-core
+langchain-groq
+python-dotenv
+
+# ATS analysis dependencies (ats3.py)
+PyPDF2
+python-docx
+spacy
+nltk
+scikit-learn
+numpy
+aiohttp
+beautifulsoup4
+PyMuPDF
+groq
+
+# Additional dependencies
+python-dateutil

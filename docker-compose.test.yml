@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  # Simple test using just the render Dockerfile
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.render
+    ports:
+      - "10000:10000"
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY:-gsk_test_key_replace_with_real_one}
+      - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY:-lsv2_test_key_replace_with_real_one}
+      - LANGCHAIN_TRACING_V2=true
+      - LANGCHAIN_PROJECT=Portfolio_ATS
+      - NODE_ENV=production
+      - PORT=10000
+    volumes:
+      - ./html_templates:/app/html_templates
+      - ./output:/app/output
+      - ./uploads:/app/uploads
+    command: ./start.sh

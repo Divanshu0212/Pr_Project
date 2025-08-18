@@ -136,6 +136,17 @@ app.use('/api/experiences', experienceRoutes);
 app.use('/api/resumes', resumeRoutes);
 app.use('/api/ats', atsRoutes); // Mount ATS routes
 app.use('/api/candidates', candidateRoutes); // Mount candidate search routes
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'OK', 
+        timestamp: new Date().toISOString(),
+        service: 'Backend API',
+        port: PORT || process.env.PORT || 5000
+    });
+});
+
 logger.info('All API routes registered.');
 
 // 404 Not Found Handler - Catches requests to undefined routes

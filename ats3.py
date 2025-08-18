@@ -108,7 +108,7 @@ class CodingProfileAnalysis(BaseModel):
 class AdvancedATSAnalyzer:
     def __init__(self, groq_api_key=None):
         # Initialize Groq client
-        self.groq_api_key = groq_api_key or os.getenv("GROQ_API_KEY","")
+        self.groq_api_key = groq_api_key or os.getenv("GROQ_API_KEY","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")
         if self.groq_api_key:
             self.groq_client = Groq(api_key=self.groq_api_key)
             self.model_name = "llama-3.3-70b-versatile"  # Default Groq model
@@ -2667,10 +2667,12 @@ if __name__ == "__main__":
     
     print("\n🌐 Server starting on port 8001...")
     
+    import os
+    port = int(os.getenv("ATS_PORT", os.getenv("PORT", 8001)))
     uvicorn.run(
         "ats3:app",  # Updated filename
         host="0.0.0.0",
-        port=8001,
-        reload=True,
+        port=port,
+        reload=False,  # Set to False for production
         log_level="info"
     )

@@ -331,23 +331,23 @@ class HTMLResumeGenerator:
                 color: #000;
                 max-width: 210mm;
                 margin: 0 auto;
-                padding: 25mm;
+                padding: 2.5mm;
                 background: #fff;
                 font-size: 12px;
             }
             
             .header {
                 text-align: center;
-                padding-bottom: 15px;
+                padding-bottom: 5px;
                 border-bottom: 1px solid #000;
-                margin-bottom: 20px;
+                margin-bottom: 8px;
             }
             
             .name {
                 font-size: 20px;
                 font-weight: bold;
                 color: #000;
-                margin-bottom: 8px;
+                margin-bottom: 3px;
                 letter-spacing: 1px;
             }
             
@@ -368,7 +368,7 @@ class HTMLResumeGenerator:
             }
             
             .section {
-                margin-bottom: 18px;
+                margin-bottom: 8px;
             }
             
             .section-title {
@@ -378,23 +378,23 @@ class HTMLResumeGenerator:
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
                 border-bottom: 1px solid #000;
-                padding-bottom: 2px;
-                margin-bottom: 10px;
+                padding-bottom: 1px;
+                margin-bottom: 5px;
             }
             
             .summary {
                 text-align: justify;
                 line-height: 1.4;
                 color: #000;
-                margin-bottom: 5px;
+                margin-bottom: 2px;
             }
             
             .experience-item, .education-item, .project-item {
-                margin-bottom: 15px;
+                margin-bottom: 6px;
             }
             
             .item-header {
-                margin-bottom: 5px;
+                margin-bottom: 2px;
             }
             
             .item-title {
@@ -424,12 +424,12 @@ class HTMLResumeGenerator:
             }
             
             .bullet-points {
-                margin-top: 5px;
-                margin-left: 20px;
+                margin-top: 2px;
+                margin-left: 15px;
             }
             
             .bullet-point {
-                margin-bottom: 3px;
+                margin-bottom: 1px;
                 text-align: justify;
                 line-height: 1.4;
                 list-style-type: disc;
@@ -438,9 +438,9 @@ class HTMLResumeGenerator:
             
             .bullet-points strong {
                 font-weight: bold;
-                margin-bottom: 3px;
+                margin-bottom: 1px;
                 display: block;
-                margin-left: -20px;
+                margin-left: -15px;
             }
             
             .skills-grid {
@@ -448,7 +448,7 @@ class HTMLResumeGenerator:
             }
             
             .skill-category {
-                margin-bottom: 8px;
+                margin-bottom: 3px;
             }
             
             .skill-category h4 {
@@ -512,7 +512,7 @@ class HTMLResumeGenerator:
             @media print {
                 body {
                     font-size: 11px;
-                    padding: 20mm;
+                    padding: 2mm;
                 }
                 
                 .name {
@@ -528,7 +528,7 @@ class HTMLResumeGenerator:
                 }
             }
         </style>
-    </head>
+        </head>
     <body>
         <!-- Header -->
         <div class="header">

@@ -1,4 +1,39 @@
 {
+  "name": "portfolio-project",
+  "version": "1.0.0",
+  "description": "Full-stack portfolio application with ATS and resume generation",
+  "main": "start.sh",
+  "scripts": {
+    "start": "./start.sh",
+    "dev": "docker-compose up --build",
+    "build": "docker build -t portfolio-app .",
+    "build:render": "docker build -f Dockerfile.render -t portfolio-app .",
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "build:frontend": "cd frontend && npm run build",
+    "start:backend": "cd backend && npm start",
+    "start:ats": "python3 ats3.py",
+    "start:resume": "python3 temp4.py",
+    "lint": "cd frontend && npm run lint",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "portfolio",
+    "ats",
+    "resume",
+    "fastapi",
+    "react",
+    "nodejs"
+  ],
+  "author": "Divanshu",
+  "license": "ISC",
+  "engines": {
+    "node": ">=18.0.0",
+    "python": ">=3.9.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Divanshu0212/Pr_Project.git"
+  },
   "dependencies": {
     "express-rate-limiter": "^1.3.1",
     "fitz": "^0.0.1",

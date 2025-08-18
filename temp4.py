@@ -12,13 +12,14 @@ import tempfile
 from pathlib import Path
 import weasyprint
 from jinja2 import Template
-
+from dotenv import load_dotenv
 # LangChain imports
 from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough, RunnableLambda
 from fastapi.middleware.cors import CORSMiddleware
+load_dotenv()
 
 os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY","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")
 os.environ["LANGCHAIN_TRACING_V2"] = os.getenv("LANGCHAIN_TRACING_V2", "true")
@@ -1349,4 +1350,6 @@ async def cleanup_old_files():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import os
+    port = int(os.getenv("RESUME_PORT", os.getenv("PORT", 8000)))
+    uvicorn.run(app, host="0.0.0.0", port=port)

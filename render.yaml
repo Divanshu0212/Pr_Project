@@ -1,0 +1,70 @@
+services:
+  # Main Application Service
+  - type: web
+    name: portfolio-app
+    env: docker
+    repo: https://github.com/Divanshu0212/Pr_Project.git
+    branch: newbr
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: LANGCHAIN_API_KEY  
+        sync: false
+      - key: LANGCHAIN_TRACING_V2
+        value: "true"
+      - key: LANGCHAIN_PROJECT
+        value: "Portfolio_ATS"
+      - key: NODE_ENV
+        value: "production"
+      - key: PORT
+        value: "10000"
+      - key: PYTHON_VERSION
+        value: "3.9.16"
+    plan: free
+    region: oregon
+    buildCommand: |
+      # Install system dependencies
+      apt-get update && apt-get install -y \
+        build-essential \
+        libffi-dev \
+        libpango-1.0-0 \
+        libpangoft2-1.0-0 \
+        libcairo2 \
+        libgdk-pixbuf2.0-0 \
+        libfontconfig1 \
+        libgtk-3-0
+      
+      # Install Python dependencies
+      pip install -r requirements.txt
+      
+      # Download spaCy model
+      python -m spacy download en_core_web_sm
+      
+      # Download NLTK data
+      python -c "import nltk; nltk.download('punkt', quiet=True); nltk.download('punkt_tab', quiet=True); nltk.download('stopwords', quiet=True); nltk.download('averaged_perceptron_tagger', quiet=True)"
+      
+      # Install Node.js dependencies for backend
+      cd backend && npm ci --only=production
+      
+      # Build frontend
+      cd ../frontend && npm ci --only=production && npm run build
+    startCommand: |
+      # Start all services
+      cd backend && npm start &
+      BACKEND_PID=$!
+      
+      cd .. && python3 ats3.py &
+      ATS_PID=$!
+      
+      python3 temp4.py &
+      RESUME_PID=$!
+      
+      # Wait for all processes
+      wait $BACKEND_PID $ATS_PID $RESUME_PID
+    autoDeploy: true
+    disk:
+      name: portfolio-disk
+      mountPath: /data
+      sizeGB: 1
+    healthCheckPath: /api/health
