@@ -50,7 +50,7 @@ RUN apt-get update && apt-get install -y \
 
 # Copy Python requirements and install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 # Download spaCy model
 RUN python -m spacy download en_core_web_sm
@@ -113,7 +113,7 @@ RUN npm ci --only=production
 WORKDIR /app
 
 # Expose ports
-EXPOSE 3000 5000 8000 8001
+EXPOSE 5173 5000 8000 8001
 
 # Create startup script
 RUN echo '#!/bin/bash\n\

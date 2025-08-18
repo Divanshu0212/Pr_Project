@@ -8,13 +8,14 @@ services:
       dockerfile: Dockerfile
       target: frontend-builder
     ports:
-      - "3000:3000"
+      - "4173:4173"
     environment:
       - NODE_ENV=production
     volumes:
       - ./frontend:/app/frontend
       - /app/frontend/node_modules
-    command: npm run preview
+    working_dir: /app/frontend
+    command: npm run preview -- --host 0.0.0.0 --port 4173
 
   # Backend Service
   backend:
@@ -27,11 +28,28 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=5000
+      - MONGODB_URI=${MONGODB_URI}
+      - SESSION_SECRET=${SESSION_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
+      - TOKEN_SECRET_KEY=${TOKEN_SECRET_KEY}
+      - ENCRYPTION_SECRET_KEY=${ENCRYPTION_SECRET_KEY}
+      - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
+      - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
+      - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      - CLIENT_URL=${CLIENT_URL}
+      - SERVER_URL=${SERVER_URL}
+      - BACKEND_URL=${BACKEND_URL}
+      - FRONTEND_URL=${FRONTEND_URL}
     volumes:
       - ./backend:/app/backend
       - /app/backend/node_modules
-    depends_on:
-      - mongodb
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     command: npm start
 
   # ATS Analysis Service
@@ -41,12 +59,13 @@ services:
       dockerfile: Dockerfile
       target: python-builder
     ports:
-      - "8000:8000"
+      - "8001:8000"
     environment:
       - GROQ_API_KEY=${GROQ_API_KEY}
       - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY}
       - LANGCHAIN_TRACING_V2=true
       - LANGCHAIN_PROJECT=ATS
+      - PORT=8000
     volumes:
       - ./ats3.py:/app/ats3.py
       - ./uploads:/app/uploads
@@ -59,30 +78,20 @@ services:
       dockerfile: Dockerfile
       target: python-builder
     ports:
-      - "8001:8000"
+      - "8000:8001"
     environment:
       - GROQ_API_KEY=${GROQ_API_KEY}
       - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY}
       - LANGCHAIN_TRACING_V2=true
       - LANGCHAIN_PROJECT=Resume
+      - PORT=8001
     volumes:
       - ./temp4.py:/app/temp4.py
       - ./html_templates:/app/html_templates
       - ./output:/app/output
     command: python3 temp4.py
 
-  # MongoDB Service (if needed)
-  mongodb:
-    image: mongo:6.0
-    ports:
-      - "27017:27017"
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=admin
-      - MONGO_INITDB_ROOT_PASSWORD=password
-    volumes:
-      - mongodb_data:/data/db
-
-  # Redis Service (if needed)
+  # Redis Service
   redis:
     image: redis:7-alpine
     ports:
@@ -93,3 +102,4 @@ services:
 volumes:
   mongodb_data:
   redis_data:
+
