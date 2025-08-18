@@ -1,0 +1,42 @@
+# Ultra-simple Dockerfile for Render
+FROM node:18-alpine
+
+# Install Python and pip
+RUN apk add --no-cache python3 py3-pip python3-dev build-base
+
+# Create symlink for python
+RUN ln -sf python3 /usr/bin/python
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files first
+COPY package*.json ./
+COPY backend/package*.json ./backend/
+COPY frontend/package*.json ./frontend/
+
+# Install Node.js dependencies
+RUN cd backend && npm ci --only=production
+RUN cd frontend && npm ci
+
+# Copy Python requirements and install
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt || pip install --no-cache-dir -r requirements.txt
+
+# Copy source code
+COPY . .
+
+# Build frontend
+RUN cd frontend && npm run build
+
+# Create directories
+RUN mkdir -p html_templates output uploads logs
+
+# Make scripts executable
+RUN chmod +x start.sh build.sh
+
+# Expose port
+EXPOSE 10000
+
+# Start
+CMD ["./start.sh"]
