@@ -4,8 +4,7 @@ services:
     name: portfolio-app
     env: docker
     repo: https://github.com/Divanshu0212/Pr_Project.git
-    branch: newbr
-    dockerfilePath: ./Dockerfile.simple
+    branch: deployment
     envVars:
       - key: GROQ_API_KEY
         sync: false
