@@ -1,35 +1,35 @@
-# Ultra-simple Dockerfile for Render
+# Pre-built Frontend Dockerfile
 FROM node:18-alpine
 
-# Install Python and pip
+# Install Python and tools
 RUN apk add --no-cache python3 py3-pip python3-dev build-base curl
 
-# Create symlink for python
+# Create symlinks
 RUN ln -sf python3 /usr/bin/python && ln -sf pip3 /usr/bin/pip
 
-# Set working directory
+# Set working directory  
 WORKDIR /app
 
-# Copy package files first
+# Copy backend package.json and install
 COPY backend/package*.json ./backend/
-COPY frontend/package*.json ./frontend/
-
-# Install Node.js dependencies
 RUN cd backend && npm ci --only=production
-RUN cd frontend && npm ci
 
 # Copy Python requirements and install
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy source code
+# Copy everything (assuming frontend is pre-built)
 COPY . .
 
-# Verify tools are available
-RUN node --version && npm --version && python --version
-
-# Build frontend
-RUN cd frontend && npm run build
+# If dist directory doesn't exist, try to build
+RUN if [ ! -d "frontend/dist" ]; then \
+        echo "Building frontend..." && \
+        cd frontend && \
+        npm ci && \
+        npm run build; \
+    else \
+        echo "Using pre-built frontend"; \
+    fi
 
 # Create directories
 RUN mkdir -p html_templates output uploads logs
@@ -40,5 +40,4 @@ RUN chmod +x start.sh
 # Expose port
 EXPOSE 10000
 
-# Start
 CMD ["./start.sh"]

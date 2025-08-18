@@ -41,8 +41,11 @@ RUN cd frontend && npm ci
 # Copy all source code
 COPY . .
 
-# Build frontend
-RUN cd frontend && npm run build
+# Verify npm and node versions
+RUN node --version && npm --version
+
+# Build frontend with verbose output
+RUN cd frontend && npm run build --verbose
 
 # Create necessary directories
 RUN mkdir -p html_templates output uploads logs

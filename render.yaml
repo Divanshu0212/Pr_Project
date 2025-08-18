@@ -5,7 +5,7 @@ services:
     env: docker
     repo: https://github.com/Divanshu0212/Pr_Project.git
     branch: newbr
-    dockerfilePath: ./Dockerfile.render
+    dockerfilePath: ./Dockerfile.simple
     envVars:
       - key: GROQ_API_KEY
         sync: false

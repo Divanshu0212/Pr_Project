@@ -1,0 +1,54 @@
+# Debug Dockerfile for Render
+FROM node:18-alpine
+
+# Install debugging tools and Python
+RUN apk add --no-cache python3 py3-pip python3-dev build-base curl bash
+
+# Create symlinks
+RUN ln -sf python3 /usr/bin/python && ln -sf pip3 /usr/bin/pip
+
+# Set working directory
+WORKDIR /app
+
+# Copy and debug frontend package.json
+COPY frontend/package*.json ./frontend/
+RUN echo "=== Frontend package.json ===" && cat frontend/package.json
+RUN echo "=== Installing frontend dependencies ===" && cd frontend && npm ci
+RUN echo "=== Frontend node_modules ===" && ls -la frontend/node_modules/.bin/ | head -10
+
+# Copy backend package.json
+COPY backend/package*.json ./backend/
+RUN echo "=== Installing backend dependencies ===" && cd backend && npm ci --only=production
+
+# Copy Python requirements
+COPY requirements.txt .
+RUN echo "=== Installing Python dependencies ===" && pip install --no-cache-dir -r requirements.txt
+
+# Copy all source code
+COPY . .
+
+# Debug the build environment
+RUN echo "=== Environment Check ===" \
+    && node --version \
+    && npm --version \
+    && python --version \
+    && which node \
+    && which npm \
+    && pwd \
+    && ls -la frontend/ \
+    && cd frontend && which vite || echo "vite not found" \
+    && ls -la node_modules/.bin/ | grep vite || echo "vite not in node_modules"
+
+# Try to build frontend with detailed output
+RUN echo "=== Building Frontend ===" && cd frontend && npm run build
+
+# Create directories
+RUN mkdir -p html_templates output uploads logs
+
+# Make scripts executable
+RUN chmod +x start.sh
+
+# Expose port
+EXPOSE 10000
+
+CMD ["./start.sh"]
