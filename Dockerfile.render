@@ -31,9 +31,9 @@ RUN python -c "import nltk; nltk.download('punkt', quiet=True); nltk.download('p
 COPY backend/package*.json ./backend/
 RUN cd backend && npm ci --only=production
 
-# Copy frontend package.json and install dependencies
+# Copy frontend package.json and install dependencies (including dev dependencies for build)
 COPY frontend/package*.json ./frontend/
-RUN cd frontend && npm ci --only=production
+RUN cd frontend && npm ci
 
 # Copy source code
 COPY . .
