@@ -81,7 +81,7 @@ app.use(session({
     cookie: {
         secure: process.env.NODE_ENV === 'production', // Use secure cookies in production (HTTPS)
         httpOnly: true, // Prevent client-side JavaScript from accessing cookies
-        sameSite: 'Lax', // Protect against CSRF attacks. 'Strict' is more secure but can break cross-site links. 'Lax' is a good balance.
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' required for cross-origin requests in production
         maxAge: 24 * 60 * 60 * 1000 // Session cookie expiration time (1 day)
     }
 }));
@@ -152,9 +152,14 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 logger.info('Centralized error handler applied.');
 
-// Start the server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-    logger.info(`Server started on port ${PORT} in ${process.env.NODE_ENV} mode.`);
-});
+// Start the server (only when not running in a serverless environment like Vercel)
+if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SERVER_LISTEN === 'true') {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+        logger.info(`Server started on port ${PORT} in ${process.env.NODE_ENV} mode.`);
+    });
+}
+
+// Export app for Vercel serverless
+module.exports = app;

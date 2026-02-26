@@ -7,6 +7,9 @@ const path = require('path');
 const { console } = require('inspector');
 const { log } = require('console');
 const logger = require('../utils/logger');
+const cloudinaryResume = require('../config/cloudinaryResume');
+const https = require('https');
+const http = require('http');
 
 // Extend Joi with date validations
 const customJoi = Joi.extend(JoiDate);
@@ -364,32 +367,87 @@ exports.getDefaultResume = (req, res) => {
 // @access  Private
 exports.uploadResumeToMongoDB = async (req, res) => {
     try {
-        if (!req.file) {
+        // Accept either a direct file upload (`req.file`) or a Cloudinary reference
+        if (!req.file && !req.body.cloudinary_public_id && !req.body.cloudinaryUrl) {
             return res.status(400).json({
                 success: false,
-                message: 'No file uploaded'
+                message: 'No file uploaded or Cloudinary reference provided'
             });
         }
 
         const userId = req.user.id;
         const resumeId = req.body.resumeId || `resume_${Date.now()}`;
 
-        // Validate file type
         const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-        if (!allowedTypes.includes(req.file.mimetype)) {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid file type. Only PDF, DOC, and DOCX files are allowed.'
-            });
+        const maxSize = 10 * 1024 * 1024; // 10MB
+
+        // If file was provided directly in the request, validate it
+        if (req.file) {
+            if (!allowedTypes.includes(req.file.mimetype)) {
+                return res.status(400).json({ success: false, message: 'Invalid file type. Only PDF, DOC, and DOCX files are allowed.' });
+            }
+            if (req.file.buffer.length > maxSize) {
+                return res.status(400).json({ success: false, message: 'File size too large. Maximum size is 10MB.' });
+            }
         }
 
-        // Validate file size (e.g., max 10MB)
-        const maxSize = 10 * 1024 * 1024; // 10MB
-        if (req.file.buffer.length > maxSize) {
-            return res.status(400).json({
-                success: false,
-                message: 'File size too large. Maximum size is 10MB.'
+        // Helper to fetch a URL into a Buffer
+        const fetchUrlToBuffer = (url) => {
+            return new Promise((resolve, reject) => {
+                const client = url.startsWith('https') ? https : http;
+                client.get(url, (resp) => {
+                    if (resp.statusCode >= 300 && resp.statusCode < 400 && resp.headers.location) {
+                        // Follow redirect
+                        return resolve(fetchUrlToBuffer(resp.headers.location));
+                    }
+                    const data = [];
+                    resp.on('data', (chunk) => data.push(chunk));
+                    resp.on('end', () => resolve(Buffer.concat(data)));
+                    resp.on('error', (err) => reject(err));
+                }).on('error', (err) => reject(err));
             });
+        };
+
+        // If Cloudinary public_id was provided, resolve it to a URL
+        if (!req.file && (req.body.cloudinary_public_id || req.body.cloudinaryUrl)) {
+            let fileUrl = req.body.cloudinaryUrl;
+            const publicId = req.body.cloudinary_public_id;
+            if (publicId && !fileUrl) {
+                // Use Cloudinary API to get resource info
+                try {
+                    const resource = await new Promise((resolve, reject) => {
+                        cloudinaryResume.cloudinary.api.resource(publicId, { resource_type: 'raw' }, (err, result) => {
+                            if (err) return reject(err);
+                            resolve(result);
+                        });
+                    });
+                    fileUrl = resource.secure_url || resource.url;
+                } catch (err) {
+                    console.error('Could not fetch Cloudinary resource:', err.message);
+                    return res.status(400).json({ success: false, message: 'Failed to resolve Cloudinary public_id' });
+                }
+            }
+
+            if (!fileUrl) {
+                return res.status(400).json({ success: false, message: 'Cloudinary URL could not be determined' });
+            }
+
+            // Fetch the file bytes from Cloudinary URL
+            let buffer;
+            try {
+                buffer = await fetchUrlToBuffer(fileUrl);
+            } catch (err) {
+                console.error('Error downloading file from Cloudinary URL:', err.message);
+                return res.status(500).json({ success: false, message: 'Failed to download file from Cloudinary' });
+            }
+
+            // Emulate `req.file` shape for downstream logic
+            req.file = {
+                originalname: req.body.filename || (publicId ? `${publicId}` : `resume_${Date.now()}.pdf`),
+                mimetype: req.body.mimetype || 'application/pdf',
+                buffer,
+                size: buffer.length
+            };
         }
 
         let resume;

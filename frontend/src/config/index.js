@@ -1,6 +1,11 @@
 const BACKEND_DOMAIN = import.meta.env.VITE_REACT_APP_API_BASE_URL || "http://localhost:5000";
+const ATS_DOMAIN = import.meta.env.VITE_ATS_API_BASE_URL || "http://localhost:8001";
 
 const SummaryApi = {
+    checkAuth: {
+        url: `${BACKEND_DOMAIN}/api/auth/me`,
+        method: "get"
+    },
     signUp: {
         url: `${BACKEND_DOMAIN}/api/auth/signup`,
         method: "post"
@@ -153,35 +158,35 @@ const SummaryApi = {
     },
     ats: {
         analyze: {
-            url: "http://localhost:8001/analyze",
+            url: `${ATS_DOMAIN}/analyze`,
             method: "POST"
         },
         analyzeText: {
-            url: "http://localhost:8001/analyze-text",
+            url: `${ATS_DOMAIN}/analyze-text`,
             method: "POST"
         },
         health: {
-            url: "http://localhost:8001/health",
+            url: `${ATS_DOMAIN}/health`,
             method: "GET"
         },
         models: {
-            url: "http://localhost:8001/models",
+            url: `${ATS_DOMAIN}/models`,
             method: "GET"
         },
         batchAnalyze: {
-            url: "http://localhost:8001/batch-analyze",
+            url: `${ATS_DOMAIN}/batch-analyze`,
             method: "POST"
         },
         compare: {
-            url: "http://localhost:8001/compare",
+            url: `${ATS_DOMAIN}/compare`,
             method: "POST"
         },
         keywords: {
-            url: (industry) => `http://localhost:8001/keywords/${industry}`,
+            url: (industry) => `${ATS_DOMAIN}/keywords/${industry}`,
             method: "GET"
         },
         analytics: {
-            url: "http://localhost:8001/analytics",
+            url: `${ATS_DOMAIN}/analytics`,
             method: "GET"
         },
         history: {

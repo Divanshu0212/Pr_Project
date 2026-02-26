@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
     const checkAuth = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:5000/api/auth/me', {
+        const response = await fetch(SummaryApi.checkAuth.url, {
           method: 'GET',
           credentials: 'include',
           headers: {
@@ -252,11 +252,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signInWithGoogle = () => {
-    window.open(SummaryApi.googleAuth.url || "http://localhost:5000/api/auth/google", "_self");
+    window.open(SummaryApi.googleAuth.url, "_self");
   };
 
   const signInWithGithub = () => {
-    window.open(SummaryApi.githubAuth.url || "http://localhost:5000/api/auth/github", "_self");
+    window.open(SummaryApi.githubAuth.url, "_self");
   };
   const handleOAuthCallback = async (token, user) => {
     try {
