@@ -1,7 +1,10 @@
 // backend/server.js
-require('dotenv').config({ path: './.env' }); // Load .env variables at the very start
+// Load .env only in local development; on Vercel env vars come from the dashboard
+if (!process.env.VERCEL) {
+    require('dotenv').config({ path: './.env' });
+}
 const express = require('express');
-const mongoose = require('mongoose'); // Mongoose for database interaction
+const mongoose = require('mongoose');
 const cors = require('cors');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
@@ -9,15 +12,15 @@ const passport = require('passport');
 const { initializePassport } = require('./config/passport');
 
 // Security Middleware Imports
-const helmet = require('helmet'); // For setting security headers
-const rateLimit = require('express-rate-limit'); // For rate limiting requests
-const cookieParser = require('cookie-parser'); // For parsing cookies
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
 
 // Import your database connection function
 const connectDB = require('./db/mongoClient');
 
 // Import your logger utility
-const logger = require('./utils/logger'); // Used for security logging
+const logger = require('./utils/logger');
 
 // Import your route files
 const authRoutes = require('./routes/auth');
@@ -36,6 +39,11 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
+// --- Health check endpoint (no DB, no auth, responds instantly) ---
+app.get('/api/health', (req, res) => {
+    res.json({ success: true, message: 'Backend is running', timestamp: new Date().toISOString() });
+});
+
 // --- Database Connection Middleware ---
 // Runs on every request; cached connection is reused on warm serverless invocations.
 app.use(async (req, res, next) => {
@@ -50,83 +58,52 @@ app.use(async (req, res, next) => {
 
 // --- Core Security & Hardening Middleware ---
 
-// 1. Helmet.js: Secure HTTP Headers
-// It's recommended to place Helmet early in your middleware stack.
 app.use(helmet());
-logger.info('Helmet middleware applied for security headers.');
 
-// 2. CORS Configuration: Restrictive Access
-// Allows requests from your frontend client only.
 app.use(cors({
-    origin: process.env.CLIENT_URL, // Your frontend URL from .env (e.g., http://localhost:3000)
-    credentials: true, // Allow cookies to be sent
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'] // Allowed request headers
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
-logger.info(`CORS configured for origin: ${process.env.CLIENT_URL}`);
 
-// 3. Body Parsing with Limits
-// express.json() for parsing application/json. Added limit to prevent large payloads (DoS).
 app.use(express.json({ limit: '1mb' }));
-// express.urlencoded() for parsing application/x-www-form-urlencoded. Added limit.
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
-logger.info('Body parsers (JSON, URL-encoded) applied with 1MB limit.');
 
-// 4. Cookie Parsing
-// Required for parsing cookies sent by the client. Place before session if session relies on it.
 app.use(cookieParser());
-logger.info('Cookie-parser middleware applied.');
 
-// 5. Session middleware setup
+// Session middleware — reuse the mongoose connection for MongoStore (no second connection)
 app.use(session({
-    secret: process.env.SESSION_SECRET, // Secret key for signing the session ID cookie
-    resave: false, // Don't save session if unmodified
-    saveUninitialized: false, // Don't create session until something stored
-    store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }), // Store sessions in MongoDB
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+        clientPromise: connectDB().then(() => mongoose.connection.getClient()),
+        ttl: 24 * 60 * 60, // 1 day in seconds
+    }),
     cookie: {
-        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production (HTTPS)
-        httpOnly: true, // Prevent client-side JavaScript from accessing cookies
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' required for cross-origin requests in production
-        maxAge: 24 * 60 * 60 * 1000 // Session cookie expiration time (1 day)
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 24 * 60 * 60 * 1000
     }
 }));
-logger.info('Express-session middleware applied. Cookie secure and httpOnly settings based on NODE_ENV.');
 
 // Initialize Passport.js for authentication
-initializePassport(passport); // Pass the passport instance to your config
-app.use(passport.initialize()); // Initialize Passport
-app.use(passport.session()); // Enable Passport session support
-logger.info('Passport.js initialized.');
+initializePassport(passport);
+app.use(passport.initialize());
+app.use(passport.session());
 
-// 6. Rate Limiting for Authentication Routes
+// Rate Limiting for Authentication Routes
 const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
+    windowMs: 15 * 60 * 1000,
+    max: 100,
     message: 'Too many requests from this IP, please try again after 15 minutes',
-    // Log blocked attempts for security monitoring
-    handler: (req, res, next, options) => {
-        logger.security('Rate limit exceeded', {
-            ip: req.ip,
-            route: req.originalUrl,
-            method: req.method,
-            max: options.max,
-            windowMs: options.windowMs / 1000 / 60 + ' minutes'
-        });
-        res.status(options.statusCode).send(options.message);
-    }
 });
-// Apply to authentication routes to prevent brute-force attacks
-app.use('/api/auth/login', authLimiter); // Assuming login is a POST route
-app.use('/api/auth/signup', authLimiter); // Assuming signup is a POST route
-logger.info('Rate limiting applied to /api/auth/login and /api/auth/signup.');
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/signup', authLimiter);
 
-// Optional: Log routes for debugging (can be removed in production)
-app.use((req, res, next) => {
-    // console.log(`${req.method} ${req.originalUrl}`);
-    next();
-});
-
-// Serve static files (e.g., for mock PDF downloads, if any)
+// Serve static files
 app.use('/mock_files', express.static('mock_files'));
 
 // Define API Routes
@@ -140,11 +117,9 @@ app.use('/api/certificates', certificateRoutes);
 app.use('/api/experiences', experienceRoutes);
 app.use('/api/resumes', resumeRoutes);
 app.use('/api/ats', atsRoutes); // Mount ATS routes
-app.use('/api/candidates', candidateRoutes); // Mount candidate search routes
-logger.info('All API routes registered.');
+app.use('/api/candidates', candidateRoutes);
 
-// 404 Not Found Handler - Catches requests to undefined routes
-// This must come BEFORE the centralized error handler, but AFTER all valid routes.
+// 404 Not Found Handler
 app.use((req, res, next) => {
     const error = new Error(`Endpoint not found: ${req.originalUrl}`);
     error.statusCode = 404;
@@ -155,9 +130,8 @@ app.use((req, res, next) => {
 // Centralized Error Handling Middleware (MUST BE LAST APP.USE BEFORE LISTEN)
 // This will catch all errors, including those from routes and other middleware.
 app.use(errorHandler);
-logger.info('Centralized error handler applied.');
 
-// Start the server (only when not running in a serverless environment like Vercel)
+// Start the server (only in local development)
 if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_SERVER_LISTEN === 'true') {
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => {
