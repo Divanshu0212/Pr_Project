@@ -1,4 +1,4 @@
-# Core FastAPI dependencies
+# Core FastAPI
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 python-multipart==0.0.6
@@ -7,21 +7,22 @@ python-multipart==0.0.6
 PyPDF2==3.0.1
 python-docx==1.1.0
 
-# NLP and text processing
-spacy==3.7.2
+# NLP — spaCy is excluded (exceeds Vercel's 250MB bundle limit).
+# The app detects its absence and falls back to NLTK-only analysis.
 nltk==3.8.1
 scikit-learn==1.3.2
 numpy==1.24.4
 
-# AI/LLM integration
+# AI / LLM
 groq==0.4.1
 
-# HTTP requests and async
+# HTTP / async
 aiohttp==3.9.1
 requests==2.31.0
+beautifulsoup4==4.12.2
 
 # Data validation
 pydantic==2.5.0
 
-# Additional utilities
-python-dotenv==1.0.0  # For environment variable management
+# Env vars (local dev only; Vercel injects env vars natively)
+python-dotenv==1.0.0

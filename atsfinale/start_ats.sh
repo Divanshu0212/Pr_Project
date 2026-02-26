@@ -1,4 +1,20 @@
 #!/bin/bash
+set -e
+
+echo "📦 Installing spaCy English model..."
+python -m spacy download en_core_web_sm --quiet || echo "⚠️  spaCy model download failed, will use NLTK fallback"
+
+echo "📦 Downloading NLTK data..."
+python -c "
+import nltk
+for pkg in ['punkt', 'punkt_tab', 'stopwords', 'averaged_perceptron_tagger']:
+    nltk.download(pkg, quiet=True)
+print('NLTK data ready')
+"
+
+echo "🚀 Starting ATS server..."
+uvicorn ats:app --host 0.0.0.0 --port "${PORT:-8001}" --workers 1
+
 
 # ATS Backend Startup Script
 echo "🚀 Starting ATS Resume Analyzer Backend..."
