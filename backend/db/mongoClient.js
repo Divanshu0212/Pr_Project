@@ -1,46 +1,51 @@
 // backend/db/mongoClient.js
 const mongoose = require('mongoose');
 
+// Cache the connection across serverless invocations (warm starts reuse this)
+let cachedConnection = null;
+
 const connectDB = async () => {
+  // If a connection is already established and ready, reuse it immediately
+  if (cachedConnection && mongoose.connection.readyState === 1) {
+    return cachedConnection;
+  }
+
   try {
     if (!process.env.MONGODB_URI) {
       throw new Error('MONGODB_URI is not defined in the .env file');
     }
 
-    // MongoDB connection options for better reliability
+    // Tuned for serverless: small pool, fast timeouts, no idle connections held open
     const options = {
-      serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
-      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-      maxPoolSize: 10, // Maintain up to 10 socket connections
-      minPoolSize: 5, // Maintain at least 5 socket connections
+      serverSelectionTimeoutMS: 5000,  // Fail fast (5s) instead of hanging for 30s
+      socketTimeoutMS: 10000,
+      maxPoolSize: 5,                  // Small pool suitable for serverless
+      minPoolSize: 0,                  // Don't hold idle connections (serverless scales to zero)
       retryWrites: true,
-      maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
-      family: 4, // Use IPv4, skip trying IPv6
+      family: 4,                       // Use IPv4, skip trying IPv6
     };
 
     await mongoose.connect(process.env.MONGODB_URI, options);
 
+    cachedConnection = mongoose.connection;
     console.log('✅ Successfully connected to MongoDB');
 
     // Handle connection events
     mongoose.connection.on('error', (err) => {
       console.error('❌ MongoDB connection error:', err);
+      cachedConnection = null; // Reset cache so next request retries
     });
 
     mongoose.connection.on('disconnected', () => {
       console.log('🔌 MongoDB disconnected');
+      cachedConnection = null; // Reset cache so next request reconnects
     });
 
-    mongoose.connection.on('reconnected', () => {
-      console.log('🔄 MongoDB reconnected');
-    });
+    return cachedConnection;
 
   } catch (error) {
+    cachedConnection = null;
     console.error('❌ MongoDB connection error:', error.message);
-    console.error('Full error:', error);
-    
-    // Don't exit the process immediately, let the app handle the error
-    // process.exit(1);
     throw error;
   }
 };

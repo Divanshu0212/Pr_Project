@@ -36,11 +36,16 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
-// Connect Database with error handling
-connectDB().catch(err => {
-    logger.error('Failed to connect to MongoDB:', err);
-    console.error('❌ Failed to connect to MongoDB. Server will continue but database operations will fail.');
-    // Server continues to run but database operations will fail gracefully
+// --- Database Connection Middleware ---
+// Runs on every request; cached connection is reused on warm serverless invocations.
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (err) {
+        logger.error('Failed to connect to MongoDB:', err);
+        return res.status(503).json({ success: false, message: 'Database unavailable, please try again.' });
+    }
 });
 
 // --- Core Security & Hardening Middleware ---
